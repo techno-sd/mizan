@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# Corpus build cache and built corpora (rebuild with scripts/build_corpus.py)
+services/api/.cache/
+services/api/data/
+
+# Secrets
+.env
+.env.local
+*.pem
+
+# Eval outputs (keep the summary markdown, not raw dumps)
+eval/results/*.json
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Claude Code local settings
+.claude/settings.local.json

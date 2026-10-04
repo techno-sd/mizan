@@ -1,0 +1,33 @@
+[project]
+name = "mizan-api"
+version = "0.1.0"
+description = "Mizan verification service: checks Quran verses, hadith and attributed quotes against a declared corpus."
+requires-python = ">=3.12"
+dependencies = [
+  "fastapi>=0.142",
+  "uvicorn[standard]>=0.54",
+  "pydantic>=2.13",
+  "pydantic-settings>=2.15",
+  "anthropic>=1.11",
+  "psycopg[binary]>=3.3",
+  "psycopg-pool>=3.3",
+  "rapidfuzz>=3.14",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=9.1", "ruff>=0.16", "httpx>=0.28"]
+
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"

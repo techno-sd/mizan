@@ -1,0 +1,511 @@
+{
+ "corpus_version": "2026-10-04-fixture",
+ "notices": [
+  "Quran text: Tanzil Project (https://tanzil.net). Copied verbatim; changing the text is not allowed. Source must be indicated and a link to tanzil.net provided.",
+  "Hadith: fawazahmed0/hadith-api (Unlicense)."
+ ],
+ "passages": [
+  {
+   "id": 1,
+   "collection": "quran",
+   "kind": "quran",
+   "book": 1,
+   "number": 1,
+   "numbering_scheme": "رقم السورة:رقم الآية (المصحف)",
+   "text_ar": "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
+   "text_en": null,
+   "gradings": [],
+   "url": "https://quran.com/1/1",
+   "text_ar_norm": "بسم الله الرحمن الرحيم",
+   "text_en_norm": ""
+  },
+  {
+   "id": 2,
+   "collection": "quran",
+   "kind": "quran",
+   "book": 1,
+   "number": 2,
+   "numbering_scheme": "رقم السورة:رقم الآية (المصحف)",
+   "text_ar": "الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ",
+   "text_en": null,
+   "gradings": [],
+   "url": "https://quran.com/1/2",
+   "text_ar_norm": "الحمد لله رب العالمين",
+   "text_en_norm": ""
+  },
+  {
+   "id": 3,
+   "collection": "quran",
+   "kind": "quran",
+   "book": 1,
+   "number": 3,
+   "numbering_scheme": "رقم السورة:رقم الآية (المصحف)",
+   "text_ar": "الرَّحْمَٰنِ الرَّحِيمِ",
+   "text_en": null,
+   "gradings": [],
+   "url": "https://quran.com/1/3",
+   "text_ar_norm": "الرحمن الرحيم",
+   "text_en_norm": ""
+  },
+  {
+   "id": 4,
+   "collection": "quran",
+   "kind": "quran",
+   "book": 1,
+   "number": 4,
+   "numbering_scheme": "رقم السورة:رقم الآية (المصحف)",
+   "text_ar": "مَالِكِ يَوْمِ الدِّينِ",
+   "text_en": null,
+   "gradings": [],
+   "url": "https://quran.com/1/4",
+   "text_ar_norm": "مالك يوم الدين",
+   "text_en_norm": ""
+  },
+  {
+   "id": 5,
+   "collection": "quran",
+   "kind": "quran",
+   "book": 1,
+   "number": 5,
+   "numbering_scheme": "رقم السورة:رقم الآية (المصحف)",
+   "text_ar": "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ",
+   "text_en": null,
+   "gradings": [],
+   "url": "https://quran.com/1/5",
+   "text_ar_norm": "اياك نعبد واياك نستعين",
+   "text_en_norm": ""
+  },
+  {
+   "id": 6,
+   "collection": "quran",
+   "kind": "quran",
+   "book": 1,
+   "number": 6,
+   "numbering_scheme": "رقم السورة:رقم الآية (المصحف)",
+   "text_ar": "اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ",
+   "text_en": null,
+   "gradings": [],
+   "url": "https://quran.com/1/6",
+   "text_ar_norm": "اهدنا الصراط المستقيم",
+   "text_en_norm": ""
+  },
+  {
+   "id": 7,
+   "collection": "quran",
+   "kind": "quran",
+   "book": 1,
+   "number": 7,
+   "numbering_scheme": "رقم السورة:رقم الآية (المصحف)",
+   "text_ar": "صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ",
+   "text_en": null,
+   "gradings": [],
+   "url": "https://quran.com/1/7",
+   "text_ar_norm": "صراط الذين انعمت عليهم غير المغضوب عليهم ولا الضالين",
+   "text_en_norm": ""
+  },
+  {
+   "id": 8,
+   "collection": "quran",
+   "kind": "quran",
+   "book": 2,
+   "number": 254,
+   "numbering_scheme": "رقم السورة:رقم الآية (المصحف)",
+   "text_ar": "يَا أَيُّهَا الَّذِينَ آمَنُوا أَنفِقُوا مِمَّا رَزَقْنَاكُم مِّن قَبْلِ أَن يَأْتِيَ يَوْمٌ لَّا بَيْعٌ فِيهِ وَلَا خُلَّةٌ وَلَا شَفَاعَةٌ وَالْكَافِرُونَ هُمُ الظَّالِمُونَ",
+   "text_en": null,
+   "gradings": [],
+   "url": "https://quran.com/2/254",
+   "text_ar_norm": "يا ايها الذين امنوا انفقوا مما رزقناكم من قبل ان ياتي يوم لا بيع فيه ولا خله ولا شفاعه والكافرون هم الظالمون",
+   "text_en_norm": ""
+  },
+  {
+   "id": 9,
+   "collection": "quran",
+   "kind": "quran",
+   "book": 2,
+   "number": 255,
+   "numbering_scheme": "رقم السورة:رقم الآية (المصحف)",
+   "text_ar": "اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ لَّهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ مَن ذَا الَّذِي يَشْفَعُ عِندَهُ إِلَّا بِإِذْنِهِ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ وَلَا يُحِيطُونَ بِشَيْءٍ مِّنْ عِلْمِهِ إِلَّا بِمَا شَاءَ وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالْأَرْضَ وَلَا يَئُودُهُ حِفْظُهُمَا وَهُوَ الْعَلِيُّ الْعَظِيمُ",
+   "text_en": null,
+   "gradings": [],
+   "url": "https://quran.com/2/255",
+   "text_ar_norm": "الله لا اله الا هو الحي القيوم لا تاخذه سنه ولا نوم له ما في السماوات وما في الارض من ذا الذي يشفع عنده الا باذنه يعلم ما بين ايديهم وما خلفهم ولا يحيطون بشيء من علمه الا بما شاء وسع كرسيه السماوات والارض ولا ييوده حفظهما وهو العلي العظيم",
+   "text_en_norm": ""
+  },
+  {
+   "id": 10,
+   "collection": "quran",
+   "kind": "quran",
+   "book": 2,
+   "number": 256,
+   "numbering_scheme": "رقم السورة:رقم الآية (المصحف)",
+   "text_ar": "لَا إِكْرَاهَ فِي الدِّينِ قَد تَّبَيَّنَ الرُّشْدُ مِنَ الْغَيِّ فَمَن يَكْفُرْ بِالطَّاغُوتِ وَيُؤْمِن بِاللَّهِ فَقَدِ اسْتَمْسَكَ بِالْعُرْوَةِ الْوُثْقَىٰ لَا انفِصَامَ لَهَا وَاللَّهُ سَمِيعٌ عَلِيمٌ",
+   "text_en": null,
+   "gradings": [],
+   "url": "https://quran.com/2/256",
+   "text_ar_norm": "لا اكراه في الدين قد تبين الرشد من الغي فمن يكفر بالطاغوت ويومن بالله فقد استمسك بالعروه الوثقي لا انفصام لها والله سميع عليم",
+   "text_en_norm": ""
+  },
+  {
+   "id": 11,
+   "collection": "quran",
+   "kind": "quran",
+   "book": 2,
+   "number": 257,
+   "numbering_scheme": "رقم السورة:رقم الآية (المصحف)",
+   "text_ar": "اللَّهُ وَلِيُّ الَّذِينَ آمَنُوا يُخْرِجُهُم مِّنَ الظُّلُمَاتِ إِلَى النُّورِ وَالَّذِينَ كَفَرُوا أَوْلِيَاؤُهُمُ الطَّاغُوتُ يُخْرِجُونَهُم مِّنَ النُّورِ إِلَى الظُّلُمَاتِ أُولَٰئِكَ أَصْحَابُ النَّارِ هُمْ فِيهَا خَالِدُونَ",
+   "text_en": null,
+   "gradings": [],
+   "url": "https://quran.com/2/257",
+   "text_ar_norm": "الله ولي الذين امنوا يخرجهم من الظلمات الي النور والذين كفروا اولياوهم الطاغوت يخرجونهم من النور الي الظلمات اوليك اصحاب النار هم فيها خالدون",
+   "text_en_norm": ""
+  },
+  {
+   "id": 12,
+   "collection": "quran",
+   "kind": "quran",
+   "book": 49,
+   "number": 12,
+   "numbering_scheme": "رقم السورة:رقم الآية (المصحف)",
+   "text_ar": "يَا أَيُّهَا الَّذِينَ آمَنُوا اجْتَنِبُوا كَثِيرًا مِّنَ الظَّنِّ إِنَّ بَعْضَ الظَّنِّ إِثْمٌ وَلَا تَجَسَّسُوا وَلَا يَغْتَب بَّعْضُكُم بَعْضًا أَيُحِبُّ أَحَدُكُمْ أَن يَأْكُلَ لَحْمَ أَخِيهِ مَيْتًا فَكَرِهْتُمُوهُ وَاتَّقُوا اللَّهَ إِنَّ اللَّهَ تَوَّابٌ رَّحِيمٌ",
+   "text_en": null,
+   "gradings": [],
+   "url": "https://quran.com/49/12",
+   "text_ar_norm": "يا ايها الذين امنوا اجتنبوا كثيرا من الظن ان بعض الظن اثم ولا تجسسوا ولا يغتب بعضكم بعضا ايحب احدكم ان ياكل لحم اخيه ميتا فكرهتموه واتقوا الله ان الله تواب رحيم",
+   "text_en_norm": ""
+  },
+  {
+   "id": 13,
+   "collection": "quran",
+   "kind": "quran",
+   "book": 49,
+   "number": 13,
+   "numbering_scheme": "رقم السورة:رقم الآية (المصحف)",
+   "text_ar": "يَا أَيُّهَا النَّاسُ إِنَّا خَلَقْنَاكُم مِّن ذَكَرٍ وَأُنثَىٰ وَجَعَلْنَاكُمْ شُعُوبًا وَقَبَائِلَ لِتَعَارَفُوا إِنَّ أَكْرَمَكُمْ عِندَ اللَّهِ أَتْقَاكُمْ إِنَّ اللَّهَ عَلِيمٌ خَبِيرٌ",
+   "text_en": null,
+   "gradings": [],
+   "url": "https://quran.com/49/13",
+   "text_ar_norm": "يا ايها الناس انا خلقناكم من ذكر وانثي وجعلناكم شعوبا وقبايل لتعارفوا ان اكرمكم عند الله اتقاكم ان الله عليم خبير",
+   "text_en_norm": ""
+  },
+  {
+   "id": 14,
+   "collection": "quran",
+   "kind": "quran",
+   "book": 49,
+   "number": 14,
+   "numbering_scheme": "رقم السورة:رقم الآية (المصحف)",
+   "text_ar": "قَالَتِ الْأَعْرَابُ آمَنَّا قُل لَّمْ تُؤْمِنُوا وَلَٰكِن قُولُوا أَسْلَمْنَا وَلَمَّا يَدْخُلِ الْإِيمَانُ فِي قُلُوبِكُمْ وَإِن تُطِيعُوا اللَّهَ وَرَسُولَهُ لَا يَلِتْكُم مِّنْ أَعْمَالِكُمْ شَيْئًا إِنَّ اللَّهَ غَفُورٌ رَّحِيمٌ",
+   "text_en": null,
+   "gradings": [],
+   "url": "https://quran.com/49/14",
+   "text_ar_norm": "قالت الاعراب امنا قل لم تومنوا ولكن قولوا اسلمنا ولما يدخل الايمان في قلوبكم وان تطيعوا الله ورسوله لا يلتكم من اعمالكم شييا ان الله غفور رحيم",
+   "text_en_norm": ""
+  },
+  {
+   "id": 15,
+   "collection": "quran",
+   "kind": "quran",
+   "book": 112,
+   "number": 1,
+   "numbering_scheme": "رقم السورة:رقم الآية (المصحف)",
+   "text_ar": "قُلْ هُوَ اللَّهُ أَحَدٌ",
+   "text_en": null,
+   "gradings": [],
+   "url": "https://quran.com/112/1",
+   "text_ar_norm": "قل هو الله احد",
+   "text_en_norm": ""
+  },
+  {
+   "id": 16,
+   "collection": "quran",
+   "kind": "quran",
+   "book": 112,
+   "number": 2,
+   "numbering_scheme": "رقم السورة:رقم الآية (المصحف)",
+   "text_ar": "اللَّهُ الصَّمَدُ",
+   "text_en": null,
+   "gradings": [],
+   "url": "https://quran.com/112/2",
+   "text_ar_norm": "الله الصمد",
+   "text_en_norm": ""
+  },
+  {
+   "id": 17,
+   "collection": "quran",
+   "kind": "quran",
+   "book": 112,
+   "number": 3,
+   "numbering_scheme": "رقم السورة:رقم الآية (المصحف)",
+   "text_ar": "لَمْ يَلِدْ وَلَمْ يُولَدْ",
+   "text_en": null,
+   "gradings": [],
+   "url": "https://quran.com/112/3",
+   "text_ar_norm": "لم يلد ولم يولد",
+   "text_en_norm": ""
+  },
+  {
+   "id": 18,
+   "collection": "quran",
+   "kind": "quran",
+   "book": 112,
+   "number": 4,
+   "numbering_scheme": "رقم السورة:رقم الآية (المصحف)",
+   "text_ar": "وَلَمْ يَكُن لَّهُ كُفُوًا أَحَدٌ",
+   "text_en": null,
+   "gradings": [],
+   "url": "https://quran.com/112/4",
+   "text_ar_norm": "ولم يكن له كفوا احد",
+   "text_en_norm": ""
+  },
+  {
+   "id": 19,
+   "collection": "quran",
+   "kind": "quran",
+   "book": 16,
+   "number": 125,
+   "numbering_scheme": "رقم السورة:رقم الآية (المصحف)",
+   "text_ar": "ادْعُ إِلَىٰ سَبِيلِ رَبِّكَ بِالْحِكْمَةِ وَالْمَوْعِظَةِ الْحَسَنَةِ وَجَادِلْهُم بِالَّتِي هِيَ أَحْسَنُ إِنَّ رَبَّكَ هُوَ أَعْلَمُ بِمَن ضَلَّ عَن سَبِيلِهِ وَهُوَ أَعْلَمُ بِالْمُهْتَدِينَ",
+   "text_en": null,
+   "gradings": [],
+   "url": "https://quran.com/16/125",
+   "text_ar_norm": "ادع الي سبيل ربك بالحكمه والموعظه الحسنه وجادلهم بالتي هي احسن ان ربك هو اعلم بمن ضل عن سبيله وهو اعلم بالمهتدين",
+   "text_en_norm": ""
+  },
+  {
+   "id": 20,
+   "collection": "quran",
+   "kind": "quran",
+   "book": 5,
+   "number": 32,
+   "numbering_scheme": "رقم السورة:رقم الآية (المصحف)",
+   "text_ar": "مِنْ أَجْلِ ذَٰلِكَ كَتَبْنَا عَلَىٰ بَنِي إِسْرَائِيلَ أَنَّهُ مَن قَتَلَ نَفْسًا بِغَيْرِ نَفْسٍ أَوْ فَسَادٍ فِي الْأَرْضِ فَكَأَنَّمَا قَتَلَ النَّاسَ جَمِيعًا وَمَنْ أَحْيَاهَا فَكَأَنَّمَا أَحْيَا النَّاسَ جَمِيعًا وَلَقَدْ جَاءَتْهُمْ رُسُلُنَا بِالْبَيِّنَاتِ ثُمَّ إِنَّ كَثِيرًا مِّنْهُم بَعْدَ ذَٰلِكَ فِي الْأَرْضِ لَمُسْرِفُونَ",
+   "text_en": null,
+   "gradings": [],
+   "url": "https://quran.com/5/32",
+   "text_ar_norm": "من اجل ذلك كتبنا علي بني اسراييل انه من قتل نفسا بغير نفس او فساد في الارض فكانما قتل الناس جميعا ومن احياها فكانما احيا الناس جميعا ولقد جاءتهم رسلنا بالبينات ثم ان كثيرا منهم بعد ذلك في الارض لمسرفون",
+   "text_en_norm": ""
+  },
+  {
+   "id": 21,
+   "collection": "bukhari",
+   "kind": "hadith",
+   "book": 1,
+   "number": 1,
+   "numbering_scheme": "الترقيم العربي (hadith-api)",
+   "text_ar": "حَدَّثَنَا الْحُمَيْدِيُّ عَبْدُ اللَّهِ بْنُ الزُّبَيْرِ ، قَالَ : حَدَّثَنَا سُفْيَانُ ، قَالَ : حَدَّثَنَا يَحْيَى بْنُ سَعِيدٍ الْأَنْصَارِيُّ ، قَالَ : أَخْبَرَنِي مُحَمَّدُ بْنُ إِبْرَاهِيمَ التَّيْمِيُّ ، أَنَّهُ سَمِعَ عَلْقَمَةَ بْنَ وَقَّاصٍ اللَّيْثِيَّ ، يَقُولُ : سَمِعْتُ عُمَرَ بْنَ الْخَطَّابِ رَضِيَ اللَّهُ عَنْهُ عَلَى الْمِنْبَرِ، قَالَ : سَمِعْتُ رَسُولَ اللَّهِ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ، يَقُولُ : \" إِنَّمَا الْأَعْمَالُ بِالنِّيَّاتِ، وَإِنَّمَا لِكُلِّ امْرِئٍ مَا نَوَى، فَمَنْ كَانَتْ هِجْرَتُهُ إِلَى دُنْيَا يُصِيبُهَا أَوْ إِلَى امْرَأَةٍ يَنْكِحُهَا، فَهِجْرَتُهُ إِلَى مَا هَاجَرَ إِلَيْهِ",
+   "text_en": "Narrated 'Umar bin Al-Khattab: I heard Allah's Messenger (ﷺ) saying, \"The reward of deeds depends upon the intentions and every person will get the reward according to what he has intended. So whoever emigrated for worldly benefits or for a woman to marry, his emigration was for what he emigrated for",
+   "gradings": [],
+   "url": null,
+   "text_ar_norm": "حدثنا الحميدي عبد الله بن الزبير قال حدثنا سفيان قال حدثنا يحيي بن سعيد الانصاري قال اخبرني محمد بن ابراهيم التيمي انه سمع علقمه بن وقاص الليثي يقول سمعت عمر بن الخطاب رضي الله عنه علي المنبر قال سمعت رسول الله صلي الله عليه وسلم يقول انما الاعمال بالنيات وانما لكل امري ما نوي فمن كانت هجرته الي دنيا يصيبها او الي امراه ينكحها فهجرته الي ما هاجر اليه",
+   "text_en_norm": "narrated umar bin al khattab i heard allah s messenger ﷺ saying the reward of deeds depends upon the intentions and every person will get the reward according to what he has intended so whoever emigrated for worldly benefits or for a woman to marry his emigration was for what he emigrated for"
+  },
+  {
+   "id": 22,
+   "collection": "muslim",
+   "kind": "hadith",
+   "book": 2,
+   "number": 223,
+   "numbering_scheme": "الترقيم العربي (hadith-api)",
+   "text_ar": "حَدَّثَنَا إِسْحَاقُ بْنُ مَنْصُورٍ، حَدَّثَنَا حَبَّانُ بْنُ هِلاَلٍ، حَدَّثَنَا أَبَانٌ، حَدَّثَنَا يَحْيَى، أَنَّ زَيْدًا، حَدَّثَهُ أَنَّ أَبَا سَلاَّمٍ حَدَّثَهُ عَنْ أَبِي مَالِكٍ الأَشْعَرِيِّ، قَالَ قَالَ رَسُولُ اللَّهِ صلى الله عليه وسلم ‏ \"‏ الطُّهُورُ شَطْرُ الإِيمَانِ وَالْحَمْدُ لِلَّهِ تَمْلأُ الْمِيزَانَ ‏.‏ وَسُبْحَانَ اللَّهِ وَالْحَمْدُ لِلَّهِ تَمْلآنِ - أَوْ تَمْلأُ - مَا بَيْنَ السَّمَوَاتِ وَالأَرْضِ وَالصَّلاَةُ نُورٌ وَالصَّدَقَةُ بُرْهَانٌ وَالصَّبْرُ ضِيَاءٌ وَالْقُرْآنُ حُجَّةٌ لَكَ أَوْ عَلَيْكَ كُلُّ النَّاسِ يَغْدُو فَبَائِعٌ نَفْسَهُ فَمُعْتِقُهَا أَوْ مُوبِقُهَا ‏\"‏ ‏.‏",
+   "text_en": "Abu Malik at-Ash'ari reported:The Messenger of Allah (ﷺ) said: Cleanliness is half of faith and al-Hamdu Lillah (all praise and gratitude is for Allah alone) fills the scale, and Subhan Allah (Glory be to Allah) and al-Hamdu Lillah fill up what is between the heavens and the earth, and prayer is a light, and charity is proof (of one's faith) and endurance is a brightness and the Holy Qur'an is a proof on your behalf or against you. All men go out early in the morning and sell themselves, thereby setting themselves free or destroying themselves",
+   "gradings": [],
+   "url": null,
+   "text_ar_norm": "حدثنا اسحاق بن منصور حدثنا حبان بن هلال حدثنا ابان حدثنا يحيي ان زيدا حدثه ان ابا سلام حدثه عن ابي مالك الاشعري قال قال رسول الله صلي الله عليه وسلم الطهور شطر الايمان والحمد لله تملا الميزان وسبحان الله والحمد لله تملان او تملا ما بين السموات والارض والصلاه نور والصدقه برهان والصبر ضياء والقران حجه لك او عليك كل الناس يغدو فبايع نفسه فمعتقها او موبقها",
+   "text_en_norm": "abu malik at ash ari reported the messenger of allah ﷺ said cleanliness is half of faith and al hamdu lillah all praise and gratitude is for allah alone fills the scale and subhan allah glory be to allah and al hamdu lillah fill up what is between the heavens and the earth and prayer is a light and charity is proof of one s faith and endurance is a brightness and the holy qur an is a proof on your behalf or against you all men go out early in the morning and sell themselves thereby setting themselves free or destroying themselves"
+  },
+  {
+   "id": 23,
+   "collection": "muslim",
+   "kind": "hadith",
+   "book": 1,
+   "number": 55,
+   "numbering_scheme": "الترقيم العربي (hadith-api)",
+   "text_ar": "حَدَّثَنَا مُحَمَّدُ بْنُ عَبَّادٍ الْمَكِّيُّ، حَدَّثَنَا سُفْيَانُ، قَالَ قُلْتُ لِسُهَيْلٍ إِنَّ عَمْرًا حَدَّثَنَا عَنِ الْقَعْقَاعِ، عَنْ أَبِيكَ، قَالَ وَرَجَوْتُ أَنْ يُسْقِطَ، عَنِّي رَجُلاً قَالَ فَقَالَ سَمِعْتُهُ مِنَ الَّذِي سَمِعَهُ مِنْهُ أَبِي كَانَ صَدِيقًا لَهُ بِالشَّامِ ثُمَّ حَدَّثَنَا سُفْيَانُ عَنْ سُهَيْلٍ عَنْ عَطَاءِ بْنِ يَزِيدَ عَنْ تَمِيمٍ الدَّارِيِّ أَنَّ النَّبِيَّ صلى الله عليه وسلم قَالَ ‏\"‏ الدِّينُ النَّصِيحَةُ ‏\"‏ قُلْنَا لِمَنْ قَالَ ‏\"‏ لِلَّهِ وَلِكِتَابِهِ وَلِرَسُولِهِ وَلأَئِمَّةِ الْمُسْلِمِينَ وَعَامَّتِهِمْ ‏\"‏ ‏.‏",
+   "text_en": "It is narrated on the authority of Tamim ad-Dari that the Prophet (ﷺ) said:\"The Religion is sincerity.\" We said, \"To whom?\" He said \"To Allah, to His Book, To His Messenger, and to the leaders of the Muslims and their masses",
+   "gradings": [],
+   "url": null,
+   "text_ar_norm": "حدثنا محمد بن عباد المكي حدثنا سفيان قال قلت لسهيل ان عمرا حدثنا عن القعقاع عن ابيك قال ورجوت ان يسقط عني رجلا قال فقال سمعته من الذي سمعه منه ابي كان صديقا له بالشام ثم حدثنا سفيان عن سهيل عن عطاء بن يزيد عن تميم الداري ان النبي صلي الله عليه وسلم قال الدين النصيحه قلنا لمن قال لله ولكتابه ولرسوله ولايمه المسلمين وعامتهم",
+   "text_en_norm": "it is narrated on the authority of tamim ad dari that the prophet ﷺ said the religion is sincerity we said to whom he said to allah to his book to his messenger and to the leaders of the muslims and their masses"
+  },
+  {
+   "id": 24,
+   "collection": "bukhari",
+   "kind": "hadith",
+   "book": 2,
+   "number": 13,
+   "numbering_scheme": "الترقيم العربي (hadith-api)",
+   "text_ar": "حَدَّثَنَا مُسَدَّدٌ، قَالَ حَدَّثَنَا يَحْيَى، عَنْ شُعْبَةَ، عَنْ قَتَادَةَ، عَنْ أَنَسٍ ـ رضى الله عنه ـ عَنِ النَّبِيِّ صلى الله عليه وسلم‏.‏ وَعَنْ حُسَيْنٍ الْمُعَلِّمِ، قَالَ حَدَّثَنَا قَتَادَةُ، عَنْ أَنَسٍ، عَنِ النَّبِيِّ صلى الله عليه وسلم قَالَ ‏ \"‏ لا يُؤْمِنُ أَحَدُكُمْ حَتَّى يُحِبَّ لأَخِيهِ مَا يُحِبُّ لِنَفْسِهِ ‏\"‏‏.‏",
+   "text_en": "Narrated Anas: The Prophet (ﷺ) said, \"None of you will have faith till he wishes for his (Muslim) brother what he likes for himself",
+   "gradings": [],
+   "url": null,
+   "text_ar_norm": "حدثنا مسدد قال حدثنا يحيي عن شعبه عن قتاده عن انس رضي الله عنه عن النبي صلي الله عليه وسلم وعن حسين المعلم قال حدثنا قتاده عن انس عن النبي صلي الله عليه وسلم قال لا يومن احدكم حتي يحب لاخيه ما يحب لنفسه",
+   "text_en_norm": "narrated anas the prophet ﷺ said none of you will have faith till he wishes for his muslim brother what he likes for himself"
+  },
+  {
+   "id": 25,
+   "collection": "muslim",
+   "kind": "hadith",
+   "book": 1,
+   "number": 45,
+   "numbering_scheme": "الترقيم العربي (hadith-api)",
+   "text_ar": "حَدَّثَنَا مُحَمَّدُ بْنُ الْمُثَنَّى، وَابْنُ، بَشَّارٍ قَالاَ حَدَّثَنَا مُحَمَّدُ بْنُ جَعْفَرٍ، حَدَّثَنَا شُعْبَةُ، قَالَ سَمِعْتُ قَتَادَةَ، يُحَدِّثُ عَنْ أَنَسِ بْنِ مَالِكٍ، عَنِ النَّبِيِّ صلى الله عليه وسلم قَالَ ‏ \"‏ لاَ يُؤْمِنُ أَحَدُكُمْ حَتَّى يُحِبَّ لأَخِيهِ - أَوْ قَالَ لِجَارِهِ - مَا يُحِبُّ لِنَفْسِهِ ‏\"‏ ‏.‏",
+   "text_en": "It is narrated on the authority of Anas b. Malik that the Prophet (may peace and blessings be upon him) observed:\"None amongst you believes (truly) until he loves for his brother\" - or he said \"for his neighbour\" - \"that which he loves for himself",
+   "gradings": [],
+   "url": null,
+   "text_ar_norm": "حدثنا محمد بن المثني وابن بشار قالا حدثنا محمد بن جعفر حدثنا شعبه قال سمعت قتاده يحدث عن انس بن مالك عن النبي صلي الله عليه وسلم قال لا يومن احدكم حتي يحب لاخيه او قال لجاره ما يحب لنفسه",
+   "text_en_norm": "it is narrated on the authority of anas b malik that the prophet may peace and blessings be upon him observed none amongst you believes truly until he loves for his brother or he said for his neighbour that which he loves for himself"
+  },
+  {
+   "id": 26,
+   "collection": "ibnmajah",
+   "kind": "hadith",
+   "book": 0,
+   "number": 224,
+   "numbering_scheme": "الترقيم العربي (hadith-api)",
+   "text_ar": "حَدَّثَنَا هِشَامُ بْنُ عَمَّارٍ، حَدَّثَنَا حَفْصُ بْنُ سُلَيْمَانَ، حَدَّثَنَا كَثِيرُ بْنُ شِنْظِيرٍ، عَنْ مُحَمَّدِ بْنِ سِيرِينَ، عَنْ أَنَسِ بْنِ مَالِكٍ، قَالَ قَالَ رَسُولُ اللَّهِ ـ صلى الله عليه وسلم ـ ‏ \"‏ طَلَبُ الْعِلْمِ فَرِيضَةٌ عَلَى كُلِّ مُسْلِمٍ وَوَاضِعُ الْعِلْمِ عِنْدَ غَيْرِ أَهْلِهِ كَمُقَلِّدِ الْخَنَازِيرِ الْجَوْهَرَ وَاللُّؤْلُؤَ وَالذَّهَبَ ‏\"‏ ‏.‏",
+   "text_en": "It was narrated from Anas bin Malik that the Messenger of Allah (ﷺ) said:\"Seeking knowledge is a duty upon every Muslim, and he who imparts knowledge to those who do not deserve it, is like one who puts a necklace of jewels, pearls and gold around the neck of swines",
+   "gradings": [
+    {
+     "scholar": "Al-Albani",
+     "grade": "Very Daif"
+    },
+    {
+     "scholar": "Muhammad Fouad Abd al-Baqi",
+     "grade": "Very Daif"
+    },
+    {
+     "scholar": "Shuaib Al Arnaut",
+     "grade": "Very Daif"
+    },
+    {
+     "scholar": "Zubair Ali Zai",
+     "grade": "Daif"
+    }
+   ],
+   "url": null,
+   "text_ar_norm": "حدثنا هشام بن عمار حدثنا حفص بن سليمان حدثنا كثير بن شنظير عن محمد بن سيرين عن انس بن مالك قال قال رسول الله صلي الله عليه وسلم طلب العلم فريضه علي كل مسلم وواضع العلم عند غير اهله كمقلد الخنازير الجوهر واللولو والذهب",
+   "text_en_norm": "it was narrated from anas bin malik that the messenger of allah ﷺ said seeking knowledge is a duty upon every muslim and he who imparts knowledge to those who do not deserve it is like one who puts a necklace of jewels pearls and gold around the neck of swines"
+  },
+  {
+   "id": 27,
+   "collection": "tirmidhi",
+   "kind": "hadith",
+   "book": 36,
+   "number": 2317,
+   "numbering_scheme": "الترقيم العربي (hadith-api)",
+   "text_ar": "حَدَّثَنَا أَحْمَدُ بْنُ نَصْرٍ النَّيْسَابُورِيُّ، وَغَيْرُ، وَاحِدٍ، قَالُوا حَدَّثَنَا أَبُو مُسْهِرٍ، عَنْ إِسْمَاعِيلَ بْنِ عَبْدِ اللَّهِ بْنِ سَمَاعَةَ، عَنِ الأَوْزَاعِيِّ، عَنْ قُرَّةَ، عَنِ الزُّهْرِيِّ، عَنْ أَبِي سَلَمَةَ، عَنْ أَبِي هُرَيْرَةَ، قَالَ قَالَ رَسُولُ اللَّهِ صلى الله عليه وسلم ‏ \"‏ مِنْ حُسْنِ إِسْلاَمِ الْمَرْءِ تَرْكُهُ مَا لاَ يَعْنِيهِ ‏\"‏ ‏.‏ قَالَ هَذَا حَدِيثٌ غَرِيبٌ لاَ نَعْرِفُهُ مِنْ حَدِيثِ أَبِي سَلَمَةَ عَنْ أَبِي هُرَيْرَةَ عَنِ النَّبِيِّ صلى الله عليه وسلم إِلاَّ مِنْ هَذَا الْوَجْهِ ‏.‏",
+   "text_en": "Abu Hurairah narrated that the Messenger of Allah (s.a.w) said:\"Indeed among the excellence of a person's Islam is that he leaves what does not concern him",
+   "gradings": [
+    {
+     "scholar": "Ahmad Muhammad Shakir",
+     "grade": "Sahih"
+    },
+    {
+     "scholar": "Al-Albani",
+     "grade": "Sahih"
+    },
+    {
+     "scholar": "Bashar Awad Maarouf",
+     "grade": "Hasan"
+    },
+    {
+     "scholar": "Zubair Ali Zai",
+     "grade": "Daif"
+    }
+   ],
+   "url": null,
+   "text_ar_norm": "حدثنا احمد بن نصر النيسابوري وغير واحد قالوا حدثنا ابو مسهر عن اسماعيل بن عبد الله بن سماعه عن الاوزاعي عن قره عن الزهري عن ابي سلمه عن ابي هريره قال قال رسول الله صلي الله عليه وسلم من حسن اسلام المرء تركه ما لا يعنيه قال هذا حديث غريب لا نعرفه من حديث ابي سلمه عن ابي هريره عن النبي صلي الله عليه وسلم الا من هذا الوجه",
+   "text_en_norm": "abu hurairah narrated that the messenger of allah s a w said indeed among the excellence of a person s islam is that he leaves what does not concern him"
+  },
+  {
+   "id": 28,
+   "collection": "tirmidhi",
+   "kind": "hadith",
+   "book": 36,
+   "number": 2318,
+   "numbering_scheme": "الترقيم العربي (hadith-api)",
+   "text_ar": "حَدَّثَنَا قُتَيْبَةُ، حَدَّثَنَا مَالِكُ بْنُ أَنَسٍ، عَنِ الزُّهْرِيِّ، عَنْ عَلِيِّ بْنِ حُسَيْنٍ، قَالَ قَالَ رَسُولُ اللَّهِ صلى الله عليه وسلم ‏ \"‏ إِنَّ مِنْ حُسْنِ إِسْلاَمِ الْمَرْءِ تَرْكَهُ مَا لاَ يَعْنِيهِ ‏\"‏ ‏.‏ قَالَ أَبُو عِيسَى وَهَكَذَا رَوَى غَيْرُ وَاحِدٍ مِنْ أَصْحَابِ الزُّهْرِيِّ عَنِ الزُّهْرِيِّ عَنْ عَلِيِّ بْنِ حُسَيْنٍ عَنِ النَّبِيِّ صلى الله عليه وسلم نَحْوَ حَدِيثِ مَالِكٍ مُرْسَلاً وَهَذَا عِنْدَنَا أَصَحُّ مِنْ حَدِيثِ أَبِي سَلَمَةَ عَنْ أَبِي هُرَيْرَةَ ‏.‏ وَعَلِيُّ بْنُ حُسَيْنٍ لَمْ يُدْرِكْ عَلِيَّ بْنَ أَبِي طَالِبٍ ‏.‏",
+   "text_en": "Ali bin Al-Husain narrated that the Messenger of Allah (s.a.w) said:\"Surely, of the excellence of a person's Islam is that he leaves what does not concern him",
+   "gradings": [
+    {
+     "scholar": "Ahmad Muhammad Shakir",
+     "grade": "Sahih Lighairihi"
+    },
+    {
+     "scholar": "Al-Albani",
+     "grade": "Sahih"
+    },
+    {
+     "scholar": "Bashar Awad Maarouf",
+     "grade": "Hasan"
+    },
+    {
+     "scholar": "Zubair Ali Zai",
+     "grade": "Daif"
+    }
+   ],
+   "url": null,
+   "text_ar_norm": "حدثنا قتيبه حدثنا مالك بن انس عن الزهري عن علي بن حسين قال قال رسول الله صلي الله عليه وسلم ان من حسن اسلام المرء تركه ما لا يعنيه قال ابو عيسي وهكذا روي غير واحد من اصحاب الزهري عن الزهري عن علي بن حسين عن النبي صلي الله عليه وسلم نحو حديث مالك مرسلا وهذا عندنا اصح من حديث ابي سلمه عن ابي هريره وعلي بن حسين لم يدرك علي بن ابي طالب",
+   "text_en_norm": "ali bin al husain narrated that the messenger of allah s a w said surely of the excellence of a person s islam is that he leaves what does not concern him"
+  },
+  {
+   "id": 29,
+   "collection": "bukhari",
+   "kind": "hadith",
+   "book": 78,
+   "number": 6114,
+   "numbering_scheme": "الترقيم العربي (hadith-api)",
+   "text_ar": "حَدَّثَنَا عَبْدُ اللَّهِ بْنُ يُوسُفَ، أَخْبَرَنَا مَالِكٌ، عَنِ ابْنِ شِهَابٍ، عَنْ سَعِيدِ بْنِ الْمُسَيَّبِ، عَنْ أَبِي هُرَيْرَةَ ـ رضى الله عنه ـ أَنَّ رَسُولَ اللَّهِ صلى الله عليه وسلم قَالَ ‏ \"‏ لَيْسَ الشَّدِيدُ بِالصُّرَعَةِ، إِنَّمَا الشَّدِيدُ الَّذِي يَمْلِكُ نَفْسَهُ عِنْدَ الْغَضَبِ ‏\"‏‏.‏",
+   "text_en": "Narrated Abu Huraira:Allah's Messenger (ﷺ) said, \"The strong is not the one who overcomes the people by his strength, but the strong is the one who controls himself while in anger",
+   "gradings": [],
+   "url": null,
+   "text_ar_norm": "حدثنا عبد الله بن يوسف اخبرنا مالك عن ابن شهاب عن سعيد بن المسيب عن ابي هريره رضي الله عنه ان رسول الله صلي الله عليه وسلم قال ليس الشديد بالصرعه انما الشديد الذي يملك نفسه عند الغضب",
+   "text_en_norm": "narrated abu huraira allah s messenger ﷺ said the strong is not the one who overcomes the people by his strength but the strong is the one who controls himself while in anger"
+  },
+  {
+   "id": 30,
+   "collection": "muslim",
+   "kind": "hadith",
+   "book": 45,
+   "number": 2564,
+   "numbering_scheme": "الترقيم العربي (hadith-api)",
+   "text_ar": "حَدَّثَنَا عَمْرٌو النَّاقِدُ، حَدَّثَنَا كَثِيرُ بْنُ هِشَامٍ، حَدَّثَنَا جَعْفَرُ بْنُ بُرْقَانَ، عَنْ يَزِيدَ بْنِ، الأَصَمِّ عَنْ أَبِي هُرَيْرَةَ، قَالَ قَالَ رَسُولُ اللَّهِ صلى الله عليه وسلم ‏ \"‏ إِنَّ اللَّهَ لاَ يَنْظُرُ إِلَى صُوَرِكُمْ وَأَمْوَالِكُمْ وَلَكِنْ يَنْظُرُ إِلَى قُلُوبِكُمْ وَأَعْمَالِكُمْ ‏\"‏ ‏.‏",
+   "text_en": "Abu Huraira reported Allah's Messenger (ﷺ) as saying:Verily Allah does not look to your faces and your wealth but He looks to your heart and to your deeds",
+   "gradings": [],
+   "url": null,
+   "text_ar_norm": "حدثنا عمرو الناقد حدثنا كثير بن هشام حدثنا جعفر بن برقان عن يزيد بن الاصم عن ابي هريره قال قال رسول الله صلي الله عليه وسلم ان الله لا ينظر الي صوركم واموالكم ولكن ينظر الي قلوبكم واعمالكم",
+   "text_en_norm": "abu huraira reported allah s messenger ﷺ as saying verily allah does not look to your faces and your wealth but he looks to your heart and to your deeds"
+  },
+  {
+   "id": 31,
+   "collection": "tirmidhi",
+   "kind": "hadith",
+   "book": 27,
+   "number": 1987,
+   "numbering_scheme": "الترقيم العربي (hadith-api)",
+   "text_ar": "حَدَّثَنَا مُحَمَّدُ بْنُ بَشَّارٍ، حَدَّثَنَا عَبْدُ الرَّحْمَنِ بْنُ مَهْدِيٍّ، حَدَّثَنَا سُفْيَانُ، عَنْ حَبِيبِ بْنِ أَبِي ثَابِتٍ، عَنْ مَيْمُونِ بْنِ أَبِي شَبِيبٍ، عَنْ أَبِي ذَرٍّ، قَالَ قَالَ لِي رَسُولُ اللَّهِ صلى الله عليه وسلم ‏ \"‏ اتَّقِ اللَّهَ حَيْثُمَا كُنْتَ وَأَتْبِعِ السَّيِّئَةَ الْحَسَنَةَ تَمْحُهَا وَخَالِقِ النَّاسَ بِخُلُقٍ حَسَنٍ ‏\"‏ ‏.‏ قَالَ وَفِي الْبَابِ عَنْ أَبِي هُرَيْرَةَ ‏.‏ قَالَ أَبُو عِيسَى هَذَا حَدِيثٌ حَسَنٌ صَحِيحٌ ‏.‏ حَدَّثَنَا مَحْمُودُ بْنُ غَيْلاَنَ، حَدَّثَنَا أَبُو أَحْمَدَ، وَأَبُو نُعَيْمٍ عَنْ سُفْيَانَ، عَنْ حَبِيبٍ، بِهَذَا الإِسْنَادِ نَحْوَهُ ‏.‏ قَالَ مَحْمُودٌ حَدَّثَنَا وَكِيعٌ، عَنْ سُفْيَانَ، عَنْ حَبِيبِ بْنِ أَبِي ثَابِتٍ، عَنْ مَيْمُونِ بْنِ أَبِي شَبِيبٍ، عَنْ مُعَاذِ بْنِ جَبَلٍ، عَنِ النَّبِيِّ صلى الله عليه وسلم نَحْوَهُ ‏.‏ قَالَ مَحْمُودٌ وَالصَّحِيحُ حَدِيثُ أَبِي ذَرٍّ ‏.‏",
+   "text_en": "Abu Dharr said:\"The Messenger of Allah said to me: 'Have Taqwa of Allah wherever you are, and follow an evil deed with a good one to wipe it out, and treat the people with good behavior",
+   "gradings": [
+    {
+     "scholar": "Ahmad Muhammad Shakir",
+     "grade": "Hasan"
+    },
+    {
+     "scholar": "Al-Albani",
+     "grade": "Hasan"
+    },
+    {
+     "scholar": "Bashar Awad Maarouf",
+     "grade": "Hasan Sahih"
+    },
+    {
+     "scholar": "Zubair Ali Zai",
+     "grade": "Hasan"
+    }
+   ],
+   "url": null,
+   "text_ar_norm": "حدثنا محمد بن بشار حدثنا عبد الرحمن بن مهدي حدثنا سفيان عن حبيب بن ابي ثابت عن ميمون بن ابي شبيب عن ابي ذر قال قال لي رسول الله صلي الله عليه وسلم اتق الله حيثما كنت واتبع السييه الحسنه تمحها وخالق الناس بخلق حسن قال وفي الباب عن ابي هريره قال ابو عيسي هذا حديث حسن صحيح حدثنا محمود بن غيلان حدثنا ابو احمد وابو نعيم عن سفيان عن حبيب بهذا الاسناد نحوه قال محمود حدثنا وكيع عن سفيان عن حبيب بن ابي ثابت عن ميمون بن ابي شبيب عن معاذ بن جبل عن النبي صلي الله عليه وسلم نحوه قال محمود والصحيح حديث ابي ذر",
+   "text_en_norm": "abu dharr said the messenger of allah said to me have taqwa of allah wherever you are and follow an evil deed with a good one to wipe it out and treat the people with good behavior"
+  }
+ ]
+}

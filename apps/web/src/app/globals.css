@@ -1,0 +1,97 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f7f6f2;
+  --surface: #ffffff;
+  --surface-muted: #f1efe8;
+  --foreground: #1c1b18;
+  --muted: #6b675c;
+  --border: #e3dfd3;
+  --accent: #1f5f4a;
+  --accent-contrast: #ffffff;
+
+  --green-bg: #e3f2ea; --green-fg: #1d6b47; --green-mark: #c9ead7;
+  --amber-bg: #fbf0d9; --amber-fg: #8a5a08; --amber-mark: #f6dfa6;
+  --orange-bg: #fde7dc; --orange-fg: #9a3b12; --orange-mark: #f8c9b1;
+  --slate-bg: #e9ecf1; --slate-fg: #3f4a5a; --slate-mark: #d5dbe5;
+  --zinc-bg: #efefed; --zinc-fg: #61605b; --zinc-mark: #e6e5e1;
+  --violet-bg: #ece6fb; --violet-fg: #4d2f9c;
+  --insert-bg: #fbd9d3; --insert-fg: #8c2414;
+  --delete-bg: #d4efdf; --delete-fg: #165c3b;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #141412;
+    --surface: #1c1c19;
+    --surface-muted: #24241f;
+    --foreground: #ecebe6;
+    --muted: #a19d91;
+    --border: #34332d;
+    --accent: #6cc3a0;
+    --accent-contrast: #0e1f18;
+
+    --green-bg: #183326; --green-fg: #8fd8b2; --green-mark: #1f4532;
+    --amber-bg: #3a2c10; --amber-fg: #f0c674; --amber-mark: #4d3a14;
+    --orange-bg: #40210f; --orange-fg: #f4a47c; --orange-mark: #552b14;
+    --slate-bg: #262c36; --slate-fg: #b9c3d3; --slate-mark: #323a47;
+    --zinc-bg: #2a2a27; --zinc-fg: #b3b1aa; --zinc-mark: #33332f;
+    --violet-bg: #2c2346; --violet-fg: #c7b6f6;
+    --insert-bg: #4a1f18; --insert-fg: #f6b2a5;
+    --delete-bg: #183a29; --delete-fg: #9ee0bd;
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-accent-contrast: var(--accent-contrast);
+  --font-sans: var(--font-sans-ar), system-ui, sans-serif;
+  --font-naskh: var(--font-naskh), serif;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans-ar), system-ui, sans-serif;
+}
+
+/* Status chips */
+.tone-green { background: var(--green-bg); color: var(--green-fg); }
+.tone-amber { background: var(--amber-bg); color: var(--amber-fg); }
+.tone-orange { background: var(--orange-bg); color: var(--orange-fg); }
+.tone-slate { background: var(--slate-bg); color: var(--slate-fg); }
+.tone-zinc { background: var(--zinc-bg); color: var(--zinc-fg); }
+.tone-violet { background: var(--violet-bg); color: var(--violet-fg); }
+
+/* Highlights in the document */
+.mark-green { background: var(--green-mark); }
+.mark-amber { background: var(--amber-mark); }
+.mark-orange { background: var(--orange-mark); }
+.mark-slate { background: var(--slate-mark); }
+.mark-zinc { background: var(--zinc-mark); }
+.finding-mark {
+  border-radius: 4px;
+  padding: 1px 2px;
+  cursor: pointer;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+.finding-mark[data-active="true"] { outline: 2px solid var(--accent); }
+
+/* Diff */
+.diff-insert { background: var(--insert-bg); color: var(--insert-fg); text-decoration: line-through; border-radius: 3px; padding: 0 2px; }
+.diff-delete { background: var(--delete-bg); color: var(--delete-fg); border-radius: 3px; padding: 0 2px; }
+
+/* Gradings */
+.grade-accepted { color: var(--green-fg); }
+.grade-weak { color: var(--amber-fg); }
+.grade-rejected { color: var(--orange-fg); }
+.grade-unknown { color: var(--muted); }
+
+.source-text { font-family: var(--font-naskh), serif; font-size: 1.15rem; line-height: 2.1; }

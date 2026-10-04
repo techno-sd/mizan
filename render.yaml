@@ -1,0 +1,19 @@
+# Render blueprint for the Mizan API. The web app is deployed separately on Vercel (root: apps/web).
+services:
+  - type: web
+    name: mizan-api
+    runtime: docker
+    rootDir: services/api
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    # The live link must stay up through judging (until 2026-10-22). The free plan sleeps when idle.
+    plan: starter
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: MIZAN_INTERNAL_API_KEY
+        sync: false
+      - key: MIZAN_DATABASE_URL
+        sync: false
+      - key: MIZAN_CORPUS_VERSION
+        value: 2026-10-04

@@ -1,0 +1,49 @@
+from app.align import compare
+from app.schemas import MatchType
+from tests.conftest import PASSAGES
+
+BUKHARI_1 = next(p for p in PASSAGES if p.id == 10)
+
+
+def test_exact_excerpt_inside_long_hadith_is_partial_match():
+    c = compare("إنما الأعمال بالنيات", BUKHARI_1, 92, 75)
+    assert c.similarity >= 92
+    assert c.match_type == MatchType.PARTIAL  # the hadith also has an isnad and a second sentence
+
+
+def test_highlight_points_at_the_matched_part_of_the_source():
+    c = compare("إنما الأعمال بالنيات", BUKHARI_1, 92, 75)
+    start, end = c.highlight
+    assert BUKHARI_1.text_ar[start:end].startswith("إِنَّمَا")
+    assert "حَدَّثَنَا" not in BUKHARI_1.text_ar[start:end]  # the isnad is not highlighted
+
+
+def test_changed_wording_is_variant_with_diff():
+    c = compare("إنما الأعمال بالنيات الصادقة وإنما لكل امرئ ما نوى", BUKHARI_1, 92, 75)
+    assert c.match_type == MatchType.VARIANT
+    ops = {d.op for d in c.diff}
+    assert "insert" in ops  # "الصادقة" is only in the user's text
+    inserted = " ".join(d.text for d in c.diff if d.op == "insert")
+    assert "الصادقة" in inserted
+
+
+def test_unrelated_text_does_not_match():
+    c = compare("اطلبوا العلم ولو في الصين", BUKHARI_1, 92, 75)
+    assert c.match_type is None
+
+
+def test_indexed_retriever_finds_the_hadith_and_its_neighbors():
+    import asyncio
+
+    from app.retrieve import IndexedRetriever
+
+    r = IndexedRetriever(PASSAGES)
+    hits = asyncio.run(r.search("إنما الأعمال بالنيات", None, 3))
+    assert hits[0].passage.id == 10
+    before, after = asyncio.run(r.neighbors(2))  # الصمد: previous and next ayah of surah 112
+    assert before and after
+
+
+def test_english_quote_compares_against_english_text():
+    c = compare("Actions are judged by intentions", BUKHARI_1, 92, 75)
+    assert c.lang == "en" and c.similarity >= 92
