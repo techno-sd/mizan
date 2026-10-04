@@ -22,6 +22,14 @@ def test_hadith_marker_with_quotes_and_reference():
     assert items[0].cited_reference == "رواه البخاري"
 
 
+def test_quote_right_after_the_honorific():
+    text = "ومن جميل الأخلاق ما أوصى به النبي ﷺ: «اتق الله حيثما كنت» (رواه الترمذي)."
+    items = detect_rules(text)
+    assert len(items) == 1
+    assert items[0].quoted_text == "اتق الله حيثما كنت"
+    assert items[0].cited_reference == "رواه الترمذي"
+
+
 def test_english_marker():
     text = 'The Prophet (ﷺ) said: "Actions are judged by intentions" (Bukhari 1).'
     items = detect_rules(text)

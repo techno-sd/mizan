@@ -170,6 +170,18 @@ class Pipeline:
         # Narrations in a cited collection that the best-match group missed still count as evidence.
         if cited and not mismatch:
             group += [c for c in matches if c not in group and c.passage.collection in cited.collections]
+            # Judge the wording against the source the author cited: if the exact words are only in another
+            # collection, and the cited one has a different wording, the quote's wording differs from its source.
+            hadith_cited = [k for k in cited.collections if k != QURAN]
+            in_cited = [c for c in group if c.passage.collection in hadith_cited]
+            exact = (MatchType.EXACT, MatchType.PARTIAL)
+            if in_cited and not any(c.match_type in exact for c in in_cited) and f.status == ReferenceStatus.MATCHES_SOURCE:
+                elsewhere = [c for c in group if c.match_type in exact]
+                group = in_cited + [c for c in group if c not in in_cited]
+                f.status = ReferenceStatus.WORDING_DIFFERS
+                labels = "، ".join(COLLECTIONS[k].label for k in hadith_cited if k in COLLECTIONS)
+                refs = "، ".join(dict.fromkeys(passage_reference(c.passage) for c in elsewhere))
+                f.notes.append(f"بهذا اللفظ في: {refs}؛ أما لفظه في {labels} فمختلف (انظر الفرق).")
 
         found_collections = {c.passage.collection for c in group}
         if group and cited is None:

@@ -43,6 +43,8 @@ EN_HADITH_MARKERS = re.compile(
     re.IGNORECASE,
 )
 QURAN_BRACKETS = re.compile(r"﴿([^﴾]{2,2000})﴾")
+# Any quoted text right after the honorific: «… النبي ﷺ: «…»», «ما أوصى به النبي ﷺ: «…»».
+HONORIFIC_QUOTE = re.compile(r"(?:ﷺ|صلى الله عليه وسلم)\s*[:：]?\s*(?=[«\"“])")
 
 _OPEN_CLOSE = {"«": "»", '"': '"', "“": "”", "'": "'", "﴿": "﴾", "„": "“"}
 _SENTENCE_END = re.compile(r"[.!؟?\n]")
@@ -95,6 +97,7 @@ def detect_rules(text: str) -> list[ExtractedItem]:
     for pattern, item_type, who in (
         (QURAN_MARKERS, ItemType.QURAN, "الله تعالى"),
         (HADITH_MARKERS, ItemType.HADITH, "النبي ﷺ"),
+        (HONORIFIC_QUOTE, ItemType.HADITH, "النبي ﷺ"),
         (EN_HADITH_MARKERS, ItemType.HADITH, "The Prophet ﷺ"),
     ):
         for m in pattern.finditer(text):

@@ -1,24 +1,34 @@
-"""Run the pipeline on a text from the command line (offline fixture unless MIZAN_DATABASE_URL is set).
+"""Run the pipeline on a text from the command line, rules-only, without a database.
 
-    python -m scripts.demo                 # built-in demo script
-    python -m scripts.demo path/to/file.txt
+    python -m scripts.demo                                  # demo script, small fixture corpus
+    python -m scripts.demo path/to/file.txt                 # your text, fixture corpus
+    python -m scripts.demo path/to/file.txt --corpus 2026-10-04   # full built corpus (IndexedRetriever)
 """
 
+import argparse
 import asyncio
-import sys
 from pathlib import Path
 
-from app.config import get_settings
+from app.config import Settings
 from app.pipeline import Pipeline
-from app.retrieve import InMemoryRetriever, load_fixture
+from app.retrieve import IndexedRetriever, InMemoryRetriever, load_corpus_jsonl, load_fixture
 from app.store import MemoryStore
 
-DEMO = Path(__file__).resolve().parents[3] / "eval" / "demo_script_ar.txt"
+ROOT = Path(__file__).resolve().parents[1]
+DEMO = ROOT.parents[1] / "eval" / "demo_script_ar.txt"
 
 
 async def main() -> None:
-    text = Path(sys.argv[1]).read_text(encoding="utf-8") if len(sys.argv) > 1 else DEMO.read_text(encoding="utf-8")
-    pipeline = Pipeline(get_settings(), InMemoryRetriever(load_fixture()), MemoryStore(), llm=None)
+    ap = argparse.ArgumentParser()
+    ap.add_argument("file", nargs="?", default=str(DEMO))
+    ap.add_argument("--corpus", help="corpus version to load from data/corpus/<version>/passages.jsonl")
+    args = ap.parse_args()
+    text = Path(args.file).read_text(encoding="utf-8")
+    if args.corpus:
+        retriever = IndexedRetriever(load_corpus_jsonl(ROOT / "data" / "corpus" / args.corpus / "passages.jsonl"))
+    else:
+        retriever = InMemoryRetriever(load_fixture())
+    pipeline = Pipeline(Settings(_env_file=None), retriever, MemoryStore(), llm=None)
     resp = await pipeline.verify(text, debug=False)
     print(f"items={resp.summary.total} {resp.summary.by_status} review={resp.summary.needs_scholar_review}")
     for f in resp.findings:
