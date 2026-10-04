@@ -140,9 +140,10 @@ class Pipeline:
 
         s = self.s
         candidates = await self.retriever.search(item.quoted_text, None, s.retrieve_k)
+        # Word-for-word matches first, then by similarity.
         comparisons = sorted(
             (compare(item.quoted_text, c.passage, s.t_exact, s.t_variant) for c in candidates),
-            key=lambda c: -c.similarity,
+            key=lambda c: (c.match_type not in (MatchType.EXACT, MatchType.PARTIAL), -c.similarity),
         )
         group = matched_group(comparisons, s.t_variant, s.ambiguity_margin)
         step: dict = {

@@ -133,9 +133,11 @@ def parse_cited_reference(raw: str | None) -> CitedRef | None:
     padded = f" {norm} "
     mentions_surah = any(w in norm for w in ("سوره", "قران", "surah", "sura", "quran"))
     for name, number in _surah_name_index():
-        if len(name) < 3 or f" {name} " not in padded:
+        if f" {name} " not in padded:
             continue
-        if mentions_surah or re.search(rf"{re.escape(name)} \d", norm):
+        followed_by_number = re.search(rf"(^| ){re.escape(name)} \d", norm)
+        # Short names (طه، يس، ص، ق) only count when followed by an ayah number, e.g. "[طه: 65]".
+        if (len(name) < 3 and followed_by_number) or (len(name) >= 3 and (mentions_surah or followed_by_number)):
             ref.surah = number
             ref.collections = [QURAN]
             after = norm.split(name, 1)[1]

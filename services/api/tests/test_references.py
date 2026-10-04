@@ -11,6 +11,13 @@ def test_quran_numeric_pair():
     assert (r.surah, r.ayah) == (49, 13)
 
 
+def test_short_surah_names_with_ayah_number():
+    r = parse_cited_reference("طه: 65")
+    assert (r.surah, r.ayah) == (20, 65)
+    r = parse_cited_reference("[يس: 12]")
+    assert (r.surah, r.ayah) == (36, 12)
+
+
 def test_surah_word_with_name():
     r = parse_cited_reference("سورة الإخلاص")
     assert r.surah == 112 and r.ayah is None

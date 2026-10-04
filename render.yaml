@@ -3,8 +3,13 @@ services:
   - type: web
     name: mizan-api
     runtime: docker
-    rootDir: services/api
-    dockerfilePath: ./Dockerfile
+    region: frankfurt # same region as the Supabase project (eu-central-1)
+    # Paths are relative to the repository root.
+    dockerfilePath: ./services/api/Dockerfile
+    dockerContext: ./services/api
+    buildFilter:
+      paths:
+        - services/api/**
     healthCheckPath: /health
     # The live link must stay up through judging (until 2026-10-22). The free plan sleeps when idle.
     plan: starter

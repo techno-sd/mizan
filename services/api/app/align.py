@@ -39,12 +39,38 @@ def is_arabic(text: str) -> bool:
     return sum(1 for c in letters if _ARABIC.match(c)) / len(letters) >= 0.5
 
 
+# Honorifics are not part of the quoted wording: «قال ﷺ» and «قال صلى الله عليه وسلم» quote the same text.
+_HONORIFICS = [
+    tuple(normalize(p).split())
+    for p in ("ﷺ", "صلى الله عليه وسلم", "عليه الصلاة والسلام", "عليه السلام", "رضي الله عنه",
+              "رضي الله عنها", "رضي الله عنهما", "رضي الله عنهم", "peace be upon him", "pbuh")
+]
+_HONORIFICS.sort(key=len, reverse=True)
+
+# A different wording only counts as the same text if enough words are shared, seen from both sides:
+# the quote must keep most of its words, and the source window must not be mostly other words.
+VARIANT_MIN_SHARED = 3
+VARIANT_MIN_QUOTE_SHARE = 0.6
+VARIANT_MIN_WINDOW_SHARE = 0.7
+
+
 def _words(text: str) -> list[_Word]:
     out: list[_Word] = []
     for idx, tok in enumerate(text.split()):
         for sub in normalize(tok).split():
             out.append(_Word(tok, sub, idx))
-    return out
+    # Drop honorific phrases.
+    kept, i = [], 0
+    while i < len(out):
+        hit = next(
+            (h for h in _HONORIFICS if tuple(w.norm for w in out[i : i + len(h)]) == h), None
+        )
+        if hit:
+            i += len(hit)
+        else:
+            kept.append(out[i])
+            i += 1
+    return kept
 
 
 def _window(quote_norm: str, words: list[_Word]) -> tuple[int, int]:
@@ -97,12 +123,23 @@ def _append(ops: list[DiffOp], op: str, words: list[_Word]) -> None:
         ops.append(DiffOp(op=op, text=text))
 
 
-def word_diff(quote: list[_Word], source: list[_Word]) -> list[DiffOp]:
-    """insert = words only in the user's quote; delete = words only in the source."""
+def word_diff(quote: list[_Word], source: list[_Word]) -> tuple[list[DiffOp], int, bool]:
+    """Returns (ops, shared word count, changed).
+
+    insert = words only in the user's quote; delete = words only in the source. Source-only words at the
+    very edges of the window are trimmed: they mean the quote is an excerpt, not that it was altered.
+    """
     sm = SequenceMatcher(None, [w.norm for w in quote], [w.norm for w in source], autojunk=False)
+    codes = sm.get_opcodes()
+    while codes and codes[0][0] == "insert":
+        codes = codes[1:]
+    while codes and codes[-1][0] == "insert":
+        codes = codes[:-1]
     ops: list[DiffOp] = []
-    for tag, i1, i2, j1, j2 in sm.get_opcodes():
+    shared = 0
+    for tag, i1, i2, j1, j2 in codes:
         if tag == "equal":
+            shared += i2 - i1
             _append(ops, "equal", source[j1:j2])
         elif tag == "delete":
             _append(ops, "insert", quote[i1:i2])
@@ -111,10 +148,13 @@ def word_diff(quote: list[_Word], source: list[_Word]) -> list[DiffOp]:
         else:
             _append(ops, "delete", source[j1:j2])
             _append(ops, "insert", quote[i1:i2])
-    return ops
+    changed = any(op.op != "equal" for op in ops)
+    return ops, shared, changed
 
 
 def compare(quote: str, passage: Passage, t_exact: float, t_variant: float) -> Comparison:
+    """`matches` means word-for-word identical after normalization (diacritics, hamza forms, honorifics
+    ignored). Character similarity alone is too lenient: one added word barely moves it."""
     lang = "ar" if is_arabic(quote) or not passage.text_en else "en"
     source_text = passage.text_ar if lang == "ar" else (passage.text_en or "")
     q_words = _words(quote)
@@ -129,14 +169,20 @@ def compare(quote: str, passage: Passage, t_exact: float, t_variant: float) -> C
     similarity = fuzz.ratio(q_norm, window_norm)
     coverage = len(window) / len(s_words)
 
-    if similarity >= t_exact:
-        match_type = MatchType.EXACT if coverage >= 0.9 else MatchType.PARTIAL
-    elif similarity >= t_variant:
-        match_type = MatchType.VARIANT
-    else:
-        match_type = None
-
-    diff = word_diff(q_words, window) if match_type else []
+    match_type = None
+    diff: list[DiffOp] = []
+    if similarity >= t_variant:
+        diff, shared, changed = word_diff(q_words, window)
+        if not changed:
+            match_type = MatchType.EXACT if coverage >= 0.9 else MatchType.PARTIAL
+        elif (
+            shared >= VARIANT_MIN_SHARED
+            and shared / len(q_words) >= VARIANT_MIN_QUOTE_SHARE
+            and shared / len(window) >= VARIANT_MIN_WINDOW_SHARE
+        ):
+            match_type = MatchType.VARIANT
+        else:
+            diff = []
     tokens = list(re.finditer(r"\S+", source_text))
     highlight = (tokens[window[0].idx].start(), tokens[window[-1].idx].end()) if window else None
     return Comparison(passage, float(similarity), coverage, lang, match_type, diff, window_norm, highlight)

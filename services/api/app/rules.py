@@ -158,7 +158,10 @@ def check_reference(
             return True, ["قُدِّم النص على أنه آية، لكنه وُجد في كتب الحديث وليس في القرآن."], False
         if cited.surah and all(p.book != cited.surah for p in quran):
             return True, ["رقم السورة أو اسمها المذكور لا يطابق موضع النص."], False
-        if cited.ayah and all(p.number != cited.ayah for p in quran):
+        # Surah and ayah must match as a pair (a similar verse can sit at that number in another surah).
+        if cited.ayah and not any(
+            p.number == cited.ayah and (cited.surah is None or p.book == cited.surah) for p in quran
+        ):
             return True, ["رقم الآية المذكور لا يطابق موضع النص."], False
         return False, notes, False
 
@@ -179,9 +182,16 @@ def check_reference(
 
 
 def base_status(group: list[Comparison], t_exact: float) -> ReferenceStatus:
+    """Word-for-word identical → matches; otherwise wording differs. A model-assisted (semantic) match
+    counts as matching only when the model judged it the same text (similarity raised to t_exact)."""
     if not group:
         return ReferenceStatus.NOT_FOUND
-    return ReferenceStatus.MATCHES_SOURCE if group[0].similarity >= t_exact else ReferenceStatus.WORDING_DIFFERS
+    best = group[0]
+    if best.match_type in (MatchType.EXACT, MatchType.PARTIAL):
+        return ReferenceStatus.MATCHES_SOURCE
+    if best.match_type == MatchType.SEMANTIC and best.similarity >= t_exact:
+        return ReferenceStatus.MATCHES_SOURCE
+    return ReferenceStatus.WORDING_DIFFERS
 
 
 def suggested_reference(group: list[Comparison]) -> str | None:

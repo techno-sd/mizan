@@ -17,11 +17,12 @@
    python -m scripts.build_corpus --version 2026-10-04
    MIZAN_DATABASE_URL="<direct connection string>" python -m scripts.load_corpus --version 2026-10-04
    ```
-3. **API on Render**: New → Blueprint → this repo (`render.yaml`). Set `ANTHROPIC_API_KEY`,
-   `MIZAN_INTERNAL_API_KEY` (random 32+ chars) and `MIZAN_DATABASE_URL` (**pooler** string, transaction mode).
-   Check `GET /health`.
-4. **Web on Vercel**: import the repo, root directory `apps/web`; set `MIZAN_API_URL` (Render URL) and
-   `MIZAN_INTERNAL_API_KEY` (same value).
+3. **API on Render** (Frankfurt region, next to the database): New → Blueprint → `techno-sd/mizan`
+   (`render.yaml`). Set `ANTHROPIC_API_KEY`, `MIZAN_INTERNAL_API_KEY` (the value in the git-ignored
+   `services/api/.env`) and `MIZAN_DATABASE_URL` (**transaction pooler** string, port 6543). Check `GET /health`:
+   it should report about 42,300 passages.
+4. **Web on Vercel**: Add New → Project → import `techno-sd/mizan`, root directory `apps/web` (framework
+   detected as Next.js); set `MIZAN_API_URL` (the Render URL) and `MIZAN_INTERNAL_API_KEY` (same value as the API).
 5. **Smoke test**: open the site → "جرّب نصًا تجريبيًا" → "افحص المحتوى" → 7 findings, matching
    `services/api/tests/test_demo_regression.py`.
 

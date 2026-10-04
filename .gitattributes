@@ -1,0 +1,5 @@
+# Keep LF in the repository and working tree (Dockerfile, shell, Python, SQL run on Linux hosts).
+* text=auto eol=lf
+*.png binary
+*.ico binary
+*.jpg binary

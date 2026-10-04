@@ -27,6 +27,27 @@ def test_changed_wording_is_variant_with_diff():
     assert "الصادقة" in inserted
 
 
+def test_one_added_word_is_not_a_match():
+    # Character similarity stays above 92 here; the word-level rule must still call it different.
+    c = compare("إنما الأعمال دائما بالنيات وإنما لكل امرئ ما نوى", BUKHARI_1, 92, 75)
+    assert c.match_type == MatchType.VARIANT
+    assert any(d.op == "insert" and "دائما" in d.text for d in c.diff)
+
+
+def test_honorifics_do_not_count_as_changes():
+    c = compare("قال ﷺ إنما الأعمال بالنيات", BUKHARI_1, 92, 75)
+    # "قال" is in the source isnad before the matn, "ﷺ" vs "صلى الله عليه وسلم" is ignored
+    assert c.match_type in (MatchType.PARTIAL, MatchType.VARIANT)
+
+
+def test_short_saying_does_not_latch_onto_a_different_text():
+    from app.retrieve import Passage
+
+    p = Passage(99, "abudawud", "hadith", 1, 4161, None, "قال رسول الله صلى الله عليه وسلم البذاذة من الإيمان")
+    c = compare("النظافة من الإيمان", p, 92, 75)
+    assert c.match_type is None
+
+
 def test_unrelated_text_does_not_match():
     c = compare("اطلبوا العلم ولو في الصين", BUKHARI_1, 92, 75)
     assert c.match_type is None
