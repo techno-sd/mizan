@@ -1,6 +1,7 @@
 import logging
 import os
 from contextlib import asynccontextmanager
+from typing import Annotated
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Request
 
@@ -44,7 +45,8 @@ app = FastAPI(title="Mizan API", version=PIPELINE_VERSION, lifespan=lifespan)
 
 
 def check_internal_key(
-    settings: Settings = Depends(get_settings), x_internal_key: str | None = Header(default=None)
+    settings: Annotated[Settings, Depends(get_settings)],
+    x_internal_key: Annotated[str | None, Header()] = None,
 ) -> None:
     if settings.internal_api_key and x_internal_key != settings.internal_api_key:
         raise HTTPException(status_code=401, detail="invalid internal key")

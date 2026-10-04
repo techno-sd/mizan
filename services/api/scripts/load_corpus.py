@@ -45,19 +45,21 @@ def main() -> None:
             )
             cur.execute("delete from passages where corpus_version = %s", (args.version,))
             n = 0
-            with cur.copy(f"copy passages ({', '.join(COLUMNS)}) from stdin") as copy:
-                with (corpus_dir / "passages.jsonl").open(encoding="utf-8") as fh:
-                    for line in fh:
-                        p = json.loads(line)
-                        copy.write_row(
-                            (
-                                args.version, p["source_id"], p["collection"], p["kind"], p["book"], p["number"],
-                                p["number_label"], p["numbering_scheme"], p["text_ar"], p["text_ar_norm"],
-                                p["text_en"], p["text_en_norm"], json.dumps(p["gradings"], ensure_ascii=False),
-                                p["url"], json.dumps(p["extra"], ensure_ascii=False),
-                            )
+            with (
+                cur.copy(f"copy passages ({', '.join(COLUMNS)}) from stdin") as copy,
+                (corpus_dir / "passages.jsonl").open(encoding="utf-8") as fh,
+            ):
+                for line in fh:
+                    p = json.loads(line)
+                    copy.write_row(
+                        (
+                            args.version, p["source_id"], p["collection"], p["kind"], p["book"], p["number"],
+                            p["number_label"], p["numbering_scheme"], p["text_ar"], p["text_ar_norm"],
+                            p["text_en"], p["text_en_norm"], json.dumps(p["gradings"], ensure_ascii=False),
+                            p["url"], json.dumps(p["extra"], ensure_ascii=False),
                         )
-                        n += 1
+                    )
+                    n += 1
             cur.execute("analyze passages")
         conn.commit()
     print(f"loaded {n} passages into corpus_version={args.version}")

@@ -124,13 +124,13 @@ class ClaudeClient:
     async def _json_call(self, system: str, user: str, schema: dict, effort: str) -> dict:
         import anthropic
 
-        kwargs = dict(
-            model=self.model,
-            max_tokens=16000,
-            system=system,
-            messages=[{"role": "user", "content": user}],
-            output_config={"effort": effort, "format": {"type": "json_schema", "schema": schema}},
-        )
+        kwargs = {
+            "model": self.model,
+            "max_tokens": 16000,
+            "system": system,
+            "messages": [{"role": "user", "content": user}],
+            "output_config": {"effort": effort, "format": {"type": "json_schema", "schema": schema}},
+        }
         try:
             if self.fallbacks:
                 # Server-side fallback: if a safety classifier declines, the API retries on a fallback model.
