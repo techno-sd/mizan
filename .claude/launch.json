@@ -5,8 +5,7 @@
       "name": "web",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["--prefix", "apps/web", "run", "dev", "--", "--port", "3000"],
-      "port": 3000,
-      "env": { "MIZAN_API_URL": "http://localhost:8000" }
+      "port": 3000
     }
   ]
 }

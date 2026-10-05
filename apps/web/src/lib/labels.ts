@@ -68,6 +68,24 @@ export function sortFindings(findings: Finding[]): Finding[] {
   return [...findings].sort((a, b) => rank(a) - rank(b));
 }
 
+// Result filters shown as summary tiles. A finding can belong to several (e.g. "fix" and "review").
+export type Filter = "all" | "fix" | "not_found" | "matches" | "review" | "out_of_scope";
+
+export const FILTERS: { key: Exclude<Filter, "all">; label: string; tone: string; test: (f: Finding) => boolean }[] = [
+  { key: "fix", label: "تحتاج تصحيحًا", tone: "tone-orange", test: (f) => f.status === "reference_mismatch" || f.status === "wording_differs" },
+  { key: "not_found", label: "لم يُعثر عليها", tone: "tone-slate", test: (f) => f.status === "not_found" },
+  { key: "review", label: "تُحال لمختص", tone: "tone-violet", test: (f) => f.needs_scholar_review },
+  { key: "matches", label: "مطابقة للمصدر", tone: "tone-green", test: (f) => f.status === "matches_source" },
+  { key: "out_of_scope", label: "خارج النطاق", tone: "tone-zinc", test: (f) => f.status === "out_of_scope" },
+];
+
+export const inFilter = (f: Finding, filter: Filter) =>
+  filter === "all" || (FILTERS.find((x) => x.key === filter)?.test(f) ?? true);
+
+// Problems are expanded by default; clean matches start collapsed so they don't bury what needs attention.
+export const startsExpanded = (f: Finding) =>
+  f.status !== "matches_source" || f.needs_scholar_review || gradingSummary(f) !== null;
+
 export const TYPE_LABEL: Record<ItemType, string> = {
   quran: "آية",
   hadith: "حديث",

@@ -2,24 +2,39 @@
 
 import { useState } from "react";
 
-import { GRADE_TONE, STATUS, TYPE_LABEL, gradingSummary } from "@/lib/labels";
-import type { DiffOp, Evidence, Finding, Span } from "@/lib/types";
+import { Alert, Check, Chevron, Copy, External, Search } from "@/components/Icons";
+import { GRADE_TONE, STATUS, TYPE_LABEL, gradingSummary, startsExpanded } from "@/lib/labels";
+import type { DiffOp, Evidence, Finding, ReferenceStatus, Span } from "@/lib/types";
+
+const STATUS_ICON: Record<ReferenceStatus, (p: { className?: string }) => React.ReactNode> = {
+  matches_source: Check,
+  wording_differs: Alert,
+  reference_mismatch: Alert,
+  not_found: Search,
+  out_of_scope: Search,
+};
 
 function CopyButton({ text, label }: { text: string; label: string }) {
   const [done, setDone] = useState(false);
   return (
     <button
       type="button"
-      className="rounded-md border border-border px-2 py-1 text-xs hover:bg-surface-muted"
-      onClick={async () => {
+      className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-2.5 py-1 text-sm hover:bg-surface-muted"
+      onClick={async (e) => {
+        e.stopPropagation();
         await navigator.clipboard.writeText(text);
         setDone(true);
         setTimeout(() => setDone(false), 1500);
       }}
     >
-      {done ? "تم النسخ" : label}
+      {done ? <Check className="h-4 w-4 text-accent" /> : <Copy className="h-4 w-4" />}
+      <span aria-live="polite">{done ? "تم النسخ" : label}</span>
     </button>
   );
+}
+
+function sourceWording(diff: DiffOp[]): string {
+  return diff.filter((d) => d.op !== "insert").map((d) => d.text).join(" ");
 }
 
 function DiffView({ diff }: { diff: DiffOp[] }) {
@@ -33,16 +48,12 @@ function DiffView({ diff }: { diff: DiffOp[] }) {
           </span>
         ))}
       </p>
-      <p className="mt-1 text-xs text-muted">
-        <span className="diff-insert">مشطوب</span> = في نصك وليس في المصدر ·{" "}
-        <span className="diff-delete">مظلّل</span> = في المصدر وليس في نصك
+      <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
+        <span><span className="diff-insert">مشطوب</span> في نصك وليس في المصدر</span>
+        <span><span className="diff-delete">مظلّل</span> في المصدر وليس في نصك</span>
       </p>
     </div>
   );
-}
-
-function sourceWording(diff: DiffOp[]): string {
-  return diff.filter((d) => d.op !== "insert").map((d) => d.text).join(" ");
 }
 
 const EXCERPT_PAD = 160;
@@ -64,38 +75,59 @@ function MarkedText({ text, span, open, className }: { text: string; span: Span 
   );
 }
 
-function EvidenceBlock({ ev, showEnglish }: { ev: Evidence; showEnglish: boolean }) {
+function EvidenceBlock({ ev, showEnglish, label }: { ev: Evidence; showEnglish: boolean; label?: string }) {
   const [open, setOpen] = useState(false);
   const arSpan = ev.highlight_lang === "ar" ? ev.highlight : null;
   const enSpan = ev.highlight_lang === "en" ? ev.highlight : null;
   const long = ev.text.length > 420 || (!!arSpan && ev.text.length > arSpan.end - arSpan.start + 2 * EXCERPT_PAD);
   return (
-    <div className="rounded-lg border border-border bg-surface-muted p-3">
-      <div className="mb-1 flex flex-wrap items-center gap-2 text-sm">
+    <figure className="rounded-xl border border-border bg-surface-muted p-4">
+      <figcaption className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+        {label && <span className="text-muted">{label}</span>}
         <span className="font-semibold">{ev.reference}</span>
-        {ev.numbering_scheme && ev.collection !== "quran" && (
-          <span className="text-xs text-muted">({ev.numbering_scheme})</span>
-        )}
+        {ev.numbering_scheme && ev.collection !== "quran" && <span className="text-xs text-muted">{ev.numbering_scheme}</span>}
         {ev.url && (
-          <a className="text-xs text-accent underline" href={ev.url} target="_blank" rel="noreferrer">
-            افتح المصدر
+          <a
+            className="inline-flex items-center gap-1 text-xs font-medium text-accent hover:underline"
+            href={ev.url}
+            target="_blank"
+            rel="noreferrer"
+            onClick={(e) => e.stopPropagation()}
+          >
+            افتح المصدر <External className="h-3.5 w-3.5" />
           </a>
         )}
-      </div>
+      </figcaption>
       {ev.context_before && <p className="source-text text-muted">{ev.context_before}</p>}
       <MarkedText text={ev.text} span={arSpan} open={open} className="source-text" />
       {ev.context_after && <p className="source-text text-muted">{ev.context_after}</p>}
       {long && (
-        <button type="button" className="mt-1 text-xs text-accent underline" onClick={() => setOpen(!open)}>
-          {open ? "عرض أقل" : "عرض النص كاملًا"}
+        <button
+          type="button"
+          className="mt-1 text-sm font-medium text-accent hover:underline"
+          onClick={(e) => {
+            e.stopPropagation();
+            setOpen(!open);
+          }}
+        >
+          {open ? "عرض أقل" : "عرض النص كاملًا مع سنده"}
         </button>
       )}
       {(showEnglish || enSpan) && ev.text_en && (
-        <div dir="ltr" className="mt-2">
+        <div dir="ltr" className="mt-3 border-t border-border pt-3">
           <MarkedText text={ev.text_en} span={enSpan} open={open} className="text-sm leading-6 text-muted" />
         </div>
       )}
-    </div>
+    </figure>
+  );
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section className="space-y-2">
+      <h4 className="text-sm font-semibold text-muted">{title}</h4>
+      {children}
+    </section>
   );
 }
 
@@ -108,104 +140,131 @@ export default function FindingCard({
   active: boolean;
   onSelect: () => void;
 }) {
+  const [open, setOpen] = useState(() => startsExpanded(f));
+  const expanded = open || active;
   const st = STATUS[f.status];
+  const Icon = STATUS_ICON[f.status];
   const grading = gradingSummary(f);
   const changed = f.diff.some((d) => d.op !== "equal");
   const showEnglish = /[a-z]/i.test(f.quoted_text);
   const [showNearest, setShowNearest] = useState(false);
+  const sahih = f.evidence.find((e) => e.collection === "bukhari" || e.collection === "muslim");
+  const bodyId = `card-body-${f.id}`;
 
   return (
     <article
       id={`card-${f.id}`}
-      onClick={onSelect}
-      className={`rounded-xl border bg-surface p-4 shadow-sm transition ${
-        active ? "border-accent ring-1 ring-accent" : "border-border"
-      }`}
+      className={`card overflow-hidden transition ${active ? "ring-2 ring-accent" : ""}`}
     >
-      <div className="mb-2 flex flex-wrap items-center gap-2">
-        <span className={`rounded-full px-2.5 py-0.5 text-sm font-semibold ${st.tone}`}>{st.label}</span>
-        <span className="rounded-full bg-surface-muted px-2 py-0.5 text-xs text-muted">{TYPE_LABEL[f.type]}</span>
-        {grading && (
-          <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${grading.tone}`}>{grading.label}</span>
-        )}
-        {f.needs_scholar_review && (
-          <span className="tone-violet rounded-full px-2 py-0.5 text-xs font-medium">يُحال لمختص</span>
-        )}
-      </div>
+      <button
+        type="button"
+        aria-expanded={expanded}
+        aria-controls={bodyId}
+        onClick={() => {
+          onSelect();
+          setOpen(!expanded);
+        }}
+        className="flex w-full items-start gap-3 p-4 text-start hover:bg-surface-muted/60"
+      >
+        <span className={`mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-lg ${st.tone}`}>
+          <Icon className="h-4.5 w-4.5" />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="flex flex-wrap items-center gap-2">
+            <span className="font-semibold">{st.label}</span>
+            <span className="rounded-full bg-surface-muted px-2 py-0.5 text-xs text-muted">{TYPE_LABEL[f.type]}</span>
+            {grading && <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${grading.tone}`}>{grading.label}</span>}
+            {f.needs_scholar_review && <span className="tone-violet rounded-full px-2 py-0.5 text-xs font-semibold">يُحال لمختص</span>}
+          </span>
+          <span dir="auto" className={`mt-1 block text-[0.97rem] leading-7 ${expanded ? "" : "truncate text-muted"}`}>
+            «{f.quoted_text}»
+          </span>
+        </span>
+        <Chevron className={`mt-1 h-5 w-5 text-muted transition-transform ${expanded ? "rotate-180" : ""}`} />
+      </button>
 
-      <p className="mb-1 text-xs text-muted">ما كتبته{f.cited_reference ? ` · الإحالة المذكورة: ${f.cited_reference}` : ""}</p>
-      <p dir="auto" className="mb-3 leading-8">
-        «{f.quoted_text}»
-      </p>
+      {expanded && (
+        <div id={bodyId} className="space-y-5 border-t border-border px-4 pb-5 pt-4">
+          <p className="leading-7">
+            {st.hint}
+            {f.cited_reference && (
+              <span className="text-muted">
+                {" "}الإحالة التي ذكرتها: «{f.cited_reference.replace(/^[\s[(«]+|[\s\])»]+$/g, "")}».
+              </span>
+            )}
+          </p>
 
-      <p className="mb-3 text-sm text-muted">{st.hint}</p>
-
-      {changed && (
-        <section className="mb-3">
-          <h4 className="mb-1 text-sm font-semibold">الفرق بين نصك والمصدر</h4>
-          <DiffView diff={f.diff} />
-          <div className="mt-2">
-            <CopyButton text={sourceWording(f.diff)} label="انسخ لفظ المصدر" />
-          </div>
-        </section>
-      )}
-
-      {f.evidence.length > 0 && (
-        <section className="mb-3 space-y-2">
-          <h4 className="text-sm font-semibold">الدليل من المصدر</h4>
-          <EvidenceBlock ev={f.evidence[0]} showEnglish={showEnglish} />
-          {f.evidence.length > 1 && (
-            <p className="text-xs text-muted">ورد أيضًا في: {f.evidence.slice(1).map((e) => e.reference).join("، ")}</p>
+          {f.suggested_reference && f.status !== "matches_source" && f.status !== "out_of_scope" && (
+            <div className="flex flex-wrap items-center gap-3 rounded-xl bg-accent-soft px-4 py-3">
+              <span className="text-sm text-muted">الإحالة الصحيحة</span>
+              <span className="font-bold text-accent">{f.suggested_reference}</span>
+              <span className="ms-auto">
+                <CopyButton text={f.suggested_reference} label="نسخ الإحالة" />
+              </span>
+            </div>
           )}
-        </section>
-      )}
 
-      {f.suggested_reference && f.status !== "matches_source" && (
-        <section className="mb-3 flex flex-wrap items-center gap-2 text-sm">
-          <span>الإحالة الصحيحة:</span>
-          <span className="font-semibold">{f.suggested_reference}</span>
-          <CopyButton text={f.suggested_reference} label="انسخ الإحالة" />
-        </section>
-      )}
+          {changed && (
+            <Section title="الفرق بين نصك والمصدر">
+              <DiffView diff={f.diff} />
+              <CopyButton text={sourceWording(f.diff)} label="نسخ لفظ المصدر" />
+            </Section>
+          )}
 
-      {f.gradings.length > 0 && (
-        <section className="mb-3">
-          <h4 className="mb-1 text-sm font-semibold">أحكام العلماء المنقولة</h4>
-          <ul className="space-y-0.5 text-sm">
-            {f.gradings.map((g, i) => (
-              <li key={i}>
-                <span>{g.scholar_ar ?? g.scholar}: </span>
-                <span className={`font-semibold ${GRADE_TONE[g.category]}`}>{g.grade_ar ?? g.grade}</span>
-              </li>
-            ))}
-          </ul>
-          <p className="mt-1 text-xs text-muted">منقولة كما وردت في المصدر؛ ميزان لا يصدر أحكامًا على الأحاديث.</p>
-        </section>
-      )}
+          {f.evidence.length > 0 && (
+            <Section title="الدليل من المصدر">
+              <EvidenceBlock ev={f.evidence[0]} showEnglish={showEnglish} />
+              {f.evidence.length > 1 && (
+                <p className="text-sm text-muted">ورد أيضًا في: {f.evidence.slice(1).map((e) => e.reference).join("، ")}</p>
+              )}
+            </Section>
+          )}
 
-      {f.evidence.some((e) => e.collection === "bukhari" || e.collection === "muslim") && f.gradings.length === 0 && (
-        <p className="mb-3 text-sm">ورد في {f.evidence.find((e) => e.collection === "bukhari" || e.collection === "muslim")!.collection_label}.</p>
-      )}
+          {f.gradings.length > 0 && (
+            <Section title="أحكام العلماء المنقولة">
+              <ul className="divide-y divide-border rounded-xl border border-border">
+                {f.gradings.map((g, i) => (
+                  <li key={i} className="flex items-center justify-between gap-3 px-4 py-2">
+                    <span>{g.scholar_ar ?? g.scholar}</span>
+                    <span className={`font-semibold ${GRADE_TONE[g.category]}`}>{g.grade_ar ?? g.grade}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="text-xs text-muted">منقولة كما وردت في المصدر؛ ميزان لا يصدر أحكامًا على الأحاديث.</p>
+            </Section>
+          )}
 
-      {[...f.review_reasons, ...f.notes].length > 0 && (
-        <ul className="mb-2 list-inside list-disc space-y-1 text-sm text-muted">
-          {[...f.review_reasons, ...f.notes].map((n, i) => (
-            <li key={i}>{n}</li>
-          ))}
-        </ul>
-      )}
+          {sahih && f.gradings.length === 0 && f.status !== "not_found" && (
+            <p className="text-sm">ورد في {sahih.collection_label}.</p>
+          )}
 
-      {f.nearest && (
-        <div className="mt-2">
-          <button type="button" className="text-xs text-accent underline" onClick={() => setShowNearest(!showNearest)}>
-            {showNearest ? "إخفاء أقرب نص" : "أقرب نص في المصادر (نص مختلف)"}
-          </button>
-          {showNearest && (
-            <div className="mt-2">
-              <p className="mb-1 text-xs text-muted">
-                هذا نص مختلف عمّا كتبته، وليس تصحيحًا له. يُعرض للمقارنة فقط.
-              </p>
-              <EvidenceBlock ev={f.nearest} showEnglish={showEnglish} />
+          {[...f.review_reasons, ...f.notes].length > 0 && (
+            <ul className="space-y-1.5 rounded-xl bg-surface-muted px-4 py-3 text-sm leading-7 text-muted">
+              {[...f.review_reasons, ...f.notes].map((n, i) => (
+                <li key={i} className="flex gap-2">
+                  <span aria-hidden="true">•</span>
+                  <span>{n}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {f.nearest && (
+            <div>
+              <button
+                type="button"
+                className="text-sm font-medium text-accent hover:underline"
+                onClick={() => setShowNearest(!showNearest)}
+                aria-expanded={showNearest}
+              >
+                {showNearest ? "إخفاء أقرب نص" : "عرض أقرب نص في المصادر (نص مختلف)"}
+              </button>
+              {showNearest && (
+                <div className="mt-2 space-y-2">
+                  <p className="text-sm text-muted">هذا نص مختلف عمّا كتبته، وليس تصحيحًا له؛ يُعرض للمقارنة فقط.</p>
+                  <EvidenceBlock ev={f.nearest} showEnglish={showEnglish} />
+                </div>
+              )}
             </div>
           )}
         </div>

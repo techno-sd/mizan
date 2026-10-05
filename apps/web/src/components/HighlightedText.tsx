@@ -1,6 +1,6 @@
 "use client";
 
-import { STATUS, markClass } from "@/lib/labels";
+import { STATUS, TYPE_LABEL, markClass } from "@/lib/labels";
 import type { Finding } from "@/lib/types";
 
 interface Props {
@@ -10,11 +10,9 @@ interface Props {
   onSelect: (id: string) => void;
 }
 
-// Renders the original text with each finding's span highlighted by status.
+// The checked text, with each finding's span highlighted by status. Highlights are keyboard-accessible.
 export default function HighlightedText({ text, findings, activeId, onSelect }: Props) {
-  const spans = findings
-    .filter((f) => f.span)
-    .sort((a, b) => a.span!.start - b.span!.start);
+  const spans = findings.filter((f) => f.span).sort((a, b) => a.span!.start - b.span!.start);
 
   const parts: React.ReactNode[] = [];
   let cursor = 0;
@@ -27,10 +25,18 @@ export default function HighlightedText({ text, findings, activeId, onSelect }: 
       <mark
         key={f.id}
         id={`mark-${f.id}`}
+        role="button"
+        tabIndex={0}
         data-active={activeId === f.id}
+        aria-label={`${TYPE_LABEL[f.type]}: ${STATUS[f.status].label}. اعرض التفاصيل`}
         className={`finding-mark ${markClass(f)}`}
-        title={STATUS[f.status].label}
         onClick={() => onSelect(f.id)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onSelect(f.id);
+          }
+        }}
       >
         {text.slice(start, end)}
       </mark>,
@@ -40,7 +46,7 @@ export default function HighlightedText({ text, findings, activeId, onSelect }: 
   if (cursor < text.length) parts.push(text.slice(cursor));
 
   return (
-    <div dir="auto" className="whitespace-pre-wrap text-[1.05rem] leading-9">
+    <div dir="auto" className="whitespace-pre-wrap text-[1.08rem] leading-[2.2]">
       {parts}
     </div>
   );

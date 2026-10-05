@@ -1,5 +1,11 @@
-// Demo text. Kept in sync with eval/demo_script_ar.txt (also used by the backend regression test).
-export const SAMPLE_TEXT = `التعارف بين الشعوب أصل في رسالة الإسلام، قال تعالى: ﴿يَا أَيُّهَا النَّاسُ إِنَّا خَلَقْنَاكُم مِّن ذَكَرٍ وَأُنثَىٰ وَجَعَلْنَاكُمْ شُعُوبًا وَقَبَائِلَ لِتَعَارَفُوا﴾ [الحجرات: 13].
+// Sample texts for the "try it" buttons. SAMPLES[0] is kept in sync with eval/demo_script_ar.txt
+// (also used by the backend regression test).
+export const SAMPLES = [
+  {
+    id: "post",
+    label: "منشور دعوي",
+    hint: "آيات وأحاديث بإحالات، فيها أخطاء شائعة",
+    text: `التعارف بين الشعوب أصل في رسالة الإسلام، قال تعالى: ﴿يَا أَيُّهَا النَّاسُ إِنَّا خَلَقْنَاكُم مِّن ذَكَرٍ وَأُنثَىٰ وَجَعَلْنَاكُمْ شُعُوبًا وَقَبَائِلَ لِتَعَارَفُوا﴾ [الحجرات: 13].
 
 والإسلام لا يُكره أحدًا على الدخول فيه، قال تعالى: ﴿لَا إِكْرَاهَ فِي الدِّينِ﴾ [البقرة: 265].
 
@@ -12,4 +18,51 @@ export const SAMPLE_TEXT = `التعارف بين الشعوب أصل في رس�
 وقال رسول الله ﷺ: «طلب العلم فريضة على كل مسلم» (رواه ابن ماجه).
 
 وقال رسول الله ﷺ: «النظافة من الإيمان».
-`;
+`,
+  },
+  {
+    id: "plain",
+    label: "نص بلا علامات",
+    hint: "اقتباسات داخل الكلام دون تنصيص",
+    text: `من أجمل ما يُعلَّم للناشئة أن المسلم من سلم المسلمون من لسانه ويده، وأن الدين النصيحة كما ثبت عن نبينا الكريم. وقد ذكّرنا ربنا في كتابه بأنه لا إكراه في الدين، فالدعوة بالحكمة لا بالإجبار. ويُنسب إلى عمر بن الخطاب قوله: متى استعبدتم الناس وقد ولدتهم أمهاتهم أحرارا.
+`,
+  },
+  {
+    id: "english",
+    label: "منشور بالإنجليزية",
+    hint: "أحاديث وآية مترجمة",
+    text: `Islam teaches mercy and good character. The Messenger of Allah said that the strong man is not the one who wrestles others down, but the one who controls himself when angry (Bukhari). He also said "None of you truly believes until he loves for his brother what he loves for himself" (Muslim). And the Quran says: "There is no compulsion in religion" (2:256).
+`,
+  },
+] as const;
+
+export const SAMPLE_TEXT = SAMPLES[0].text;
+
+// Corpus figures (corpus version 2026-10-04).
+export const CORPUS_STATS = [
+  { label: "القرآن الكريم", count: 6236, unit: "آية" },
+  { label: "صحيح البخاري", count: 7580 },
+  { label: "صحيح مسلم", count: 7360 },
+  { label: "سنن النسائي", count: 5679 },
+  { label: "سنن أبي داود", count: 5272 },
+  { label: "سنن ابن ماجه", count: 4338 },
+  { label: "جامع الترمذي", count: 3924 },
+  { label: "موطأ مالك", count: 1829 },
+  { label: "الأربعون النووية", count: 42 },
+  { label: "الأحاديث القدسية", count: 40 },
+];
+
+export const REPO_URL = "https://github.com/techno-sd/mizan";
+export const METHOD_URL = `${REPO_URL}/blob/main/eval/results/COMPARISON.md`;
+
+export const fmt = (n: number) => n.toLocaleString("en-US");
+
+// Arabic number agreement: 1 اقتباسًا واحدًا، 2 اقتباسين، 3-10 اقتباسات، 11-99 اقتباسًا، 100+ follows the last two digits.
+export function countQuotes(n: number): string {
+  if (n === 1) return "اقتباسًا واحدًا";
+  if (n === 2) return "اقتباسين";
+  const r = n % 100;
+  if (r >= 3 && r <= 10) return `${fmt(n)} اقتباسات`;
+  if (r >= 11 && r <= 99) return `${fmt(n)} اقتباسًا`;
+  return `${fmt(n)} اقتباس`;
+}
