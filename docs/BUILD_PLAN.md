@@ -45,7 +45,7 @@
 
 ## قائمة التسليم
 
-- [x] رابط Live Demo يعمل: https://mizan-xi-six.vercel.app (Render مدفوع لا ينام؛ /health يُبقي Supabase نشطًا)
+- [x] رابط Live Demo يعمل: https://mizan-islam.vercel.app (Render مدفوع لا ينام؛ /health يُبقي Supabase نشطًا)
 - [x] مستودع GitHub **عام**: https://github.com/techno-sd/mizan، بلا مفاتيح، مع تراخيص المكونات
 - [ ] فيديو لا يتجاوز دقيقتين
 - [ ] عرض PDF/PowerPoint: المشكلة، والحل، وآلية العمل، والقيمة، والتقنيات، والنتائج، وخطة الاستمرار، وصور من المنتج

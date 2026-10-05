@@ -9,7 +9,7 @@ AI Challenge: Serving Islamic Content 2026 · Track 04: Knowledge and verificati
 Islam.
 
 - Idea and scope: [docs/IDEA.md](docs/IDEA.md)
-- **Live demo: https://mizan-xi-six.vercel.app** (API: https://mizan-api-dslz.onrender.com/health)
+- **Live demo: https://mizan-islam.vercel.app** (API: https://mizan-api-dslz.onrender.com/health)
 - Video (≤ 2 min): _add the link_
 
 ---
