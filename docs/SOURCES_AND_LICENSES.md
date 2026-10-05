@@ -3,6 +3,8 @@
 Mizan's **primary sources are the ones listed in the challenge's scientific reference package**
 («المرجعية والحزمة العلمية والبيانات», version 20/3/1448), and it follows the package's content levels and scientific standard.
 One **supplementary** hadith source that is not in the package is also loaded. Every result built on it says so (see below).
+The organisers confirmed on 2026-10-06 that sources outside the package may be used **provided the reference is
+stated**, which is how Mizan presents every result from it.
 
 ## Content sources (corpus `2026-10-05.2`)
 

@@ -96,7 +96,8 @@ Primary sources, from the challenge's scientific reference package ([details](do
 - Quran: [موسوعة القرآن الكريم — QuranEnc](https://quranenc.com), King Fahd Complex mushaf text and the approved English translation.
 - Hadith: [موسوعة الأحاديث النبوية — HadeethEnc](https://hadeethenc.com), with its takhrij and ruling.
 
-Supplementary source, **not in the package**, named in every result that uses it:
+Supplementary source, **not in the package**, named in every result that uses it (the organisers confirmed on 2026-10-06
+that outside sources may be used when the reference is stated):
 - [hadith-api](https://github.com/fawazahmed0/hadith-api) (Unlicense): the six books and the Muwatta, with the gradings that dataset records.
 
 Mizan is a research and review aid. It is not a religious authority, issues no fatwas and does not grade hadith.
