@@ -19,7 +19,7 @@ Islam.
 Paste an article, post or video script. Mizan:
 
 1. finds every Quran verse, hadith and attributed quote (rules + Claude), and the reference the author cited;
-2. matches each one against **the challenge's approved sources only**: the Quran from QuranEnc (King Fahd Complex mushaf text) and 3,574 hadith from HadeethEnc, each with its approved takhrij and ruling;
+2. matches each one against **the challenge's approved sources first**: the Quran from QuranEnc (King Fahd Complex mushaf text) and 3,574 hadith from HadeethEnc, each with its approved takhrij and ruling. Hadith not there are looked up in one supplementary source (hadith-api: the six books and the Muwatta), and **every result names its source** and says whether it is in the challenge's package;
 3. shows, per quote: whether the text and reference match, a word-by-word diff, the source passage with the matched
    part highlighted in context, the correct reference, and scholars' gradings **as reported, with their names**;
 4. says "not found in the loaded sources" instead of inventing one, and flags conflicting gradings or ambiguous
@@ -33,7 +33,7 @@ Two separate axes: the **reference** (Mizan decides, with deterministic rules) a
 | Built | Proposed next |
 |---|---|
 | Verification pipeline, five statuses + specialist flag, deployed (Vercel + Render + Supabase, Frankfurt) | Multilingual embeddings for meaning and translation matches |
-| Corpus from the approved sources only: 6,236 ayat (QuranEnc) + 3,574 hadith (HadeethEnc), versioned, checksummed | More approved translation languages; Dorar / Shamela coverage if access is granted |
+| Corpus: 6,236 ayat (QuranEnc) + 3,574 hadith (HadeethEnc) from the approved sources, + 35,982 hadith from a labelled supplementary source (hadith-api), versioned, checksummed | More approved translation languages; Dorar / Shamela coverage if access is granted |
 | Supabase schema + hybrid search function | Organization workspaces with their own approved corpora |
 | Arabic document-centred UI, `POST /v1/verify` API | Reviewer dashboard, audit trail, browser and editor add-ons |
 | Held-out test on approved sources: 97% status accuracy, 0% false support, 100% references agreeing with the approved takhrij (same model used directly: 85-88% / 93%) ([comparison](eval/results/COMPARISON.md)); 60+ tests in CI | Reviewed database of circulating texts |
@@ -90,9 +90,12 @@ npm run dev                   # http://localhost:3000
 
 ## Sources and attribution
 
-Only sources from the challenge's scientific reference package are used ([details](docs/SOURCES_AND_LICENSES.md)):
+Primary sources, from the challenge's scientific reference package ([details](docs/SOURCES_AND_LICENSES.md)):
 - Quran: [موسوعة القرآن الكريم — QuranEnc](https://quranenc.com), King Fahd Complex mushaf text and the approved English translation.
 - Hadith: [موسوعة الأحاديث النبوية — HadeethEnc](https://hadeethenc.com), with its takhrij and ruling.
+
+Supplementary source, **not in the package**, named in every result that uses it:
+- [hadith-api](https://github.com/fawazahmed0/hadith-api) (Unlicense): the six books and the Muwatta, with the gradings that dataset records.
 
 Mizan is a research and review aid. It is not a religious authority, issues no fatwas and does not grade hadith.
 

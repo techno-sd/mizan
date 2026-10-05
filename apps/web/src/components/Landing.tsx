@@ -44,7 +44,11 @@ export function SiteFooter() {
       <a className="underline hover:text-foreground" href="https://hadeethenc.com" target="_blank" rel="noreferrer">
         موسوعة الأحاديث النبوية
       </a>
-      . لا نحتفظ بنص ما تفحصه.
+      ، ومصدر إضافي غير مدرج في الحزمة العلمية:{" "}
+      <a className="underline hover:text-foreground" href="https://github.com/fawazahmed0/hadith-api" target="_blank" rel="noreferrer">
+        hadith-api
+      </a>{" "}
+      (يُذكر في كل نتيجة تعتمد عليه). لا نحتفظ بنص ما تفحصه.
     </footer>
   );
 }

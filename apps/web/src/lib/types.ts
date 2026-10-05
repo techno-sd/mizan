@@ -21,6 +21,8 @@ export interface Grading {
   grade: string;
   scholar_ar: string | null;
   grade_ar: string | null;
+  source_label: string | null;
+  source_approved: boolean;
   category: "accepted" | "weak" | "rejected" | "unknown";
 }
 
@@ -46,6 +48,10 @@ export interface Evidence {
   highlight: Span | null;
   highlight_lang: "ar" | "en" | null;
   takhrij: string | null;
+  source_id: string;
+  source_label: string;
+  source_url: string;
+  source_approved: boolean;
 }
 
 export interface Finding {

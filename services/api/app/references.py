@@ -18,10 +18,10 @@ class Collection:
     label_en: str
     kind: str  # quran | hadith | source
     aliases: tuple[str, ...]
-    # Loaded = its texts are in the corpus (shown as "checked against"). Hadith books are not loaded: they are
-    # recognized in what the author cited and in the approved source's takhrij (e.g. «متفق عليه»).
+    # Hadith books are recognized in what the author cited and in the approved source's takhrij
+    # (e.g. «متفق عليه»). Their texts may also be loaded from a supplementary source (see SOURCES).
     loaded: bool = False
-    scope: str | None = None  # how a loaded source is named in "checked against"
+    scope: str | None = None
 
 
 HADEETHENC = "hadeethenc"
@@ -63,8 +63,46 @@ COLLECTIONS: dict[str, Collection] = {
 }
 
 
+@dataclass(frozen=True)
+class Source:
+    """Where a passage's data comes from. Every piece of evidence and every ruling names its source."""
+
+    id: str
+    label: str
+    url: str
+    approved: bool  # listed in the challenge's scientific reference package
+    scope: str  # how it is named in "checked against"
+
+
+SOURCES: dict[str, Source] = {
+    s.id: s
+    for s in [
+        Source(
+            "quranenc", "موسوعة القرآن الكريم (QuranEnc)", "https://quranenc.com", True,
+            "القرآن الكريم: موسوعة القرآن الكريم QuranEnc، نص مصحف المدينة (مصدر معتمد)",
+        ),
+        Source(
+            "hadeethenc", "موسوعة الأحاديث النبوية (HadeethEnc)", "https://hadeethenc.com", True,
+            "الحديث: موسوعة الأحاديث النبوية HadeethEnc، مع التخريج والحكم (مصدر معتمد)",
+        ),
+        Source(
+            "hadith-api", "مجموعة hadith-api", "https://github.com/fawazahmed0/hadith-api", False,
+            "الحديث: الكتب الستة وموطأ مالك من مجموعة hadith-api (مصدر إضافي غير مدرج في الحزمة العلمية)",
+        ),
+    ]
+}
+
+# Source of a passage when its data does not say: the Quran and HadeethEnc are their own sources.
+_DEFAULT_SOURCE = {QURAN: "quranenc", HADEETHENC: "hadeethenc"}
+
+
+def source_of(collection: str, extra: dict | None) -> Source:
+    sid = (extra or {}).get("source_id") or _DEFAULT_SOURCE.get(collection, "hadith-api")
+    return SOURCES[sid]
+
+
 def loaded_scope() -> list[str]:
-    return [c.scope or c.label for c in COLLECTIONS.values() if c.loaded]
+    return [s.scope for s in SOURCES.values()]
 
 # "متفق عليه" = reported by both al-Bukhari and Muslim.
 _AGREED = ("متفق عليه", "agreed upon", "muttafaq")

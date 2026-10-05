@@ -41,6 +41,9 @@ class Grading(BaseModel):
     grade: str  # as written in the source data
     scholar_ar: str | None = None
     grade_ar: str | None = None
+    # Where this ruling was taken from, e.g. "موسوعة الأحاديث النبوية (HadeethEnc)" or "مجموعة hadith-api".
+    source_label: str | None = None
+    source_approved: bool = True
     category: str = Field(description="accepted | weak | rejected | unknown (display hint only)")
 
 
@@ -69,6 +72,11 @@ class Evidence(BaseModel):
     highlight_lang: str | None = None
     # Full takhrij from the approved source (HadeethEnc), so every hadith is traceable to its books.
     takhrij: str | None = None
+    # Where this text comes from. approved = listed in the challenge's scientific reference package.
+    source_id: str = ""
+    source_label: str = ""
+    source_url: str = ""
+    source_approved: bool = True
 
 
 class Finding(BaseModel):

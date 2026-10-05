@@ -3,11 +3,15 @@
     python -m scripts.build_corpus --version 2026-10-05            # full corpus -> data/corpus/<version>/
     python -m scripts.build_corpus --version 2026-10-05 --fixture  # small offline set -> app/data/fixture_passages.json
 
-Only sources from the challenge's scientific reference package («المرجعية والحزمة العلمية والبيانات») are used:
+Primary sources, from the challenge's scientific reference package («المرجعية والحزمة العلمية والبيانات»):
   * Quran: QuranEnc (موسوعة القرآن الكريم, Society for Islamic Content Service in Languages). Arabic text of the
     King Fahd Complex mushaf, with the approved English translation (english_saheeh).
   * Hadith: HadeethEnc (موسوعة الأحاديث النبوية, same society). Every hadith carries its source (التخريج) and an
     approved ruling (الحكم), as the package requires: «لا ينسب حديث دون مصدر وحكم معتمد في البيانات».
+
+Supplementary source (NOT in the package), for complete-book coverage:
+  * hadith-api: the six books and al-Muwatta with gradings where provided. Ranked after the approved sources and
+    named, with an "not in the reference package" label, in every result and ruling that uses it.
 
 Source texts are stored verbatim. Normalized fields are derived for search only and never displayed.
 The manifest records each download's URL and SHA-256.
@@ -31,6 +35,9 @@ CACHE = ROOT / ".cache" / "sources"
 QURANENC_SURA = "https://quranenc.com/api/v1/translation/sura/english_saheeh/{s}"
 HADEETHENC_LIST = "https://hadeethenc.com/api/v1/hadeeths/list/?language=ar&category_id={c}&page={p}&per_page=500"
 HADEETHENC_ONE = "https://hadeethenc.com/api/v1/hadeeths/one/?language={lang}&id={id}"
+# Supplementary (not in the reference package): complete books, each result labelled with this source.
+HADITH_API = "https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/{e}.min.json"
+HADITH_API_BOOKS = ["bukhari", "muslim", "abudawud", "tirmidhi", "nasai", "ibnmajah", "malik"]
 
 SOURCES = {
     "quranenc": {
@@ -47,12 +54,21 @@ SOURCES = {
         "license": "Listed in the challenge reference package (Society for Islamic Content Service in Languages). "
         "Free content with a public developer API.",
     },
+    "hadith-api": {
+        "title": "fawazahmed0/hadith-api: complete texts of the six books and al-Muwatta (supplementary)",
+        "kind": "hadith",
+        "url": "https://github.com/fawazahmed0/hadith-api",
+        "license": "Unlicense (public domain). NOT listed in the challenge reference package: used only as a "
+        "supplementary source, ranked after the approved sources and named in every result that uses it.",
+    },
 }
 
 # Offline demo/test fixture: enough real text to exercise every status without a database.
 FIXTURE_QURAN = [(1, a) for a in range(1, 8)] + [(2, a) for a in range(254, 258)] + [
     (49, 12), (49, 13), (49, 14), (112, 1), (112, 2), (112, 3), (112, 4), (16, 124), (16, 125), (16, 126), (5, 32),
 ]
+# Supplementary-source texts for the fixture (weak and conflicting gradings, a hadith outside HadeethEnc).
+FIXTURE_SUPPLEMENTARY = [("ibnmajah", "طلب العلم فريضة"), ("tirmidhi", "من حسن إسلام المرء"), ("muslim", "لا ينظر إلى صوركم")]
 FIXTURE_HADITH_PHRASES = [
     "إنما الأعمال بالنيات",
     "الطهور شطر الإيمان",
@@ -187,6 +203,44 @@ def hadith_passages(downloads: list[dict]) -> list[dict]:
     return out
 
 
+def hadith_api_passages(downloads: list[dict]) -> list[dict]:
+    out = []
+    for book in HADITH_API_BOOKS:
+        ara, sha_ar = cached(f"ara-{book}.json", lambda b=book: _get_json(HADITH_API.format(e=f"ara-{b}")))
+        eng, sha_en = cached(f"eng-{book}.json", lambda b=book: _get_json(HADITH_API.format(e=f"eng-{b}")))
+        downloads += [
+            {"source_id": "hadith-api", "url": HADITH_API.format(e=f"ara-{book}"), "sha256": sha_ar},
+            {"source_id": "hadith-api", "url": HADITH_API.format(e=f"eng-{book}"), "sha256": sha_en},
+        ]
+        english = {h["hadithnumber"]: (h.get("text") or "").strip() for h in eng["hadiths"]}
+        for h in ara["hadiths"]:
+            text = (h.get("text") or "").strip()
+            if not text:
+                continue
+            an = h.get("arabicnumber")
+            has_an = an not in (None, "", 0, "0")
+            label = str(an if has_an else h["hadithnumber"])
+            out.append(
+                {
+                    "key": f"hadith-api:{book}:{label}",
+                    "source_id": "hadith-api",
+                    "collection": book,
+                    "kind": "hadith",
+                    "book": (h.get("reference") or {}).get("book"),
+                    "number": int(float(label)),
+                    "number_label": label,
+                    "numbering_scheme": "ترقيم مجموعة hadith-api",
+                    "text_ar": text,
+                    "text_en": english.get(h["hadithnumber"]) or None,
+                    "gradings": [{"scholar": g["name"], "grade": g["grade"]} for g in h.get("grades") or []],
+                    "url": "https://github.com/fawazahmed0/hadith-api",
+                    "extra": {"source_id": "hadith-api", "approved": False, "sources": [book],
+                              "hadithnumber": h["hadithnumber"]},
+                }
+            )
+    return out
+
+
 def with_norm(p: dict) -> dict:
     p["text_ar_norm"] = normalize(p["text_ar"])
     p["text_en_norm"] = normalize(p["text_en"]) if p.get("text_en") else None
@@ -199,7 +253,10 @@ def build_fixture(passages: list[dict]) -> list[dict]:
     keep += [quran[k] for k in FIXTURE_QURAN if k in quran]
     for phrase in FIXTURE_HADITH_PHRASES:
         needle = normalize(phrase)
-        keep += [p for p in passages if p["kind"] == "hadith" and needle in p["text_ar_norm"]][:2]
+        keep += [p for p in passages if p["collection"] == "hadeethenc" and needle in p["text_ar_norm"]][:2]
+    for collection, phrase in FIXTURE_SUPPLEMENTARY:
+        needle = normalize(phrase)
+        keep += [p for p in passages if p["collection"] == collection and needle in p["text_ar_norm"]][:2]
     seen, unique = set(), []
     for p in keep:
         if p["key"] not in seen:
@@ -215,7 +272,10 @@ def main() -> None:
     args = ap.parse_args()
 
     downloads: list[dict] = []
-    passages = [with_norm(p) for p in quran_passages(downloads) + hadith_passages(downloads)]
+    passages = [
+        with_norm(p)
+        for p in quran_passages(downloads) + hadith_passages(downloads) + hadith_api_passages(downloads)
+    ]
     counts: dict[str, int] = {}
     for p in passages:
         counts[p["collection"]] = counts.get(p["collection"], 0) + 1
@@ -240,7 +300,7 @@ def main() -> None:
             json.dumps(
                 {
                     "corpus_version": f"{args.version}-fixture",
-                    "notices": ["Quran: QuranEnc (quranenc.com). Hadith: HadeethEnc (hadeethenc.com)."],
+                    "notices": ["Quran: QuranEnc (quranenc.com). Hadith: HadeethEnc (hadeethenc.com); supplementary: hadith-api (not in the reference package)."],
                     "passages": [{k: (p[k] or "") if k.endswith("_norm") else p[k] for k in fields} for p in fixture],
                 },
                 ensure_ascii=False,

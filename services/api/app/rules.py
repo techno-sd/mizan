@@ -9,7 +9,7 @@ out_of_scope        claim types this version does not check
 """
 
 from .align import Comparison, same_matn
-from .references import COLLECTIONS, HADEETHENC, QURAN, CitedRef, quran_reference
+from .references import COLLECTIONS, HADEETHENC, QURAN, CitedRef, quran_reference, source_of
 from .retrieve import Passage
 from .schemas import Evidence, Grading, MatchType, ReferenceStatus, Span
 
@@ -79,6 +79,7 @@ def passage_reference(p: Passage) -> str:
 def to_evidence(c: Comparison) -> Evidence:
     p = c.passage
     col = COLLECTIONS.get(p.collection)
+    src = source_of(p.collection, p.extra)
     return Evidence(
         passage_id=p.id,
         collection=p.collection,
@@ -94,6 +95,10 @@ def to_evidence(c: Comparison) -> Evidence:
         highlight=Span(start=c.highlight[0], end=c.highlight[1]) if c.highlight and c.match_type else None,
         highlight_lang=c.lang if c.highlight and c.match_type else None,
         takhrij=p.extra.get("takhrij") or None,
+        source_id=src.id,
+        source_label=src.label,
+        source_url=src.url,
+        source_approved=src.approved,
     )
 
 
@@ -101,6 +106,7 @@ def collect_gradings(passages: list[Passage]) -> list[Grading]:
     seen: set[tuple[str, str]] = set()
     out: list[Grading] = []
     for p in passages:
+        src = source_of(p.collection, p.extra)
         for g in p.gradings:
             scholar, grade = (g.get("scholar") or g.get("name") or "").strip(), (g.get("grade") or "").strip()
             if not grade or (scholar, grade) in seen:
@@ -113,6 +119,8 @@ def collect_gradings(passages: list[Passage]) -> list[Grading]:
                     scholar_ar=SCHOLARS_AR.get(scholar.lower()),
                     grade_ar=grade_ar(grade),
                     category=grade_category(grade),
+                    source_label=src.label,
+                    source_approved=src.approved,
                 )
             )
     return out
@@ -133,7 +141,11 @@ def matched_group(comparisons: list[Comparison], t_variant: float, margin: float
     if not ok:
         return []
     best = ok[0]
-    return [c for c in ok if c is best or same_matn(c, best)]
+    group = [c for c in ok if c is best or same_matn(c, best)]
+    # Approved sources first among matches of the same kind (word-for-word before differing wording).
+    exact = (MatchType.EXACT, MatchType.PARTIAL)
+    group.sort(key=lambda c: (c.match_type not in exact, not source_of(c.passage.collection, c.passage.extra).approved))
+    return group
 
 
 def is_ambiguous(comparisons: list[Comparison], t_variant: float, margin: float) -> bool:

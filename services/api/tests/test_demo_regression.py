@@ -1,6 +1,7 @@
 """Regression on real texts: the demo script against the committed fixture corpus.
 
-The fixture is built from the approved sources only (QuranEnc for the Quran, HadeethEnc for hadith).
+The fixture holds the approved sources (QuranEnc, HadeethEnc) and a few texts from the supplementary source
+(hadith-api), which every result must name as such.
 """
 
 import asyncio
@@ -23,7 +24,7 @@ EXPECTED = [
     ("لا ينظر", "reference_mismatch", "رواه مسلم"),  # cited al-Bukhari; HadeethEnc takhrij: رواه مسلم
     ("لا يومن", "wording_differs", "متفق عليه"),  # «من الخير» is not in the approved text
     ("حسن اسلام", "matches_source", "رواه الترمذي"),
-    ("طلب العلم", "not_found", None),  # not in the approved sources
+    ("طلب العلم", "matches_source", "سنن ابن ماجه"),  # only in the supplementary source, with weak gradings
     ("النظافه", "not_found", None),
 ]
 
@@ -48,17 +49,32 @@ def test_demo_statuses(response, fragment, status, ref):
         assert ref in (f.suggested_reference or "")
 
 
-def test_every_hadith_shown_has_an_approved_source_and_ruling(response):
-    # «لا ينسب حديث دون مصدر وحكم معتمد في البيانات»
+def test_every_evidence_and_ruling_names_its_source(response):
     for f in response.findings:
         for e in f.evidence:
-            if e.collection != "quran":
-                assert e.collection == "hadeethenc"
-                assert e.takhrij
-                assert f.gradings and all(g.scholar == "موسوعة الأحاديث النبوية" for g in f.gradings)
+            assert e.source_label
+            if e.collection == "hadeethenc":
+                assert e.source_approved and e.takhrij
+            elif e.collection != "quran":
+                assert not e.source_approved and "hadith-api" in e.source_label
+        for g in f.gradings:
+            assert g.source_label
+
+
+def test_approved_source_comes_first(response):
+    f = find(response, "لا ينظر")  # in HadeethEnc and in hadith-api
+    assert f.evidence[0].source_approved
+    assert f.suggested_reference.startswith("رواه مسلم")
+
+
+def test_supplementary_only_text_is_labelled(response):
+    f = find(response, "طلب العلم")
+    assert f.evidence and not f.evidence[0].source_approved
+    assert {g.category for g in f.gradings} <= {"weak", "rejected"}
+    assert all(not g.source_approved for g in f.gradings)
 
 
 def test_not_found_never_says_fabricated(response):
-    f = find(response, "طلب العلم")
+    f = find(response, "النظافه")
     assert not f.evidence and not f.gradings
     assert any("لا يعني" in n for n in f.notes)

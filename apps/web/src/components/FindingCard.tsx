@@ -75,6 +75,24 @@ function MarkedText({ text, span, open, className }: { text: string; span: Span 
   );
 }
 
+// Every piece of evidence names where it comes from; supplementary (non-package) sources are marked as such.
+function SourceBadge({ label, url, approved }: { label: string; url?: string; approved: boolean }) {
+  const text = approved ? "مصدر معتمد" : "مصدر إضافي غير مدرج في الحزمة العلمية";
+  return (
+    <span className="inline-flex flex-wrap items-center gap-1.5 text-xs">
+      <span className="text-muted">المصدر:</span>
+      {url ? (
+        <a href={url} target="_blank" rel="noreferrer" className="font-medium hover:underline" onClick={(e) => e.stopPropagation()}>
+          {label}
+        </a>
+      ) : (
+        <span className="font-medium">{label}</span>
+      )}
+      <span className={`rounded-full px-2 py-0.5 ${approved ? "tone-green" : "tone-amber"}`}>{text}</span>
+    </span>
+  );
+}
+
 function EvidenceBlock({ ev, showEnglish, label }: { ev: Evidence; showEnglish: boolean; label?: string }) {
   const [open, setOpen] = useState(false);
   const arSpan = ev.highlight_lang === "ar" ? ev.highlight : null;
@@ -98,6 +116,9 @@ function EvidenceBlock({ ev, showEnglish, label }: { ev: Evidence; showEnglish: 
           </a>
         )}
       </figcaption>
+      <div className="mb-2">
+        <SourceBadge label={ev.source_label} url={ev.source_url} approved={ev.source_approved} />
+      </div>
       {ev.context_before && <p className="source-text text-muted">{ev.context_before}</p>}
       <MarkedText text={ev.text} span={arSpan} open={open} className="source-text" />
       {ev.context_after && <p className="source-text text-muted">{ev.context_after}</p>}
@@ -226,16 +247,24 @@ export default function FindingCard({
           )}
 
           {f.gradings.length > 0 && (
-            <Section title="الحكم المنقول من المصدر المعتمد">
+            <Section title="الحكم المنقول">
               <ul className="divide-y divide-border rounded-xl border border-border">
                 {f.gradings.map((g, i) => (
                   <li key={i} className="flex items-center justify-between gap-3 px-4 py-2">
-                    <span>{g.scholar_ar ?? g.scholar}</span>
+                    <span>
+                      {g.scholar_ar ?? g.scholar}
+                      {g.source_label && g.source_label !== g.scholar && (
+                        <span className="ms-2 text-xs text-muted">
+                          عبر {g.source_label}
+                          {!g.source_approved && " (غير مدرج في الحزمة العلمية)"}
+                        </span>
+                      )}
+                    </span>
                     <span className={`font-semibold ${GRADE_TONE[g.category]}`}>{g.grade_ar ?? g.grade}</span>
                   </li>
                 ))}
               </ul>
-              <p className="text-xs text-muted">منقول كما ورد في المصدر المعتمد؛ ميزان لا يصدر أحكامًا على الأحاديث.</p>
+              <p className="text-xs text-muted">منقول كما ورد في مصدره المذكور؛ ميزان لا يصدر أحكامًا على الأحاديث.</p>
             </Section>
           )}
 
