@@ -61,6 +61,7 @@ def main() -> None:
                     )
                     n += 1
             cur.execute("analyze passages")
+            cur.execute("select refresh_lexeme_df()")  # word frequencies used by match_passages()
         conn.commit()
     print(f"loaded {n} passages into corpus_version={args.version}")
 

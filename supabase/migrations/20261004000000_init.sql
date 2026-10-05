@@ -77,6 +77,7 @@ create table if not exists verification_runs (
 
 -- Hybrid candidate search: full-text (OR of query words) + trigram word_similarity + optional vector,
 -- fused with reciprocal rank fusion. Returns passage ids; the service does the exact alignment.
+-- Superseded by 20261005000000_fast_search.sql (rare words only, no shared CTE).
 create or replace function match_passages(
   q            text,                  -- normalized query text
   q_kind       text default null,     -- 'quran' | 'hadith' | null

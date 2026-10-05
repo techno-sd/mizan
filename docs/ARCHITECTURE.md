@@ -69,13 +69,19 @@ RLS is enabled on every table with no policies: only the service's server-side c
 
 Reciprocal rank fusion of up to four candidate lists (60 each):
 
-1. full-text search with an OR query of the normalized words (`simple` config: no stemming, exact quotes matter);
+1. full-text search with an OR query of the **4 rarest** query words (found in < 3% of passages, from the
+   `lexeme_df` table; `simple` config: no stemming). Using all words made common ones (في، من، الله) match ~15,000
+   passages and took ~8 s;
 2. `word_similarity(q, text_ar_norm)`: trigram similarity that works for a short quote inside a long hadith;
 3. the same over `text_en_norm` (English quotes of hadith translations);
 4. cosine distance over `embedding` when an embedding is supplied (optional, Day 2+).
 
 The function returns ids and fused scores. The service then aligns each candidate exactly (`align.py`): retrieval
 only proposes, it never decides.
+
+Measured on the loaded corpus (client in Riyadh, database in Frankfurt): 0.6–2.6 s per query, with the expected
+passage at rank 1–2 for Arabic quotes and within the top 20 for an English quote. Database size: 225 MB
+(free plan limit 500 MB). After loading a corpus run `select refresh_lexeme_df();` (the loaders do this).
 
 > Check on Day 1: `select word_similarity('انما الاعمال بالنيات', 'حدثنا ... انما الاعمال بالنيات');` must
 > return a high value. If it returns 0, the database locale treats Arabic letters as non-word characters; fall back to

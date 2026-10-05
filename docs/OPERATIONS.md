@@ -8,7 +8,10 @@
    - Free plan caveats: 500 MB database (check size after loading; drop `passages_en_trgm_idx` first if needed) and
      pausing after about a week without activity. `/health` queries the database, so Render's health checks keep it
      active.
-   - For a new project: SQL editor → run `supabase/migrations/20261004000000_init.sql` (or `supabase db push`), then
+   - Corpus `2026-10-04` loaded on 2026-10-05 (42,300 passages, 225 MB of 500 MB). Connection: use the pooler host
+     shown in Supabase → Connect (for this project `aws-1-eu-central-1.pooler.supabase.com`), and percent-encode
+     special characters in the password (`@` → `%40`).
+   - For a new project: SQL editor → run the files in `supabase/migrations/` in order (or `supabase db push`), then
      `select extensions.word_similarity('انما الاعمال بالنيات', 'حدثنا الحميدي انما الاعمال بالنيات');` → high, not 0.
 2. **Corpus**:
    ```bash
