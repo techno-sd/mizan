@@ -32,11 +32,13 @@ Two separate axes: the **reference** (Mizan decides, with deterministic rules) a
 
 | Built | Proposed next |
 |---|---|
-| Verification pipeline, five statuses + specialist flag, deployed (Vercel + Render + Supabase, Frankfurt) | Multilingual embeddings for meaning and translation matches |
+| Verification pipeline, five statuses + specialist flag, deployed (Vercel + Render + Neon Postgres, Frankfurt) | Multilingual embeddings for meaning and translation matches |
 | Corpus: 6,236 ayat (QuranEnc) + 3,574 hadith (HadeethEnc) from the approved sources, + 35,982 hadith from a labelled supplementary source (hadith-api), versioned, checksummed | More approved translation languages; Dorar / Shamela coverage if access is granted |
-| Supabase schema + hybrid search function | Organization workspaces with their own approved corpora |
+| Postgres schema (`supabase/migrations/`) + hybrid search function | Organization workspaces with their own approved corpora |
 | Arabic document-centred UI, `POST /v1/verify` API; **corrected copy**: the text with each quote's wording and reference taken from its source, numbered source notes, and flags for what the writer must decide (nothing in it is written by a model) | Reviewer dashboard, audit trail, browser and editor add-ons |
 | Held-out test: 97% status accuracy, 0% false support, 100% references agreeing with the approved takhrij (same model used directly: 85-88% / 93%) ([comparison](eval/results/COMPARISON.md)). Word fidelity: **40/40 vs 31/40** for the same model used directly, which flagged 7 of 10 correctly quoted hadith as altered ([FIDELITY](eval/results/FIDELITY.md)). Popular claims: 37/37, 0 invented references ([CHALLENGE](eval/results/CHALLENGE.md)). 60+ tests in CI | Reviewed database of circulating texts |
+| **Report a wrong result** on every card: the quote, the reader's comment and the corpus version go to a `feedback` review queue for specialists (the checked text is never stored) | Specialist review screen for the queue; fixes flow back into the corpus and the test sets |
+| Plain verdict → fix → source on each card, details on demand; RTL, light/dark, mobile | Apply one fix in place; edit and re-check; results streamed as found; save/share/export (PDF, Word); English interface; accessibility audit; shared rate limit and daily spending cap |
 
 ## Repository
 
@@ -72,7 +74,7 @@ npm install
 npm run dev                   # http://localhost:3000
 ```
 
-**Full corpus into Supabase**: see [docs/OPERATIONS.md](docs/OPERATIONS.md).
+**Full corpus into Postgres (Neon)**: see [docs/OPERATIONS.md](docs/OPERATIONS.md).
 
 ## Documentation
 
