@@ -139,6 +139,9 @@ class Pipeline:
             return f
 
         s = self.s
+        translated = not is_arabic(item.quoted_text)
+        if translated and item.type == ItemType.QURAN:
+            return await self._check_translated_verse(f, item, trace)
         candidates = await self.retriever.search(item.quoted_text, None, s.retrieve_k)
         # Word-for-word matches first, then by similarity.
         comparisons = sorted(
@@ -198,6 +201,17 @@ class Pipeline:
             elif item.type == ItemType.HADITH and found_collections == {QURAN}:
                 mismatch = True
                 f.notes.append("قُدِّم النص على أنه حديث، لكنه آية قرآنية.")
+        if translated and group:
+            # Translations of the same hadith differ from book to book, so the cited collection can't be judged
+            # from English wording: report where it was found and leave the reference to a reviewer.
+            if mismatch:
+                mismatch = False
+                f.notes = [n for n in f.notes if n not in ref_notes]
+                f.needs_scholar_review = True
+                f.review_reasons.append(
+                    "النص مترجم، وتختلف صياغة الترجمات بين الكتب؛ لذلك لم نحكم على الإحالة آليًا. انظر مواضع وروده أدناه."
+                )
+            f.notes.append("المقارنة مع ترجمة إنجليزية واحدة من مصدر البيانات؛ قد تختلف صياغة ترجمتك دون أن يختلف المعنى.")
         if mismatch:
             f.status = ReferenceStatus.REFERENCE_MISMATCH
 
@@ -266,6 +280,59 @@ class Pipeline:
         # same_text (e.g. a faithful translation) counts as a match; same_meaning as differing wording.
         chosen.similarity = max(chosen.similarity, self.s.t_exact if verdict["decision"] == "same_text" else self.s.t_variant)
         return [chosen]
+
+    async def _check_translated_verse(self, f: Finding, item: ExtractedItem, trace: list[dict] | None) -> Finding:
+        """A verse quoted in translation. No Quran translations are loaded, so compare against the Arabic ayah at
+        the cited reference: Claude judges whether the translation renders it, and must cite an excerpt that is
+        verified to exist in the Arabic text. Without Claude, the ayah is shown for comparison only."""
+        step: dict = {"finding": f.id, "origin": item.origin, "translated_quran": True}
+        cited = parse_cited_reference(item.cited_reference)
+        ayat = []
+        if cited and cited.surah and cited.ayah:
+            ayat = await self.retriever.lookup(QURAN, number=cited.ayah, book=cited.surah)
+        if not ayat:
+            f.status = ReferenceStatus.OUT_OF_SCOPE
+            f.notes.append(
+                "لا تتضمن هذه النسخة ترجمات لمعاني القرآن، ولم تُذكر إحالة (سورة:آية) يمكن المقارنة بها؛ تحقق من الآية بنصها العربي."
+            )
+            if trace is not None:
+                trace.append(step)
+            return f
+
+        ayah = ayat[0]
+        comp = Comparison(ayah, 0.0, 1.0, "ar", None)
+        verdict = None
+        if self.llm is not None:
+            try:
+                verdict = await self.llm.adjudicate(
+                    item.quoted_text, [{"id": ayah.id, "reference": passage_reference(ayah), "text": ayah.text_ar}]
+                )
+                step["llm_adjudicate"] = verdict
+            except LLMError as e:
+                step["llm_adjudicate_error"] = str(e)
+        excerpt = normalize((verdict or {}).get("supporting_excerpt", ""))
+        verified = bool(verdict) and verdict["passage_id"] == ayah.id and excerpt and excerpt in ayah.text_ar_norm
+
+        if verified and verdict["decision"] in ("same_text", "same_meaning"):
+            comp.match_type = MatchType.SEMANTIC
+            f.status = (
+                ReferenceStatus.MATCHES_SOURCE if verdict["decision"] == "same_text" else ReferenceStatus.WORDING_DIFFERS
+            )
+            f.notes.append(
+                "النص ترجمة؛ حكم النموذج بأنها تؤدي معنى الآية في الموضع المذكور، وتحققنا من وجود المقطع المستشهد به في نصها العربي. راجع الآية."
+            )
+        else:
+            f.status = ReferenceStatus.OUT_OF_SCOPE
+            if verified and verdict["decision"] == "different":
+                f.needs_scholar_review = True
+                f.review_reasons.append("لا يبدو أن الترجمة تؤدي معنى الآية في الموضع المذكور؛ راجع الإحالة.")
+            f.notes.append("لا تتضمن هذه النسخة ترجمات لمعاني القرآن. الآية في الموضع المذكور معروضة للمقارنة.")
+        f.evidence = [to_evidence(comp)]
+        await self._add_quran_context(f)
+        f.suggested_reference = passage_reference(ayah)
+        if trace is not None:
+            trace.append(step)
+        return f
 
     async def _add_quran_context(self, f: Finding) -> None:
         """Show the previous and next ayah so a verse is never read out of context."""

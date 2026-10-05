@@ -94,6 +94,40 @@ class FakeLLM:
         return self.verdict
 
 
+def test_translated_hadith_reference_is_not_judged_from_english_wording(pipeline):
+    # Bukhari 1's English text matches; the author cites Muslim. Translations differ between books,
+    # so this must go to review, not be called a wrong reference.
+    resp = run(pipeline, 'The Prophet (ﷺ) said: "Actions are judged by intentions" (Sahih Muslim).')
+    f = resp.findings[0]
+    assert f.status != ReferenceStatus.REFERENCE_MISMATCH
+    assert f.needs_scholar_review
+
+
+def test_translated_verse_without_llm_shows_the_cited_ayah_unverified(pipeline):
+    resp = run(pipeline, 'The Quran says: "Say, He is Allah, the One" (112:1).')
+    f = next(x for x in resp.findings if "One" in x.quoted_text) if resp.findings else None
+    if f is None:  # rules only catch hadith markers in English; build the item directly
+        from app.extract import ExtractedItem
+        from app.schemas import ItemType, Span
+
+        item = ExtractedItem("Say, He is Allah, the One", ItemType.QURAN, cited_reference="112:1", span=Span(start=0, end=1))
+        f = asyncio.run(pipeline._check("f1", item, None))
+    assert f.status == ReferenceStatus.OUT_OF_SCOPE
+    assert f.evidence[0].reference == "الإخلاص: 1"
+
+
+def test_translated_verse_with_verified_llm_verdict(settings, retriever):
+    from app.extract import ExtractedItem
+    from app.schemas import ItemType, Span
+
+    llm = FakeLLM({"decision": "same_text", "passage_id": 1, "supporting_excerpt": "قُلْ هُوَ اللَّهُ أَحَدٌ", "rationale": ""})
+    p = Pipeline(settings, retriever, MemoryStore(), llm)
+    item = ExtractedItem("Say, He is Allah, the One", ItemType.QURAN, cited_reference="112:1", span=Span(start=0, end=1))
+    f = asyncio.run(p._check("f1", item, None))
+    assert f.status == ReferenceStatus.MATCHES_SOURCE
+    assert f.evidence[0].reference == "الإخلاص: 1"
+
+
 def test_llm_verdict_with_invented_excerpt_is_rejected(settings, retriever):
     llm = FakeLLM({"decision": "same_meaning", "passage_id": 11, "supporting_excerpt": "نص لا يوجد في المصدر", "rationale": ""})
     p = Pipeline(settings, retriever, MemoryStore(), llm)
