@@ -14,10 +14,12 @@ from .retrieve import Retriever
 from .rules import (
     NOT_PROPHETIC,
     acceptable,
+    approved_first,
     base_status,
     check_reference,
     collect_gradings,
     gradings_conflict,
+    in_collections,
     is_ambiguous,
     matched_group,
     passage_reference,
@@ -179,11 +181,11 @@ class Pipeline:
         f.notes.extend(ref_notes)
         # Narrations in a cited collection that the best-match group missed still count as evidence.
         if cited and not mismatch:
-            group += [c for c in matches if c not in group and c.passage.collection in cited.collections]
+            group += [c for c in matches if c not in group and in_collections(c, cited.collections)]
             # Judge the wording against the source the author cited: if the exact words are only in another
             # collection, and the cited one has a different wording, the quote's wording differs from its source.
             hadith_cited = [k for k in cited.collections if k != QURAN]
-            in_cited = [c for c in group if c.passage.collection in hadith_cited]
+            in_cited = approved_first([c for c in group if in_collections(c, hadith_cited)])
             exact = (MatchType.EXACT, MatchType.PARTIAL)
             if in_cited and not any(c.match_type in exact for c in in_cited) and f.status == ReferenceStatus.MATCHES_SOURCE:
                 elsewhere = [c for c in group if c.match_type in exact]

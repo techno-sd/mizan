@@ -35,6 +35,8 @@ SCHOLARS_AR = {
     "salim al-hilali": "سليم الهلالي",
 }
 _GRADE_TERMS_AR = [  # longest first
+    ("sahih mutawatir", "صحيح متواتر"), ("sahih hadith", "صحيح"), ("sahih matn", "صحيح المتن"),
+    ("sanad daif", "إسناده ضعيف"), ("isnaad malool", "إسناده معلول"),
     ("very daif", "ضعيف جدًا"), ("sahih lighairihi", "صحيح لغيره"), ("hasan lighairihi", "حسن لغيره"),
     ("hasan sahih", "حسن صحيح"), ("agreed upon", "متفق عليه"), ("sahih", "صحيح"), ("hasan", "حسن"),
     ("daif", "ضعيف"), ("mawdu", "موضوع"), ("munkar", "منكر"), ("shadh", "شاذ"), ("batil", "باطل"),
@@ -109,7 +111,7 @@ def collect_gradings(passages: list[Passage]) -> list[Grading]:
         src = source_of(p.collection, p.extra)
         for g in p.gradings:
             scholar, grade = (g.get("scholar") or g.get("name") or "").strip(), (g.get("grade") or "").strip()
-            if not grade or (scholar, grade) in seen:
+            if not grade.strip("-– ") or (scholar, grade) in seen:
                 continue
             seen.add((scholar, grade))
             out.append(
@@ -129,6 +131,15 @@ def collect_gradings(passages: list[Passage]) -> list[Grading]:
 def gradings_conflict(gradings: list[Grading]) -> bool:
     cats = {g.category for g in gradings}
     return "accepted" in cats and bool(cats & {"weak", "rejected"})
+
+
+def in_collections(c: Comparison, keys: list[str]) -> bool:
+    """The passage is in one of these books: its own collection, or a book named in its approved takhrij."""
+    return any(s in keys for s in c.passage.sources)
+
+
+def approved_first(group: list[Comparison]) -> list[Comparison]:
+    return sorted(group, key=lambda c: not source_of(c.passage.collection, c.passage.extra).approved)
 
 
 def acceptable(comparisons: list[Comparison], t_variant: float) -> list[Comparison]:

@@ -61,10 +61,23 @@ def test_every_evidence_and_ruling_names_its_source(response):
             assert g.source_label
 
 
-def test_approved_source_comes_first(response):
-    f = find(response, "لا ينظر")  # in HadeethEnc and in hadith-api
+@pytest.mark.parametrize("fragment,takhrij", [("لا ينظر", "رواه مسلم"), ("لا يومن", "متفق عليه")])
+def test_approved_source_comes_first(response, fragment, takhrij):
+    f = find(response, fragment)  # in HadeethEnc and in hadith-api
     assert f.evidence[0].source_approved
-    assert f.suggested_reference.startswith("رواه مسلم")
+    assert f.suggested_reference.startswith(takhrij)
+
+
+def test_supplementary_grades_are_shown_in_arabic():
+    from app.rules import collect_gradings
+    from app.retrieve import Passage
+
+    p = Passage(id=1, collection="ibnmajah", kind="hadith", book=None, number=224, numbering_scheme=None,
+                text_ar="", gradings=[{"scholar": "Al-Albani", "grade": "Very Daif"}, {"scholar": "x", "grade": "Sanad Daif"},
+                          {"scholar": "y", "grade": "-"}],
+                extra={"source_id": "hadith-api"})
+    g = collect_gradings([p])
+    assert [(x.scholar_ar, x.grade_ar) for x in g] == [("الألباني", "ضعيف جدًا"), (None, "إسناده ضعيف")]
 
 
 def test_supplementary_only_text_is_labelled(response):
