@@ -56,6 +56,8 @@ VARIANT_MIN_WINDOW_SHARE = 0.7
 
 _DAGGER = "ٰ"
 _SMALL_HIGH_YEH = "ۧ"
+_DIACRITICS_RE = re.compile("[ؐ-ًؚ-ٰٟۖ-ۭـ]")
+_ENDS_WAW_TAA = re.compile(r"وة\W*$")
 
 
 def _rasm(tok: str) -> list[str]:
@@ -67,7 +69,11 @@ def _rasm(tok: str) -> list[str]:
     """
     tok = tok.replace("و" + _DAGGER, "ا").replace(_SMALL_HIGH_YEH, "ي")
     # «ءا» in the mushaf is «آ» in standard spelling (وَءَاتُواْ / وآتوا): drop the bare hamza with the alefs.
-    return [w for w in (s.replace("ا", "").replace("ء", "") for s in normalize(tok).split()) if w]
+    subs = [w for w in (s.replace("ا", "").replace("ء", "") for s in normalize(tok).split()) if w]
+    # Mushaf text copied without marks keeps the rasm «الحيوة / الصلوة»: «وة» at the end of a word reads «اة».
+    if subs and _ENDS_WAW_TAA.search(_DIACRITICS_RE.sub("", tok)):
+        subs[-1] = re.sub("وه$", "ه", subs[-1])
+    return subs
 
 
 def _words(text: str, rasm: bool = False) -> list[_Word]:

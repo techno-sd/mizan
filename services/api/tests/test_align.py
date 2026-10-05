@@ -37,6 +37,8 @@ def test_standard_spelling_matches_uthmani_mushaf_text():
     assert c.match_type in (MatchType.EXACT, MatchType.PARTIAL)
     q = Passage(2, "quran", "quran", 2, 43, None, "وَأَقِيمُواْ ٱلصَّلَوٰةَ وَءَاتُواْ ٱلزَّكَوٰةَ وَٱرۡكَعُواْ مَعَ ٱلرَّٰكِعِينَ")
     assert compare("وأقيموا الصلاة وآتوا الزكاة", q, 92, 75).match_type == MatchType.PARTIAL
+    # Copied from a mushaf app without marks: «الصلوة» keeps the rasm.
+    assert compare("وأقيموا ٱلصلوة وءاتوا ٱلزكوة", q, 92, 75).match_type == MatchType.PARTIAL
     # A changed word is still a difference.
     assert compare("وأقيموا الصلاة وآتوا الصدقة", q, 92, 75).match_type != MatchType.PARTIAL
 
