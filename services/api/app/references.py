@@ -16,49 +16,58 @@ class Collection:
     key: str
     label: str
     label_en: str
-    kind: str  # quran | hadith
+    kind: str  # quran | hadith | source
     aliases: tuple[str, ...]
-    # Present in the two Sahih collections: reported as such, without a separate grading.
-    is_sahihayn: bool = False
+    # Loaded = its texts are in the corpus (shown as "checked against"). Hadith books are not loaded: they are
+    # recognized in what the author cited and in the approved source's takhrij (e.g. «متفق عليه»).
+    loaded: bool = False
+    scope: str | None = None  # how a loaded source is named in "checked against"
 
+
+HADEETHENC = "hadeethenc"
 
 COLLECTIONS: dict[str, Collection] = {
     c.key: c
     for c in [
-        Collection(QURAN, "القرآن الكريم", "The Quran", "quran", ("القران", "quran", "koran")),
+        Collection(
+            QURAN, "القرآن الكريم", "The Quran", "quran", ("القران", "quran", "koran"),
+            loaded=True, scope="القرآن الكريم: موسوعة القرآن الكريم QuranEnc (نص مصحف المدينة)",
+        ),
+        Collection(
+            HADEETHENC, "موسوعة الأحاديث النبوية", "HadeethEnc", "source", ("موسوعه الاحاديث النبويه", "hadeethenc"),
+            loaded=True, scope="الحديث: موسوعة الأحاديث النبوية HadeethEnc (مع التخريج والحكم)",
+        ),
         Collection(
             "bukhari", "صحيح البخاري", "Sahih al-Bukhari", "hadith",
             ("البخاري", "صحيح البخاري", "bukhari", "sahih bukhari", "sahih al bukhari"),
-            is_sahihayn=True,
         ),
         Collection(
             "muslim", "صحيح مسلم", "Sahih Muslim", "hadith",
             ("صحيح مسلم", "رواه مسلم", "اخرجه مسلم", "sahih muslim"),
-            is_sahihayn=True,
         ),
         Collection(
             "abudawud", "سنن أبي داود", "Sunan Abi Dawud", "hadith",
             ("ابو داود", "ابي داود", "ابو داوود", "abu dawud", "abu dawood", "abu daud"),
         ),
-        Collection(
-            "tirmidhi", "جامع الترمذي", "Jami` at-Tirmidhi", "hadith",
-            ("الترمذي", "tirmidhi", "tirmizi"),
-        ),
+        Collection("tirmidhi", "جامع الترمذي", "Jami` at-Tirmidhi", "hadith", ("الترمذي", "tirmidhi", "tirmizi")),
         Collection("nasai", "سنن النسائي", "Sunan an-Nasa'i", "hadith", ("النسايي", "nasai", "nasa i")),
-        Collection(
-            "ibnmajah", "سنن ابن ماجه", "Sunan Ibn Majah", "hadith",
-            ("ابن ماجه", "ابن ماجة", "ibn majah", "ibn maja"),
-        ),
-        Collection("malik", "موطأ مالك", "Muwatta Malik", "hadith", ("الموطا", "موطا مالك", "muwatta")),
-        Collection("nawawi", "الأربعون النووية", "40 Hadith Nawawi", "hadith", ("الاربعين النوويه", "الاربعون النوويه", "nawawi")),
-        Collection("qudsi", "الأحاديث القدسية", "40 Hadith Qudsi", "hadith", ("حديث قدسي", "قدسي", "qudsi")),
+        Collection("ibnmajah", "سنن ابن ماجه", "Sunan Ibn Majah", "hadith", ("ابن ماجه", "ابن ماجة", "ibn majah", "ibn maja")),
+        Collection("malik", "موطأ مالك", "Muwatta Malik", "hadith", ("مالك", "الموطا", "موطا مالك", "muwatta")),
+        Collection("ahmad", "مسند أحمد", "Musnad Ahmad", "hadith", ("احمد", "مسند احمد", "ahmad")),
+        Collection("darimi", "سنن الدارمي", "Sunan ad-Darimi", "hadith", ("الدارمي", "darimi")),
+        Collection("ibnhibban", "صحيح ابن حبان", "Sahih Ibn Hibban", "hadith", ("ابن حبان", "ibn hibban")),
+        Collection("hakim", "المستدرك للحاكم", "al-Hakim", "hadith", ("الحاكم", "hakim")),
+        Collection("bayhaqi", "سنن البيهقي", "al-Bayhaqi", "hadith", ("البيهقي", "bayhaqi")),
+        Collection("tabarani", "معجم الطبراني", "at-Tabarani", "hadith", ("الطبراني", "tabarani")),
     ]
 }
 
+
+def loaded_scope() -> list[str]:
+    return [c.scope or c.label for c in COLLECTIONS.values() if c.loaded]
+
 # "متفق عليه" = reported by both al-Bukhari and Muslim.
 _AGREED = ("متفق عليه", "agreed upon", "muttafaq")
-# Bare "مسلم"/"muslim" is too ambiguous on its own; only accept it after a narration verb.
-_NARRATED_BY_MUSLIM = re.compile(r"(رواه|اخرجه|في|reported by|narrated by|in)\s+(الامام\s+)?(مسلم|muslim)\b")
 
 
 @dataclass
@@ -146,18 +155,38 @@ def parse_cited_reference(raw: str | None) -> CitedRef | None:
                 ref.ayah = int(n.group(1))
             return ref
 
-    if any(a in norm for a in _AGREED):
-        ref.collections = ["bukhari", "muslim"]
-    else:
-        for c in COLLECTIONS.values():
-            if c.key == QURAN:
-                continue
-            if any(f" {a} " in padded for a in c.aliases):
-                ref.collections.append(c.key)
-        if _NARRATED_BY_MUSLIM.search(norm) and "muslim" not in ref.collections:
-            ref.collections.append("muslim")
-
+    ref.collections = _hadith_collections(norm)
     n = _NUMBER.search(norm)
     if n:
         ref.number = int(n.group(1))
     return ref if not ref.is_empty else None
+
+
+# Names that are also ordinary words or person names; accepted only in a narration phrase («رواه مسلم وأحمد»).
+_NARRATION_NAMES = {"مسلم": "muslim", "مالك": "malik", "احمد": "ahmad", "muslim": "muslim"}
+_NARRATION_VERB = re.compile(r"(^| )(رواه|روي|اخرجه|اخرج|اخرجاه|رواها|اخرجها|reported by|narrated by|recorded by)( |$)")
+
+
+def _hadith_collections(norm: str) -> list[str]:
+    """Hadith books named in a normalized reference string, in order of appearance."""
+    # «والترمذي» -> «الترمذي»: drop the conjunction so each book matches on its own.
+    words = [w[1:] if w.startswith("و") and len(w) > 3 else w for w in norm.split()]
+    text = f" {' '.join(words)} "
+    found: list[str] = []
+    if any(a in norm for a in _AGREED):
+        found += ["bukhari", "muslim"]
+    for c in COLLECTIONS.values():
+        if c.kind == "hadith" and c.key not in found and any(f" {a} " in text for a in c.aliases):
+            found.append(c.key)
+    # A reference that is just a name («(مسلم)», "(Muslim)") is also accepted.
+    if _NARRATION_VERB.search(norm) or found or len(words) <= 2:
+        for w in words:
+            key = _NARRATION_NAMES.get(w)
+            if key and key not in found:
+                found.append(key)
+    return found
+
+
+def attribution_collections(attribution: str) -> list[str]:
+    """Books named in an approved source's takhrij line, e.g. «رواه أبو داود والترمذي» -> [abudawud, tirmidhi]."""
+    return _hadith_collections(normalize(attribution or ""))

@@ -22,7 +22,7 @@ const ERRORS: Record<string, string> = {
 // Shown while waiting; they follow the real order of the pipeline.
 const STAGES = [
   { after: 0, text: "نكتشف الآيات والأحاديث في النص…" },
-  { after: 1.5, text: "نبحث في القرآن الكريم وكتب الحديث…" },
+  { after: 1.5, text: "نبحث في القرآن الكريم وموسوعة الأحاديث النبوية…" },
   { after: 3.5, text: "نطابق الألفاظ ونتحقق من الإحالات…" },
 ];
 
@@ -171,7 +171,7 @@ export default function Verifier() {
             <ScaleLogo className="h-6 w-6" />
           </span>
           <h1 className="text-2xl font-bold sm:text-3xl">تحقّق من الآيات والأحاديث قبل أن تنشر</h1>
-          <p className="mt-2 text-muted">يطابق كل اقتباس مع مصدره، ويريك الفرق والإحالة الصحيحة وأحكام العلماء.</p>
+          <p className="mt-2 text-muted">يطابق كل اقتباس مع المصادر المعتمدة، ويريك الفرق والإحالة الصحيحة والحكم.</p>
         </div>
         <Composer value={draft} onChange={setDraft} onSubmit={verify} busy={busy} large />
         <div className="mt-4 flex flex-wrap justify-center gap-2">

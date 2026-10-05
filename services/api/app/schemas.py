@@ -67,6 +67,8 @@ class Evidence(BaseModel):
     # The part of `text` (or `text_en` when highlight_lang == "en") that matched the quote.
     highlight: Span | None = None
     highlight_lang: str | None = None
+    # Full takhrij from the approved source (HadeethEnc), so every hadith is traceable to its books.
+    takhrij: str | None = None
 
 
 class Finding(BaseModel):

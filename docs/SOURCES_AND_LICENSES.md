@@ -1,28 +1,42 @@
 # Sources, tools and licenses
 
-## Content sources (corpus `2026-10-04`)
+Mizan uses **only sources listed in the challenge's scientific reference package**
+(«المرجعية والحزمة العلمية والبيانات», version 20/3/1448), and follows its content levels and its scientific standard.
 
-| Source | What we use | License / terms | How we comply |
-|---|---|---|---|
-| **Tanzil Project**, Quran text (Simple), https://tanzil.net | 6,236 ayat, verbatim; surah names from `quran-data.xml` | Verbatim copies allowed; changing the text is not allowed; the source must be indicated with a link to tanzil.net; the copyright notice must be kept in verbatim copies | Text stored and displayed verbatim; normalized copies are used only internally for search and never displayed; attribution and link in the app footer, the fixture file and this page |
-| **fawazahmed0/hadith-api**, https://github.com/fawazahmed0/hadith-api | Arabic and English editions of al-Bukhari, Muslim, Abu Dawud, at-Tirmidhi, an-Nasa'i, Ibn Majah, Malik's Muwatta, 40 Nawawi, 40 Qudsi (36,064 hadith with Arabic text); gradings by named scholars where provided | Unlicense (public domain dedication) | Attribution in the app footer and here; gradings shown as provided, attributed to their scholars |
+## Content sources (corpus `2026-10-05`)
 
-Download URLs and SHA-256 checksums of every file are recorded in the corpus manifest
+| Source (from the package) | What we use | How it is used |
+|---|---|---|
+| **موسوعة القرآن الكريم — QuranEnc** (Society for Islamic Content Service in Languages), https://quranenc.com, API `quranenc.com/api/v1` | 6,236 ayat: Arabic text of the King Fahd Complex mushaf (`arabic_text`), and the approved English translation `english_saheeh` | Verses are matched against the mushaf text, shown verbatim with surah:ayah. English verse quotes are matched against the approved translation. |
+| **موسوعة الأحاديث النبوية — HadeethEnc** (same society), https://hadeethenc.com, API `hadeethenc.com/api/v1` | 3,574 hadith in Arabic and English, each with its **source (التخريج)** and **ruling (الحكم)**, and the full takhrij references | Hadith are matched against the encyclopedia text. The reference shown is the encyclopedia's takhrij (e.g. «متفق عليه»), the ruling is the encyclopedia's ruling, and the full takhrij is one click away. |
+
+Package rules applied:
+
+- «لا ينسب حديث دون مصدر وحكم معتمد في البيانات»: every hadith Mizan shows comes from HadeethEnc with its takhrij
+  and ruling. A hadith not in the approved data is reported as «لم يُعثر عليه في المصادر المعتمدة», never
+  attributed or graded by Mizan.
+- «أهمية التأكد من موثوقية نقل الآيات»: verses are compared word by word with the mushaf text and the surah:ayah
+  is checked.
+- Not used: any source outside the package (the earlier Tanzil and hadith-api data were removed on 2026-10-05).
+
+Download URLs and SHA-256 checksums are recorded in the corpus manifest
 (`services/api/data/corpus/<version>/manifest.json`) and in the `corpus_versions` table.
+
+### Content levels («مستويات المحتوى وضبط الاستجابة»)
+
+| Level | Example | Mizan's behaviour |
+|---|---|---|
+| (أ) معلومات أصلية مستقرة | a verse, an authentic hadith | direct answer documented with the source: text, reference, ruling, link |
+| (ب) شرح وتعريف واستدلال | — | not generated; Mizan does not explain or argue |
+| (ج) مسائل خلافية أو عالية الحساسية | differing rulings, ambiguous matches | flagged «يُحال لمختص» |
+| (د) فتوى أو حالة شخصية | — | out of scope; Mizan gives no rulings on cases |
 
 ### Known data characteristics
 
-- Muslim: the dataset's `arabicnumber` is used as the hadith number (e.g. 223, or 55.01 for sub-numbers);
-  `hadithnumber` is kept in `extra`.
-- 26 al-Bukhari and 42 at-Tirmidhi entries have fractional numbers; the integer part is stored as `number` and the
-  exact label as `number_label`.
-- Entries with empty Arabic text are skipped (e.g. 203 in Muslim).
-- al-Bukhari, Muslim, 40 Nawawi and 40 Qudsi carry no gradings in the dataset.
-
-### Not used (and why)
-
-- Quran translations: licensing varies by translation; not included in this version.
-- Open web pages: not treated as sources.
+- HadeethEnc contains authentic and good hadith only (ruling «صحيح» 3,205, «حسن» 275, others «حسن لغيره»,
+  «صحيح لغيره»…). Weak or fabricated texts are therefore reported as not found in the approved sources.
+- Some HadeethEnc records are the same hadith in two places (e.g. once in a topic and once in the forty Nawawi);
+  both are kept.
 
 ## Software
 

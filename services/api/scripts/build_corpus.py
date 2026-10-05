@@ -1,144 +1,189 @@
-"""Download the sources and build a versioned corpus.
+"""Download the approved sources and build a versioned corpus.
 
-    python -m scripts.build_corpus --version 2026-10-04            # full corpus -> data/corpus/<version>/
-    python -m scripts.build_corpus --version 2026-10-04 --fixture  # small offline set -> app/data/fixture_passages.json
+    python -m scripts.build_corpus --version 2026-10-05            # full corpus -> data/corpus/<version>/
+    python -m scripts.build_corpus --version 2026-10-05 --fixture  # small offline set -> app/data/fixture_passages.json
 
-Output is deterministic for a given set of downloads; the manifest records each download's SHA-256.
+Only sources from the challenge's scientific reference package («المرجعية والحزمة العلمية والبيانات») are used:
+  * Quran: QuranEnc (موسوعة القرآن الكريم, Society for Islamic Content Service in Languages). Arabic text of the
+    King Fahd Complex mushaf, with the approved English translation (english_saheeh).
+  * Hadith: HadeethEnc (موسوعة الأحاديث النبوية, same society). Every hadith carries its source (التخريج) and an
+    approved ruling (الحكم), as the package requires: «لا ينسب حديث دون مصدر وحكم معتمد في البيانات».
+
 Source texts are stored verbatim. Normalized fields are derived for search only and never displayed.
+The manifest records each download's URL and SHA-256.
 """
 
 import argparse
 import hashlib
 import json
+import re
 import urllib.request
-import xml.etree.ElementTree as ET
+from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
 from pathlib import Path
 
 from app.normalize import normalize
+from app.references import attribution_collections
 
 ROOT = Path(__file__).resolve().parents[1]
 CACHE = ROOT / ".cache" / "sources"
 
-TANZIL_URL = "https://tanzil.net/pub/download/index.php?quranType={t}&outType=xml&agree=true"
-HADITH_URL = "https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/{e}.min.json"
-HADITH_BOOKS = ["bukhari", "muslim", "abudawud", "tirmidhi", "nasai", "ibnmajah", "malik", "nawawi", "qudsi"]
-
-TANZIL_NOTICE = (
-    "Quran text: Tanzil Project (https://tanzil.net). Copied verbatim; changing the text is not allowed. "
-    "Source must be indicated and a link to tanzil.net provided."
-)
+QURANENC_SURA = "https://quranenc.com/api/v1/translation/sura/english_saheeh/{s}"
+HADEETHENC_LIST = "https://hadeethenc.com/api/v1/hadeeths/list/?language=ar&category_id={c}&page={p}&per_page=500"
+HADEETHENC_ONE = "https://hadeethenc.com/api/v1/hadeeths/one/?language={lang}&id={id}"
 
 SOURCES = {
-    "tanzil-simple": {
-        "title": "Tanzil Quran Text (Simple)",
+    "quranenc": {
+        "title": "QuranEnc (موسوعة القرآن الكريم): King Fahd Complex mushaf text + english_saheeh translation",
         "kind": "quran",
-        "url": "https://tanzil.net",
-        "license": "Tanzil terms: verbatim copies allowed with attribution and link; no modification.",
+        "url": "https://quranenc.com",
+        "license": "Listed in the challenge reference package (Society for Islamic Content Service in Languages). "
+        "Free content with a public developer API.",
     },
-    "hadith-api": {
-        "title": "fawazahmed0/hadith-api (Arabic + English editions with gradings)",
+    "hadeethenc": {
+        "title": "HadeethEnc (موسوعة الأحاديث النبوية): hadith with takhrij, ruling, explanation, translations",
         "kind": "hadith",
-        "url": "https://github.com/fawazahmed0/hadith-api",
-        "license": "Unlicense (public domain dedication). Gradings as provided by the dataset.",
+        "url": "https://hadeethenc.com",
+        "license": "Listed in the challenge reference package (Society for Islamic Content Service in Languages). "
+        "Free content with a public developer API.",
     },
 }
 
 # Offline demo/test fixture: enough real text to exercise every status without a database.
 FIXTURE_QURAN = [(1, a) for a in range(1, 8)] + [(2, a) for a in range(254, 258)] + [
-    (49, 12), (49, 13), (49, 14), (112, 1), (112, 2), (112, 3), (112, 4), (16, 125), (5, 32),
+    (49, 12), (49, 13), (49, 14), (112, 1), (112, 2), (112, 3), (112, 4), (16, 124), (16, 125), (16, 126), (5, 32),
 ]
-FIXTURE_PHRASES = [
-    ("bukhari", "إنما الأعمال بالنيات"),
-    ("muslim", "الطهور شطر الإيمان"),
-    ("muslim", "الدين النصيحة"),
-    ("bukhari", "حتى يحب لأخيه"),
-    ("muslim", "حتى يحب لأخيه"),
-    ("ibnmajah", "طلب العلم فريضة"),
-    ("tirmidhi", "من حسن إسلام المرء"),
-    ("bukhari", "ليس الشديد بالصرعة"),
-    ("muslim", "إن الله لا ينظر إلى صوركم"),
-    ("abudawud", "إنما بعثت لأتمم"),
-    ("tirmidhi", "اتق الله حيثما كنت"),
+FIXTURE_HADITH_PHRASES = [
+    "إنما الأعمال بالنيات",
+    "الطهور شطر الإيمان",
+    "الدين النصيحة",
+    "حتى يحب لأخيه",
+    "من حسن إسلام المرء",
+    "ليس الشديد بالصرعة",
+    "إن الله لا ينظر إلى صوركم",
+    "اتق الله حيثما كنت",
+    "المسلم من سلم المسلمون",
 ]
 
 
-def fetch(url: str, name: str) -> tuple[bytes, str]:
+def _get_json(url: str) -> object:
+    for attempt in range(4):
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "mizan-corpus-builder"})
+            with urllib.request.urlopen(req, timeout=60) as r:
+                return json.loads(r.read())
+        except Exception:
+            if attempt == 3:
+                raise
+    raise RuntimeError(url)
+
+
+def cached(name: str, download) -> tuple[dict, str]:
+    """Load an aggregated source file from the cache, downloading it first if needed."""
     CACHE.mkdir(parents=True, exist_ok=True)
     path = CACHE / name
     if not path.exists():
-        req = urllib.request.Request(url, headers={"User-Agent": "mizan-corpus-builder"})
-        with urllib.request.urlopen(req, timeout=120) as r:
-            path.write_bytes(r.read())
-    data = path.read_bytes()
-    return data, hashlib.sha256(data).hexdigest()
+        path.write_text(json.dumps(download(), ensure_ascii=False), encoding="utf-8")
+    raw = path.read_bytes()
+    return json.loads(raw), hashlib.sha256(raw).hexdigest()
+
+
+def download_quran() -> dict:
+    with ThreadPoolExecutor(4) as ex:
+        suras = dict(zip(range(1, 115), ex.map(lambda s: _get_json(QURANENC_SURA.format(s=s))["result"], range(1, 115))))
+    return {"suras": {str(k): v for k, v in suras.items()}}
+
+
+def hadeethenc_ids() -> list[str]:
+    ids: set[str] = set()
+    for c in range(1, 8):
+        page, last = 1, 1
+        while page <= last:
+            j = _get_json(HADEETHENC_LIST.format(c=c, p=page))
+            last = int(j["meta"]["last_page"])
+            ids.update(h["id"] for h in j["data"])
+            page += 1
+    return sorted(ids, key=int)
+
+
+def download_hadith(lang: str):
+    def run() -> dict:
+        ids = hadeethenc_ids()
+        with ThreadPoolExecutor(6) as ex:
+            records = list(ex.map(lambda i: _get_json(HADEETHENC_ONE.format(lang=lang, id=i)), ids))
+        return {"records": records}
+
+    return run
+
+
+_FOOTNOTE = re.compile(r"\[\d+\]")
 
 
 def quran_passages(downloads: list[dict]) -> list[dict]:
-    raw, sha = fetch(TANZIL_URL.format(t="simple"), "quran-simple.xml")
-    downloads.append({"source_id": "tanzil-simple", "url": TANZIL_URL.format(t="simple"), "sha256": sha})
-    root = ET.fromstring(raw)
+    data, sha = cached("quranenc-english_saheeh.json", download_quran)
+    downloads.append({"source_id": "quranenc", "url": QURANENC_SURA.format(s="{1..114}"), "sha256": sha})
     out = []
-    for sura in root.iter("sura"):
-        s = int(sura.get("index"))
-        for aya in sura.iter("aya"):
-            a = int(aya.get("index"))
-            text = aya.get("text")
+    for s in range(1, 115):
+        for a in data["suras"][str(s)]:
+            n = int(a["aya"])
             out.append(
                 {
-                    "key": f"quran:{s}:{a}",
-                    "source_id": "tanzil-simple",
+                    "key": f"quran:{s}:{n}",
+                    "source_id": "quranenc",
                     "collection": "quran",
                     "kind": "quran",
                     "book": s,
-                    "number": a,
-                    "number_label": f"{s}:{a}",
-                    "numbering_scheme": "رقم السورة:رقم الآية (المصحف)",
-                    "text_ar": text,
-                    "text_en": None,
+                    "number": n,
+                    "number_label": f"{s}:{n}",
+                    "numbering_scheme": "رقم السورة:رقم الآية (مصحف المدينة)",
+                    "text_ar": a["arabic_text"].strip(),
+                    "text_en": _FOOTNOTE.sub("", a.get("translation") or "").strip() or None,
                     "gradings": [],
-                    "url": f"https://quran.com/{s}/{a}",
-                    "extra": {"sura_name": sura.get("name")},
+                    "url": f"https://quranenc.com/ar/browse/arabic_moyassar/{s}#{n}",
+                    "extra": {"translation": "english_saheeh"},
                 }
             )
     return out
 
 
 def hadith_passages(downloads: list[dict]) -> list[dict]:
+    ar, sha_ar = cached("hadeethenc-ar.json", download_hadith("ar"))
+    en, sha_en = cached("hadeethenc-en.json", download_hadith("en"))
+    downloads += [
+        {"source_id": "hadeethenc", "url": HADEETHENC_ONE.format(lang="ar", id="{id}"), "sha256": sha_ar},
+        {"source_id": "hadeethenc", "url": HADEETHENC_ONE.format(lang="en", id="{id}"), "sha256": sha_en},
+    ]
+    english = {r["id"]: r for r in en["records"] if not r.get("missing")}
     out = []
-    for book in HADITH_BOOKS:
-        ara_raw, ara_sha = fetch(HADITH_URL.format(e=f"ara-{book}"), f"ara-{book}.json")
-        eng_raw, eng_sha = fetch(HADITH_URL.format(e=f"eng-{book}"), f"eng-{book}.json")
-        downloads += [
-            {"source_id": "hadith-api", "url": HADITH_URL.format(e=f"ara-{book}"), "sha256": ara_sha},
-            {"source_id": "hadith-api", "url": HADITH_URL.format(e=f"eng-{book}"), "sha256": eng_sha},
-        ]
-        ara = json.loads(ara_raw)["hadiths"]
-        eng = {h["hadithnumber"]: (h.get("text") or "").strip() for h in json.loads(eng_raw)["hadiths"]}
-        for h in ara:
-            text = (h.get("text") or "").strip()
-            if not text:
-                continue
-            an = h.get("arabicnumber")
-            has_an = an not in (None, "", 0, "0")
-            label = str(an if has_an else h["hadithnumber"])
-            out.append(
-                {
-                    "key": f"{book}:{label}",
-                    "source_id": "hadith-api",
-                    "collection": book,
-                    "kind": "hadith",
-                    "book": (h.get("reference") or {}).get("book"),
-                    "number": int(float(label)),
-                    "number_label": label,
-                    "numbering_scheme": "الترقيم العربي (hadith-api)" if has_an else "ترقيم hadith-api",
-                    "text_ar": text,
-                    "text_en": eng.get(h["hadithnumber"]) or None,
-                    "gradings": [{"scholar": g["name"], "grade": g["grade"]} for g in h.get("grades") or []],
-                    "url": None,
-                    "extra": {"hadithnumber": h["hadithnumber"], "reference": h.get("reference")},
-                }
-            )
+    for r in ar["records"]:
+        if r.get("missing") or not (r.get("hadeeth") or "").strip():
+            continue
+        e = english.get(r["id"], {})
+        attribution = (r.get("attribution") or "").strip()
+        grade = (r.get("grade") or "").strip()
+        out.append(
+            {
+                "key": f"hadeethenc:{r['id']}",
+                "source_id": "hadeethenc",
+                "collection": "hadeethenc",
+                "kind": "hadith",
+                "book": int(r["categories"][0]) if r.get("categories") else None,
+                "number": int(r["id"]),
+                "number_label": str(r["id"]),
+                "numbering_scheme": "رقم الحديث في موسوعة الأحاديث النبوية",
+                "text_ar": r["hadeeth"].strip(),
+                "text_en": (e.get("hadeeth") or "").strip() or None,
+                # The encyclopedia's ruling, reviewed by its scholarly team (the package's approved source).
+                "gradings": [{"scholar": "موسوعة الأحاديث النبوية", "grade": grade}] if grade else [],
+                "url": f"https://hadeethenc.com/ar/browse/hadith/{r['id']}",
+                "extra": {
+                    "attribution": attribution,
+                    "sources": attribution_collections(attribution),
+                    "takhrij": (r.get("reference") or "").strip(),
+                    "title": (r.get("title") or "").strip(),
+                },
+            }
+        )
     return out
 
 
@@ -152,10 +197,9 @@ def build_fixture(passages: list[dict]) -> list[dict]:
     keep: list[dict] = []
     quran = {(p["book"], p["number"]): p for p in passages if p["kind"] == "quran"}
     keep += [quran[k] for k in FIXTURE_QURAN if k in quran]
-    for collection, phrase in FIXTURE_PHRASES:
+    for phrase in FIXTURE_HADITH_PHRASES:
         needle = normalize(phrase)
-        hits = [p for p in passages if p["collection"] == collection and needle in p["text_ar_norm"]]
-        keep += hits[:2]
+        keep += [p for p in passages if p["kind"] == "hadith" and needle in p["text_ar_norm"]][:2]
     seen, unique = set(), []
     for p in keep:
         if p["key"] not in seen:
@@ -166,7 +210,7 @@ def build_fixture(passages: list[dict]) -> list[dict]:
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--version", required=True, help="corpus version id, e.g. 2026-10-04")
+    ap.add_argument("--version", required=True, help="corpus version id, e.g. 2026-10-05")
     ap.add_argument("--fixture", action="store_true", help="write the small offline fixture instead")
     args = ap.parse_args()
 
@@ -179,10 +223,10 @@ def main() -> None:
     manifest = {
         "corpus_version": args.version,
         "built_at": datetime.now(UTC).isoformat(timespec="seconds"),
+        "reference_package": "المرجعية والحزمة العلمية والبيانات - تحدي الذكاء الاصطناعي في خدمة المحتوى الإسلامي",
         "sources": SOURCES,
         "downloads": downloads,
         "counts": counts,
-        "notices": [TANZIL_NOTICE],
     }
 
     if args.fixture:
@@ -190,13 +234,13 @@ def main() -> None:
         for i, p in enumerate(fixture, start=1):
             p["id"] = i
         fields = ("id", "collection", "kind", "book", "number", "numbering_scheme", "text_ar", "text_en",
-                  "gradings", "url", "text_ar_norm", "text_en_norm")
+                  "gradings", "url", "text_ar_norm", "text_en_norm", "extra")
         out = ROOT / "app" / "data" / "fixture_passages.json"
         out.write_text(
             json.dumps(
                 {
                     "corpus_version": f"{args.version}-fixture",
-                    "notices": [TANZIL_NOTICE, "Hadith: fawazahmed0/hadith-api (Unlicense)."],
+                    "notices": ["Quran: QuranEnc (quranenc.com). Hadith: HadeethEnc (hadeethenc.com)."],
                     "passages": [{k: (p[k] or "") if k.endswith("_norm") else p[k] for k in fields} for p in fixture],
                 },
                 ensure_ascii=False,

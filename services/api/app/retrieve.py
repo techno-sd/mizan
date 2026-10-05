@@ -31,6 +31,13 @@ class Passage:
     url: str | None = None
     text_ar_norm: str = ""
     text_en_norm: str = ""
+    # Source metadata, e.g. HadeethEnc: {"attribution": "متفق عليه", "sources": ["bukhari", "muslim"], "takhrij": "..."}
+    extra: dict = field(default_factory=dict)
+
+    @property
+    def sources(self) -> list[str]:
+        """Books this text is reported in: the approved takhrij for HadeethEnc, the collection itself otherwise."""
+        return self.extra.get("sources") or [self.collection]
 
     def __post_init__(self) -> None:
         self.text_ar_norm = self.text_ar_norm or normalize(self.text_ar)
@@ -172,6 +179,7 @@ def load_corpus_jsonl(path: Path) -> list[Passage]:
                     numbering_scheme=r["numbering_scheme"], text_ar=r["text_ar"], text_en=r["text_en"],
                     gradings=r["gradings"], url=r["url"], text_ar_norm=r["text_ar_norm"],
                     text_en_norm=r["text_en_norm"] or "",
+                    extra=r.get("extra") or {},
                 )
             )
     return out
@@ -179,7 +187,7 @@ def load_corpus_jsonl(path: Path) -> list[Passage]:
 
 _COLUMNS = (
     "p.id, p.collection, p.kind, p.book, p.number, p.numbering_scheme, p.text_ar, p.text_en, "
-    "p.gradings, p.url, p.text_ar_norm, coalesce(p.text_en_norm, '')"
+    "p.gradings, p.url, p.text_ar_norm, coalesce(p.text_en_norm, ''), p.extra"
 )
 
 
@@ -187,7 +195,7 @@ def _row_to_passage(row) -> Passage:
     return Passage(
         id=row[0], collection=row[1], kind=row[2], book=row[3], number=row[4],
         numbering_scheme=row[5], text_ar=row[6], text_en=row[7], gradings=row[8] or [],
-        url=row[9], text_ar_norm=row[10], text_en_norm=row[11],
+        url=row[9], text_ar_norm=row[10], text_en_norm=row[11], extra=row[12] or {},
     )
 
 
@@ -227,7 +235,7 @@ class SupabaseRetriever:
         )
         async with self.pool.connection() as conn:
             rows = await (await conn.execute(sql, (normalize(query), kind, k, self.corpus_version))).fetchall()
-        return [Candidate(_row_to_passage(r), float(r[12])) for r in rows]
+        return [Candidate(_row_to_passage(r), float(r[13])) for r in rows]
 
     async def lookup(self, collection: str, number: int | None = None, book: int | None = None):
         sql = (

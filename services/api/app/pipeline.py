@@ -9,7 +9,7 @@ from .config import Settings
 from .extract import ExtractedItem, detect_rules, locate, merge_items
 from .llm import PROMPT_VERSION, LLMClient, LLMError
 from .normalize import normalize
-from .references import COLLECTIONS, QURAN, parse_cited_reference
+from .references import COLLECTIONS, QURAN, loaded_scope, parse_cited_reference
 from .retrieve import Retriever
 from .rules import (
     NOT_PROPHETIC,
@@ -48,7 +48,7 @@ class Pipeline:
 
     @property
     def corpus_scope(self) -> list[str]:
-        return [c.label for c in COLLECTIONS.values()]
+        return loaded_scope()
 
     async def verify(self, text: str, debug: bool = False) -> VerifyResponse:
         t0 = time.perf_counter()

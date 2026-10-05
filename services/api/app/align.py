@@ -54,11 +54,37 @@ VARIANT_MIN_QUOTE_SHARE = 0.6
 VARIANT_MIN_WINDOW_SHARE = 0.7
 
 
-def _words(text: str) -> list[_Word]:
+_DAGGER = "ٰ"
+_SMALL_HIGH_YEH = "ۧ"
+
+
+def _rasm(tok: str) -> list[str]:
+    """Spelling-insensitive key for comparing a quote with the Uthmani mushaf text (QuranEnc).
+
+    The mushaf writes some long vowels with a dagger alef or none (خَلَقۡنَٰكُم، ٱلۡكِتَٰبَ، ٱلرَّحۡمَٰنِ), the alef of
+    صلاة/زكاة/حياة as و with a dagger alef (ٱلصَّلَوٰةَ), and يا أيها as one word (يَٰٓأَيُّهَا). Writers use standard
+    spelling. Comparing without alefs makes both spellings meet; the text shown is always the mushaf text.
+    """
+    tok = tok.replace("و" + _DAGGER, "ا").replace(_SMALL_HIGH_YEH, "ي")
+    # «ءا» in the mushaf is «آ» in standard spelling (وَءَاتُواْ / وآتوا): drop the bare hamza with the alefs.
+    return [w for w in (s.replace("ا", "").replace("ء", "") for s in normalize(tok).split()) if w]
+
+
+def _words(text: str, rasm: bool = False) -> list[_Word]:
     out: list[_Word] = []
     for idx, tok in enumerate(text.split()):
-        for sub in normalize(tok).split():
+        for sub in (_rasm(tok) if rasm else normalize(tok).split()):
             out.append(_Word(tok, sub, idx))
+    if rasm:
+        # Vocative «يا» written apart (يا أيها) vs joined in the mushaf (يٰأيها): after dropping alefs it is a
+        # lone «ي»; join it to the next word.
+        merged: list[_Word] = []
+        for w in out:
+            if merged and merged[-1].norm == "ي" and merged[-1].idx != w.idx:
+                prev = merged.pop()
+                w = _Word(f"{prev.orig} {w.orig}", "ي" + w.norm, prev.idx)
+            merged.append(w)
+        out = merged
     # Drop honorific phrases.
     kept, i = [], 0
     while i < len(out):
@@ -157,8 +183,9 @@ def compare(quote: str, passage: Passage, t_exact: float, t_variant: float) -> C
     ignored). Character similarity alone is too lenient: one added word barely moves it."""
     lang = "ar" if is_arabic(quote) or not passage.text_en else "en"
     source_text = passage.text_ar if lang == "ar" else (passage.text_en or "")
-    q_words = _words(quote)
-    s_words = _words(source_text)
+    rasm = lang == "ar" and passage.collection == "quran"
+    q_words = _words(quote, rasm)
+    s_words = _words(source_text, rasm)
     if not q_words or not s_words:
         return Comparison(passage, 0.0, 0.0, lang, None)
 

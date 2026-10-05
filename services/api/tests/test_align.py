@@ -27,6 +27,20 @@ def test_changed_wording_is_variant_with_diff():
     assert "الصادقة" in inserted
 
 
+def test_standard_spelling_matches_uthmani_mushaf_text():
+    from app.retrieve import Passage
+
+    # QuranEnc (King Fahd Complex) Uthmani text vs how writers type the verse.
+    p = Passage(1, "quran", "quran", 49, 13, None,
+                "يَٰٓأَيُّهَا ٱلنَّاسُ إِنَّا خَلَقۡنَٰكُم مِّن ذَكَرٖ وَأُنثَىٰ وَجَعَلۡنَٰكُمۡ شُعُوبٗا وَقَبَآئِلَ لِتَعَارَفُوٓاْۚ")
+    c = compare("يا أيها الناس إنا خلقناكم من ذكر وأنثى وجعلناكم شعوبا وقبائل لتعارفوا", p, 92, 75)
+    assert c.match_type in (MatchType.EXACT, MatchType.PARTIAL)
+    q = Passage(2, "quran", "quran", 2, 43, None, "وَأَقِيمُواْ ٱلصَّلَوٰةَ وَءَاتُواْ ٱلزَّكَوٰةَ وَٱرۡكَعُواْ مَعَ ٱلرَّٰكِعِينَ")
+    assert compare("وأقيموا الصلاة وآتوا الزكاة", q, 92, 75).match_type == MatchType.PARTIAL
+    # A changed word is still a difference.
+    assert compare("وأقيموا الصلاة وآتوا الصدقة", q, 92, 75).match_type != MatchType.PARTIAL
+
+
 def test_one_added_word_is_not_a_match():
     # Character similarity stays above 92 here; the word-level rule must still call it different.
     c = compare("إنما الأعمال دائما بالنيات وإنما لكل امرئ ما نوى", BUKHARI_1, 92, 75)

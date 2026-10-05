@@ -113,6 +113,12 @@ function EvidenceBlock({ ev, showEnglish, label }: { ev: Evidence; showEnglish: 
           {open ? "عرض أقل" : "عرض النص كاملًا مع سنده"}
         </button>
       )}
+      {ev.takhrij && (
+        <details className="mt-3 border-t border-border pt-3 text-sm" onClick={(e) => e.stopPropagation()}>
+          <summary className="cursor-pointer font-medium text-accent">التخريج من المصدر المعتمد</summary>
+          <p className="mt-2 whitespace-pre-line leading-7 text-muted">{ev.takhrij}</p>
+        </details>
+      )}
       {(showEnglish || enSpan) && ev.text_en && (
         <div dir="ltr" className="mt-3 border-t border-border pt-3">
           <MarkedText text={ev.text_en} span={enSpan} open={open} className="text-sm leading-6 text-muted" />
@@ -148,7 +154,6 @@ export default function FindingCard({
   const changed = f.diff.some((d) => d.op !== "equal");
   const showEnglish = /[a-z]/i.test(f.quoted_text);
   const [showNearest, setShowNearest] = useState(false);
-  const sahih = f.evidence.find((e) => e.collection === "bukhari" || e.collection === "muslim");
   const bodyId = `card-body-${f.id}`;
 
   return (
@@ -221,7 +226,7 @@ export default function FindingCard({
           )}
 
           {f.gradings.length > 0 && (
-            <Section title="أحكام العلماء المنقولة">
+            <Section title="الحكم المنقول من المصدر المعتمد">
               <ul className="divide-y divide-border rounded-xl border border-border">
                 {f.gradings.map((g, i) => (
                   <li key={i} className="flex items-center justify-between gap-3 px-4 py-2">
@@ -230,12 +235,8 @@ export default function FindingCard({
                   </li>
                 ))}
               </ul>
-              <p className="text-xs text-muted">منقولة كما وردت في المصدر؛ ميزان لا يصدر أحكامًا على الأحاديث.</p>
+              <p className="text-xs text-muted">منقول كما ورد في المصدر المعتمد؛ ميزان لا يصدر أحكامًا على الأحاديث.</p>
             </Section>
-          )}
-
-          {sahih && f.gradings.length === 0 && f.status !== "not_found" && (
-            <p className="text-sm">ورد في {sahih.collection_label}.</p>
           )}
 
           {[...f.review_reasons, ...f.notes].length > 0 && (

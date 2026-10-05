@@ -45,6 +45,7 @@ export interface Evidence {
   context_after: string | null;
   highlight: Span | null;
   highlight_lang: "ar" | "en" | null;
+  takhrij: string | null;
 }
 
 export interface Finding {

@@ -9,7 +9,7 @@ out_of_scope        claim types this version does not check
 """
 
 from .align import Comparison, same_matn
-from .references import COLLECTIONS, QURAN, CitedRef, quran_reference
+from .references import COLLECTIONS, HADEETHENC, QURAN, CitedRef, quran_reference
 from .retrieve import Passage
 from .schemas import Evidence, Grading, MatchType, ReferenceStatus, Span
 
@@ -67,6 +67,11 @@ def grade_category(grade: str) -> str:
 def passage_reference(p: Passage) -> str:
     if p.collection == QURAN and p.book and p.number:
         return quran_reference(p.book, p.number)
+    if p.collection == HADEETHENC:
+        # The approved takhrij is the reference a writer should cite; the encyclopedia number makes it traceable.
+        attribution = (p.extra.get("attribution") or "").strip()
+        where = f"موسوعة الأحاديث النبوية، رقم {p.number}"
+        return f"{attribution} ({where})" if attribution else where
     label = COLLECTIONS[p.collection].label if p.collection in COLLECTIONS else p.collection
     return f"{label} {p.number}" if p.number is not None else label
 
@@ -88,6 +93,7 @@ def to_evidence(c: Comparison) -> Evidence:
         match_type=c.match_type or MatchType.SEMANTIC,
         highlight=Span(start=c.highlight[0], end=c.highlight[1]) if c.highlight and c.match_type else None,
         highlight_lang=c.lang if c.highlight and c.match_type else None,
+        takhrij=p.extra.get("takhrij") or None,
     )
 
 
@@ -166,13 +172,18 @@ def check_reference(
         return False, notes, False
 
     if cited.collections:
-        found = {p.collection for p in passages}
+        # Books the text is reported in: the collection itself, or the approved takhrij (HadeethEnc).
+        found = {s for p in passages for s in p.sources}
         missing = [c for c in cited.collections if c not in found]
         if QURAN in found and not (found - {QURAN}):
             return True, ["النص آية قرآنية وليس حديثًا."], False
         if missing:
             labels = "، ".join(COLLECTIONS[c].label for c in missing if c in COLLECTIONS)
-            return True, [f"لم نجد هذا النص في: {labels} ضمن المصادر المحمّلة."], False
+            attributions = [p.extra.get("attribution") for p in passages if p.extra.get("attribution")]
+            if attributions:
+                given = "؛ ".join(dict.fromkeys(attributions))
+                return True, [f"تخريج المصدر المعتمد لا يذكر {labels}؛ المذكور فيه: «{given}»."], False
+            return True, [f"لم نجد هذا النص في: {labels} ضمن المصادر المعتمدة."], False
         if cited.number:
             in_cited = [p for p in passages if p.collection in cited.collections]
             if in_cited and all(p.number != cited.number for p in in_cited):

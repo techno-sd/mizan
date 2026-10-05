@@ -36,15 +36,15 @@ export function SiteHeader() {
 export function SiteFooter() {
   return (
     <footer className="px-4 py-4 text-center text-xs leading-6 text-muted">
-      ميزان أداة مساعدة للمراجعة وليس مرجعًا شرعيًا؛ الأحكام منقولة عن أصحابها. المصادر: القرآن الكريم (
-      <a className="underline hover:text-foreground" href="https://tanzil.net" target="_blank" rel="noreferrer">
-        تنزيل
+      ميزان أداة مدعومة بالذكاء الاصطناعي للمراجعة، وليس مرجعًا شرعيًا ولا يصدر فتاوى. المصادر المعتمدة:{" "}
+      <a className="underline hover:text-foreground" href="https://quranenc.com" target="_blank" rel="noreferrer">
+        موسوعة القرآن الكريم
+      </a>{" "}
+      و
+      <a className="underline hover:text-foreground" href="https://hadeethenc.com" target="_blank" rel="noreferrer">
+        موسوعة الأحاديث النبوية
       </a>
-) والكتب الستة وموطأ مالك (
-      <a className="underline hover:text-foreground" href="https://github.com/fawazahmed0/hadith-api" target="_blank" rel="noreferrer">
-        hadith-api
-      </a>
-      ). لا نحتفظ بنص ما تفحصه.
+      . لا نحتفظ بنص ما تفحصه.
     </footer>
   );
 }

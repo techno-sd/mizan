@@ -38,20 +38,6 @@ export const SAMPLES = [
 
 export const SAMPLE_TEXT = SAMPLES[0].text;
 
-// Corpus figures (corpus version 2026-10-04).
-export const CORPUS_STATS = [
-  { label: "القرآن الكريم", count: 6236, unit: "آية" },
-  { label: "صحيح البخاري", count: 7580 },
-  { label: "صحيح مسلم", count: 7360 },
-  { label: "سنن النسائي", count: 5679 },
-  { label: "سنن أبي داود", count: 5272 },
-  { label: "سنن ابن ماجه", count: 4338 },
-  { label: "جامع الترمذي", count: 3924 },
-  { label: "موطأ مالك", count: 1829 },
-  { label: "الأربعون النووية", count: 42 },
-  { label: "الأحاديث القدسية", count: 40 },
-];
-
 export const REPO_URL = "https://github.com/techno-sd/mizan";
 export const METHOD_URL = `${REPO_URL}/blob/main/eval/results/COMPARISON.md`;
 
