@@ -21,6 +21,15 @@ def test_correct_quran_reference(pipeline):
     assert f.evidence[0].context_after is not None  # next ayah shown for context
 
 
+def test_hadith_reciting_the_verse_does_not_compete_with_the_quran(pipeline):
+    resp = run(pipeline, "قال تعالى: ﴿قل هو الله أحد﴾ [الإخلاص: 1]")
+    f = resp.findings[0]
+    assert f.status == ReferenceStatus.MATCHES_SOURCE
+    assert not f.needs_scholar_review
+    assert f.suggested_reference == "الإخلاص: 1"
+    assert all(e.collection == "quran" for e in f.evidence)
+
+
 def test_wrong_ayah_number(pipeline):
     resp = run(pipeline, "قال تعالى: ﴿قل هو الله أحد﴾ [الإخلاص: 3]")
     f = resp.findings[0]

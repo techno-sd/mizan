@@ -145,6 +145,13 @@ class Pipeline:
             (compare(item.quoted_text, c.passage, s.t_exact, s.t_variant) for c in candidates),
             key=lambda c: (c.match_type not in (MatchType.EXACT, MatchType.PARTIAL), -c.similarity),
         )
+        # A verse presented as Quran is judged against the Quran when it matches there: a hadith that recites
+        # the verse is not a competing source (and must not make the result "ambiguous"). The reverse case stays
+        # unfiltered, so a verse presented as a hadith is still reported.
+        if item.type == ItemType.QURAN:
+            quran_hits = [c for c in comparisons if c.passage.collection == QURAN and c.match_type is not None]
+            if quran_hits:
+                comparisons = [c for c in comparisons if c.passage.collection == QURAN]
         group = matched_group(comparisons, s.t_variant, s.ambiguity_margin)
         step: dict = {
             "finding": fid,
