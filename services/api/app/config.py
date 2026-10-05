@@ -15,7 +15,7 @@ class Settings(BaseSettings):
 
     # Claude. The API key itself is read by the SDK from ANTHROPIC_API_KEY.
     llm_enabled: bool = True
-    llm_model: str = "claude-opus-5-5"
+    llm_model: str = "claude-sonnet-5-5"
     llm_effort_extract: str = "low"
     llm_effort_adjudicate: str = "medium"
     llm_fallbacks: bool = True

@@ -42,7 +42,7 @@ Download URLs and SHA-256 checksums of every file are recorded in the corpus man
 
 | Service | Use |
 |---|---|
-| Anthropic Claude API (`claude-opus-5-5`) | quote extraction; adjudication of unclear matches |
+| Anthropic Claude API (`claude-sonnet-5-5`) | quote extraction; adjudication of unclear matches |
 | Supabase (Postgres, pg_trgm, pgvector) | corpus, search, cache, run log |
 | Vercel | web app hosting |
 | Render | API hosting |

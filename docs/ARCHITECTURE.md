@@ -10,7 +10,7 @@ Browser ──► Next.js (Vercel) ──server-side, X-Internal-Key──► Fa
                                                                │     passages · sources · corpus_versions
                                                                │     llm_cache · verification_runs
                                                                │     match_passages() hybrid search
-                                                               └─► Claude API (claude-opus-5-5)
+                                                               └─► Claude API (claude-sonnet-5-5)
 ```
 
 The browser never talks to the API directly: no CORS, the API URL and key stay server-side, and rate limiting lives
@@ -100,7 +100,7 @@ passage at rank 1–2 for Arabic quotes and within the top 20 for an English quo
 ## Determinism
 
 - Everything except the two Claude calls is deterministic.
-- Claude outputs are cached by input, so a repeated input returns the same result even though Claude Opus 5.5 does
+- Claude outputs are cached by input, so a repeated input returns the same result even though Claude Sonnet 5.5 does
   not accept `temperature`.
 - The eval runner measures consistency across repeated runs (see [EVALUATION.md](EVALUATION.md)).
 

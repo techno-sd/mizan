@@ -40,12 +40,12 @@
 
 | Item | Estimate |
 |---|---|
-| Claude Opus 5.5 ($4 / $20 per million input / output tokens) | extraction ≈ 2k input + ≈ 1–2k output per 500-word document ≈ **$0.03–0.05**; adjudication only for unmatched quotes ≈ $0.02–0.03 each. Typical document **≈ $0.05–0.10**; cached repeats $0 |
+| Claude Sonnet 5.5 ($2 / $10 per million input / output tokens) | extraction ≈ 2k input + ≈ 1–2k output per 500-word document ≈ **$0.015–0.025**; adjudication only for unmatched quotes ≈ $0.01–0.015 each. Typical document **≈ $0.025–0.05**; cached repeats $0 |
 | Render Starter (API) | ≈ $7 / month |
 | Supabase Pro | ≈ $25 / month |
 | Vercel Hobby | $0 (Pro for commercial use) |
 
-1,000 documents per month ≈ $50–100 of model usage plus ≈ $32 of hosting.
+1,000 documents per month ≈ $25–50 of model usage plus ≈ $7 of hosting (Supabase free) or ≈ $32 with Supabase Pro.
 
 Cost levers, in order: the cache (free); a lower extraction effort; skipping extraction when rules already found
 everything in a short text; batch processing for bulk audits.
