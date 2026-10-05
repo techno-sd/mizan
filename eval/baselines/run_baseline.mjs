@@ -21,7 +21,11 @@ const arg = (name, dflt) => {
 const split = arg("split", "test");
 const variant = arg("variant", "plain");
 const model = arg("model", "claude-sonnet-5-5");
-const outDir = path.join(repo, "eval", "results", `responses-baseline-${variant}-${split}`, "run1");
+// --gold eval/challenge.jsonl runs another case file; --grade also asks for each hadith's authenticity.
+const gold = arg("gold", "eval/gold.jsonl");
+const askGrade = process.argv.includes("--grade");
+const setName = path.basename(gold, ".jsonl") === "gold" ? split : path.basename(gold, ".jsonl");
+const outDir = path.join(repo, "eval", "results", `responses-baseline-${variant}-${setName}`, "run1");
 
 // API key: environment, or services/api/.env (git-ignored).
 if (!process.env.ANTHROPIC_API_KEY) {
@@ -38,10 +42,10 @@ const PROMPT = `راجع النص التالي قبل نشره. لكل آية أ
   reference_mismatch (النص موجود لكن الإحالة المذكورة خاطئة: كتاب آخر أو سورة/آية أخرى، أو قُدِّم حديث على أنه آية أو العكس)،
   not_found (لم تجد له أصلًا في القرآن أو كتب الحديث).
 - reference: الإحالة الصحيحة بهذه الصيغة فقط: "اسم الكتاب رقم الحديث" مثل "صحيح البخاري 1" أو "صحيح مسلم 2564" أو "سنن ابن ماجه 224"، أو "اسم السورة: رقم الآية" مثل "البقرة: 255". استخدم أسماء الكتب: صحيح البخاري، صحيح مسلم، سنن أبي داود، جامع الترمذي، سنن النسائي، سنن ابن ماجه، موطأ مالك. اتركها فارغة إن لم تعرفها.
-- quote: نص الاقتباس كما ورد في النص.
+- quote: نص الاقتباس كما ورد في النص.{GRADE}
 
 أجب بكائن JSON فقط، دون أي نص آخر، بهذا الشكل:
-{"items":[{"quote":"...","status":"...","reference":"..."}]}
+{"items":[{"quote":"...","status":"...","reference":"..."{GRADE_FIELD}}]}
 
 النص:
 <<<
@@ -55,8 +59,12 @@ function parseJson(text) {
   return JSON.parse(cleaned.slice(start, end + 1));
 }
 
+const GRADE = `
+- grade: للأحاديث فقط: حكم الحديث كما يذكره أهل الحديث (صحيح، حسن، ضعيف، موضوع، لا أصل له)، أو فارغ للآيات.`;
+const prompt = PROMPT.replace("{GRADE}", askGrade ? GRADE : "").replace("{GRADE_FIELD}", askGrade ? ',"grade":"..."' : "");
+
 async function ask(text) {
-  const messages = [{ role: "user", content: PROMPT.replace("{TEXT}", text) }];
+  const messages = [{ role: "user", content: prompt.replace("{TEXT}", text) }];
   const tools = variant === "search" ? [{ type: "web_search_20260209", name: "web_search", max_uses: 5 }] : undefined;
   let response;
   for (let turn = 0; turn < 6; turn++) {
@@ -69,8 +77,8 @@ async function ask(text) {
   return parseJson(textBlocks.join("\n"));
 }
 
-const cases = fs.readFileSync(path.join(repo, "eval", "gold.jsonl"), "utf8").trim().split("\n").map(JSON.parse)
-  .filter((c) => split === "all" || c.split === split);
+const cases = fs.readFileSync(path.join(repo, gold), "utf8").trim().split("\n").map(JSON.parse)
+  .filter((c) => split === "all" || !c.split || c.split === split);
 fs.mkdirSync(outDir, { recursive: true });
 
 let done = 0;
@@ -86,7 +94,7 @@ await Promise.all(Array.from({ length: 3 }, async () => {
       const out = await ask(c.text);
       findings = (out.items || []).map((it, i) => ({
         id: `b${i + 1}`, quoted_text: it.quote || "", status: it.status || "not_found",
-        suggested_reference: it.reference || null, needs_scholar_review: false,
+        suggested_reference: it.reference || null, needs_scholar_review: false, grade: it.grade || null,
       }));
     } catch (e) {
       error = String(e.message || e);
@@ -96,4 +104,4 @@ await Promise.all(Array.from({ length: 3 }, async () => {
     if (error) console.log(`${c.id}: ${error}`);
   }
 }));
-console.log(`baseline ${variant}/${split}: ${done} cases -> ${outDir}`);
+console.log(`baseline ${variant}/${setName}: ${done} cases -> ${outDir}`);

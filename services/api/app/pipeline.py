@@ -10,7 +10,7 @@ from .extract import ExtractedItem, detect_rules, locate, merge_items
 from .llm import PROMPT_VERSION, LLMClient, LLMError
 from .normalize import normalize
 from .references import COLLECTIONS, QURAN, loaded_scope, parse_cited_reference
-from .retrieve import Retriever
+from .retrieve import Passage, Retriever
 from .rules import (
     NOT_PROPHETIC,
     acceptable,
@@ -144,10 +144,11 @@ class Pipeline:
         translated = not is_arabic(item.quoted_text)
         if translated and item.type == ItemType.QURAN:
             return await self._check_translated_verse(f, item, trace)
-        candidates = await self.retriever.search(item.quoted_text, None, s.retrieve_k)
+        candidates = [c.passage for c in await self.retriever.search(item.quoted_text, None, s.retrieve_k)]
+        candidates += await self._cited_ayah(item, {p.id for p in candidates})
         # Word-for-word matches first, then by similarity.
         comparisons = sorted(
-            (compare(item.quoted_text, c.passage, s.t_exact, s.t_variant) for c in candidates),
+            (compare(item.quoted_text, p, s.t_exact, s.t_variant) for p in candidates),
             key=lambda c: (c.match_type not in (MatchType.EXACT, MatchType.PARTIAL), -c.similarity),
         )
         # A verse presented as Quran is judged against the Quran when it matches there: a hadith that recites
@@ -181,10 +182,11 @@ class Pipeline:
         f.notes.extend(ref_notes)
         # Narrations in a cited collection that the best-match group missed still count as evidence.
         if cited and not mismatch:
-            group += [c for c in matches if c not in group and in_collections(c, cited.collections)]
+            # Hadith books only: for a verse, other ayat with similar words are not narrations of it.
+            hadith_cited = [k for k in cited.collections if k != QURAN]
+            group += [c for c in matches if c not in group and in_collections(c, hadith_cited)]
             # Judge the wording against the source the author cited: if the exact words are only in another
             # collection, and the cited one has a different wording, the quote's wording differs from its source.
-            hadith_cited = [k for k in cited.collections if k != QURAN]
             in_cited = approved_first([c for c in group if in_collections(c, hadith_cited)])
             exact = (MatchType.EXACT, MatchType.PARTIAL)
             if in_cited and not any(c.match_type in exact for c in in_cited) and f.status == ReferenceStatus.MATCHES_SOURCE:
@@ -282,6 +284,13 @@ class Pipeline:
         # same_text (e.g. a faithful translation) counts as a match; same_meaning as differing wording.
         chosen.similarity = max(chosen.similarity, self.s.t_exact if verdict["decision"] == "same_text" else self.s.t_variant)
         return [chosen]
+
+    async def _cited_ayah(self, item: ExtractedItem, known: set[int]) -> list[Passage]:
+        """The ayah the author cited is always compared: mushaf spelling («تَاْيۡـَٔسُواْ») can keep search from finding it."""
+        cited = parse_cited_reference(item.cited_reference)
+        if not cited or QURAN not in cited.collections or not (cited.surah and cited.ayah):
+            return []
+        return [p for p in await self.retriever.lookup(QURAN, number=cited.ayah, book=cited.surah) if p.id not in known]
 
     async def _check_translated_verse(self, f: Finding, item: ExtractedItem, trace: list[dict] | None) -> Finding:
         """A verse quoted in translation. No Quran translations are loaded, so compare against the Arabic ayah at

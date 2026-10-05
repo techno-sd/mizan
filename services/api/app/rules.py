@@ -153,8 +153,11 @@ def matched_group(comparisons: list[Comparison], t_variant: float, margin: float
         return []
     best = ok[0]
     group = [c for c in ok if c is best or same_matn(c, best)]
-    # Approved sources first among matches of the same kind (word-for-word before differing wording).
     exact = (MatchType.EXACT, MatchType.PARTIAL)
+    if best.passage.collection == QURAN and best.match_type in exact:
+        # A verse quoted word for word: other ayat with similar wording («لا نكلف نفسا إلا وسعها») are not its source.
+        group = [c for c in group if c.match_type in exact]
+    # Approved sources first among matches of the same kind (word-for-word before differing wording).
     group.sort(key=lambda c: (c.match_type not in exact, not source_of(c.passage.collection, c.passage.extra).approved))
     return group
 
