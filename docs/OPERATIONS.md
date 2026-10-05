@@ -39,12 +39,13 @@
 
 | Item | Estimate |
 |---|---|
-| Claude Sonnet 5.5 ($2 / $10 per million input / output tokens) | extraction ≈ 2k input + ≈ 1–2k output per 500-word document ≈ **$0.015–0.025**; adjudication only for unmatched quotes ≈ $0.01–0.015 each. Typical document **≈ $0.025–0.05**; cached repeats $0 |
+| Claude Sonnet 5.5 ($2 / $10 per million input / output tokens) | extraction **measured** on the 76 dev texts (2026-10-05): ≈ 830 input + ≈ 110 output tokens per text, **$0.0028 per text**, p50 2.1 s; scales with length (≈ $0.005–0.01 for a 500-word document). Adjudication only for quotes search cannot match ≈ $0.01 each (estimate). Cached repeats $0. Turning thinking off (`between_tools`) was measured too: same extractions on 76/76 texts, 1.5% fewer output tokens, so it is not used |
 | Render Starter (API) | ≈ $7 / month |
 | Neon (paid, always-on 0.5 CU minimum) | usage-based; check the Neon billing page |
 | Vercel Hobby | $0 (Pro for commercial use) |
 
-1,000 documents per month ≈ $25–50 of model usage plus ≈ $7 for the API host and the Neon compute and storage.
+1,000 documents per month ≈ $10–20 of model usage (extraction plus some adjudication) plus ≈ $7 for the API host
+and the Neon compute and storage.
 
 Cost levers, in order: the cache (free); a lower extraction effort; skipping extraction when rules already found
 everything in a short text; batch processing for bulk audits.
