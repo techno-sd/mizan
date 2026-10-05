@@ -72,8 +72,10 @@ Report detection recall (A vs B shows what Claude extraction adds) and false sup
 
 Same test cases, same scoring by hand for free-text answers (sheet: `eval/baselines/scoring_template.csv`):
 
-1. **General model without tools**: prompt in [`eval/baselines/README.md`](../eval/baselines/README.md).
-2. **General model with web search**: the same prompt. This is the fair comparison.
+1. **General model without tools**: `node eval/baselines/run_baseline.mjs --split test --variant plain` (same model as Mizan, Claude Sonnet 5.5; prompt in the script).
+2. **General model with web search**: `--variant search` (Anthropic web search tool). This is the fair comparison.
+
+Both write responses in Mizan's format and are scored by the same `run_eval.py --responses ...`.
 3. **Manual**: a reviewer with web search; time per script.
 
 Score: wrong or invented references, texts called authentic/present that are not, missed quotes, time. Report the

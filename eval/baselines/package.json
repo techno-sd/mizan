@@ -1,0 +1,9 @@
+{
+  "name": "mizan-baselines",
+  "private": true,
+  "type": "module",
+  "description": "General-model baselines for the Mizan evaluation",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.131.0"
+  }
+}
