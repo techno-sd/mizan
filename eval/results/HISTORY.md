@@ -1,8 +1,22 @@
 # Evaluation history
 
-All runs: rules-only (no Claude), full corpus `2026-10-04` (42,300 passages), in-process
-(`python -m scripts.eval_offline`). **Dev split only**: the fixes below were made by looking at dev failures, so
-these numbers are optimistic. The held-out test split is run once, at the end (Day 3).
+## Current: approved sources only (corpus `2026-10-05`, QuranEnc + HadeethEnc, 9,810 passages)
+
+New gold set generated from the approved corpus (105 cases, 125 quotes; 76 dev / 29 test). Live API with
+Claude Sonnet 5.5, 3 runs each.
+
+| Date | Commit | Split | Items | False support ↓ | Status acc. | Abstention | Reference acc. | Consistency |
+|---|---|---|---|---|---|---|---|---|
+| 2026-10-05 12:16 | `c199f66` | dev | 92 | **0.0%** | 98.9% | 100% | 100% | 100% |
+| 2026-10-05 12:40 | `a801ab2` | **test** (held out) | 33 | **0.0%** | **97.0%** | 100% | 100% | 100% |
+
+Dev fix between the two: mushaf text copied without marks («الحيوة / الصلوة») is matched to the Uthmani rasm
+(`a801ab2`). Test failure: `g-050`, a gold-set artifact (excerpt starting mid-honorific). Comparison with the
+same model used directly: [COMPARISON.md](COMPARISON.md).
+
+## Earlier: previous sources (corpus `2026-10-04`, Tanzil + hadith-api), replaced on 2026-10-05
+
+Kept for the record of how the matching rules were developed; these sources are no longer used.
 
 | Date | Commit | Split | Items | False support ↓ | Status acc. | Abstention | Reference acc. | Detection |
 |---|---|---|---|---|---|---|---|---|
