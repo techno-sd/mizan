@@ -1,6 +1,7 @@
 """Public API contract. The web app, the eval runner and future integrations all depend on this."""
 
 from enum import StrEnum
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
@@ -107,6 +108,18 @@ class Summary(BaseModel):
 class VerifyRequest(BaseModel):
     text: str = Field(min_length=1)
     debug: bool = False
+
+
+class FeedbackRequest(BaseModel):
+    """A reader's report on one result, queued for a specialist to review. Holds only the quote, not the text."""
+
+    run_id: str = Field(min_length=1, max_length=64)
+    finding_id: str = Field(min_length=1, max_length=16)
+    verdict: Literal["correct", "wrong"]
+    status: ReferenceStatus | None = None
+    quoted_text: str = Field(default="", max_length=600)
+    suggested_reference: str | None = Field(default=None, max_length=300)
+    comment: str = Field(default="", max_length=1000)
 
 
 class VerifyResponse(BaseModel):

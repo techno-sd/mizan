@@ -10,7 +10,7 @@ from .config import Settings, get_settings
 from .llm import ClaudeClient
 from .pipeline import Pipeline
 from .retrieve import InMemoryRetriever, SupabaseRetriever, load_fixture
-from .schemas import VerifyRequest, VerifyResponse
+from .schemas import FeedbackRequest, VerifyRequest, VerifyResponse
 from .store import MemoryStore, PostgresStore
 
 log = logging.getLogger("mizan")
@@ -85,3 +85,13 @@ async def verify(body: VerifyRequest, request: Request) -> VerifyResponse:
     if len(body.text) > p.s.max_input_chars:
         raise HTTPException(status_code=413, detail=f"text longer than {p.s.max_input_chars} characters")
     return await p.verify(body.text, debug=body.debug)
+
+
+@app.post("/v1/feedback", dependencies=[Depends(check_internal_key)])
+async def feedback(body: FeedbackRequest, request: Request) -> dict:
+    """A reader marks a result right or wrong; reports wait in the `feedback` table for a specialist."""
+    p: Pipeline = request.app.state.pipeline
+    fb = body.model_dump(mode="json") | {"corpus_version": p.s.corpus_version, "pipeline_version": PIPELINE_VERSION}
+    await p.store.record_feedback(fb)
+    log.info("feedback run=%s finding=%s verdict=%s", body.run_id, body.finding_id, body.verdict)
+    return {"ok": True}

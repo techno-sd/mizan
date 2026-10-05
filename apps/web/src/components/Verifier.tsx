@@ -254,7 +254,7 @@ export default function Verifier() {
 
             <div className="space-y-3">
               {findings.map((f) => (
-                <FindingCard key={f.id} finding={f} active={activeId === f.id} onSelect={() => selectFromCard(f.id)} />
+                <FindingCard key={f.id} finding={f} runId={result.run_id} active={activeId === f.id} onSelect={() => selectFromCard(f.id)} />
               ))}
             </div>
 

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import Feedback from "@/components/Feedback";
 import { Alert, Check, Chevron, Copy, External, Search } from "@/components/Icons";
 import { citation } from "@/lib/corrected";
 import { GRADE_TONE, STATUS, gradingSummary, startsExpanded } from "@/lib/labels";
@@ -136,7 +137,17 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
   );
 }
 
-export default function FindingCard({ finding: f, active, onSelect }: { finding: Finding; active: boolean; onSelect: () => void }) {
+export default function FindingCard({
+  finding: f,
+  runId,
+  active,
+  onSelect,
+}: {
+  finding: Finding;
+  runId: string;
+  active: boolean;
+  onSelect: () => void;
+}) {
   const [open, setOpen] = useState(() => startsExpanded(f));
   const [details, setDetails] = useState(false);
   const expanded = open || active;
@@ -281,6 +292,8 @@ export default function FindingCard({ finding: f, active, onSelect }: { finding:
               )}
             </div>
           )}
+
+          <Feedback runId={runId} finding={f} />
         </div>
       )}
     </article>

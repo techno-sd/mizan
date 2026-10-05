@@ -1,6 +1,7 @@
-"""Persistence for the LLM result cache and the run log.
+"""Persistence for the LLM result cache, the run log and readers' feedback.
 
-The run log never stores the user's text: only its hash, size and the summary counts.
+The run log never stores the user's text: only its hash, size and the summary counts. Feedback stores the one
+quote being reported (so a specialist can review it) and the reader's comment, never the rest of the text.
 """
 
 import json
@@ -14,11 +15,17 @@ class Store(Protocol):
 
     async def record_run(self, run: dict) -> None: ...
 
+    async def record_feedback(self, fb: dict) -> None: ...
+
 
 class MemoryStore:
     def __init__(self) -> None:
         self.cache: dict[str, Any] = {}
         self.runs: list[dict] = []
+        self.feedback: list[dict] = []
+
+    async def record_feedback(self, fb: dict) -> None:
+        self.feedback.append(fb)
 
     async def cache_get(self, key: str) -> Any | None:
         return self.cache.get(key)
@@ -57,5 +64,16 @@ class PostgresStore:
                     run["run_id"], run["corpus_version"], run["api_version"], run["pipeline_version"],
                     run["prompt_version"], run["llm_model"], run["input_sha256"], run["input_chars"],
                     json.dumps(run["summary"], ensure_ascii=False), run["duration_ms"],
+                ),
+            )
+
+    async def record_feedback(self, fb: dict) -> None:
+        async with self.pool.connection() as conn:
+            await conn.execute(
+                "insert into feedback (run_id, finding_id, verdict, status, quoted_text, suggested_reference, "
+                "comment, corpus_version, pipeline_version) values (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                (
+                    fb["run_id"], fb["finding_id"], fb["verdict"], fb.get("status"), fb.get("quoted_text", ""),
+                    fb.get("suggested_reference"), fb.get("comment", ""), fb["corpus_version"], fb["pipeline_version"],
                 ),
             )
