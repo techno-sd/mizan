@@ -1,0 +1,1 @@
+{"findings":[{"id":"b1","quoted_text":"يكون خليفة عن خلفائكم في آخر الزمان يحثو المال ولا يعده","status":"wording_differs","suggested_reference":"صحيح مسلم 2914","needs_scholar_review":false,"grade":null}],"llm_used":true,"baseline":"plain","model":"claude-sonnet-5-5","error":null,"_latency_s":4.61}

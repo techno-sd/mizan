@@ -1,0 +1,1 @@
+{"findings":[{"id":"b1","quoted_text":"اتق الله حيثما كنت، وأتبع السيئة الحسنة تمحها، وخالق الناس بخلق حسن","status":"reference_mismatch","suggested_reference":"جامع الترمذي 1987","needs_scholar_review":false,"grade":"حسن"}],"llm_used":true,"baseline":"plain","model":"claude-sonnet-5-5","error":null,"_latency_s":5.66}

@@ -1,0 +1,1 @@
+{"findings":[{"id":"b1","quoted_text":"خيركم من تعلم القرآن وعلمه","status":"matches_source","suggested_reference":"صحيح البخاري 5027","needs_scholar_review":false,"grade":"صحيح"}],"llm_used":true,"baseline":"plain","model":"claude-sonnet-5-5","error":null,"_latency_s":3.1}

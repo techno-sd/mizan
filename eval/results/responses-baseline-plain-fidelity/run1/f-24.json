@@ -1,0 +1,1 @@
+{"findings":[{"id":"b1","quoted_text":"خمس من الدواب كلهن فاسق يقتلن في الحرم الغراب والحدأة والعقرب","status":"matches_source","suggested_reference":"صحيح البخاري 1829","needs_scholar_review":false,"grade":null}],"llm_used":true,"baseline":"plain","model":"claude-sonnet-5-5","error":null,"_latency_s":7.09}

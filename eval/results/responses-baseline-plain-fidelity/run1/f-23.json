@@ -1,0 +1,1 @@
+{"findings":[{"id":"b1","quoted_text":"اللهم رب السماوات ورب الأرض ورب العرش العظيم ربنا ورب","status":"matches_source","suggested_reference":"صحيح مسلم 2713","needs_scholar_review":false,"grade":null}],"llm_used":true,"baseline":"plain","model":"claude-sonnet-5-5","error":null,"_latency_s":5.03}

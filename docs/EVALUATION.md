@@ -81,6 +81,27 @@ Both write responses in Mizan's format and are scored by the same `run_eval.py -
 Score: wrong or invented references, texts called authentic/present that are not, missed quotes, time. Report the
 limits of the comparison (small n, our case selection).
 
+### Two more sets against the same general model (2026-10-05)
+
+The held-out test showed a small accuracy gap, so two sets target what a reviewer of Islam-introduction content
+actually faces. Both are scored the same way for Mizan and for the general model.
+
+| Set | What it asks | Mizan | Claude, directly | Details |
+|---|---|---|---|---|
+| **Popular claims** (`eval/challenge.jsonl`, 37 texts) | baseless/fabricated sayings, authentic hadith cited to the wrong book, verse errors, correct controls | 37/37 correct, 0 invented references, 37/37 identical across 3 runs | 36/37 (missed «وقل **ربي** زدني علما»), 0 invented references | [CHALLENGE.md](../eval/results/CHALLENGE.md) |
+| **Word fidelity** (`eval/fidelity.jsonl`, 40 texts) | real ayat and hadith, half changed by one word the way people misquote from memory | **40/40**, 40/40 identical across 3 runs | **31/40**: flagged 7 of 10 *correctly quoted* hadith as "wording differs", missed one dropped word | [FIDELITY.md](../eval/results/FIDELITY.md) |
+
+What this shows: on **famous** baseless sayings a strong current model is already reliable (it knew all 13), so
+Mizan's value there is consistency and the evidence it shows, not a large accuracy gap. On **wording**, a model
+without the source text cannot confirm a hadith word for word: it either misses small changes or, more often here,
+tells the writer to "correct" a hadith that was quoted exactly. Mizan compares against the approved text.
+
+Limits: the fidelity set is generated from Mizan's own corpus (labels are objective because we made each change, but
+the texts are ones Mizan holds); the popular-claims labels come from the standard works on weak and fabricated
+hadith and are pending specialist review. Small sets: indications, not general claims. Reproduce:
+`node eval/build_fidelity.mjs`, `node eval/baselines/run_baseline.mjs --gold eval/fidelity.jsonl --split fidelity`,
+`node eval/score_fidelity.mjs` (and `--gold eval/challenge.jsonl --split all --grade`, `node eval/score_challenge.mjs`).
+
 ## 5. User test (UX criterion)
 
 - 3–5 people from the target group; one script with 8 planted issues.

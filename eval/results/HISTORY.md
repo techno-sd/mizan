@@ -9,6 +9,7 @@ Claude Sonnet 5.5, 3 runs each.
 |---|---|---|---|---|---|---|---|---|
 | 2026-10-05 12:16 | `c199f66` | dev | 92 | **0.0%** | 98.9% | 100% | 100% | 100% |
 | 2026-10-05 12:40 | `a801ab2` | **test** (held out) | 33 | **0.0%** | **97.0%** | 100% | 100% | 100% |
+| 2026-10-05 17:37 | `4f9208a` | **test**, corpus `2026-10-05.2` (approved + labelled hadith-api) | 33 | **0.0%** | **97.0%** | 100% | 100% | 100% |
 
 Dev fix between the two: mushaf text copied without marks («الحيوة / الصلوة») is matched to the Uthmani rasm
 (`a801ab2`). Test failure: `g-050`, a gold-set artifact (excerpt starting mid-honorific). Comparison with the

@@ -1,0 +1,1 @@
+{"findings":[{"id":"b1","quoted_text":"من صمت نجا","status":"reference_mismatch","suggested_reference":"جامع الترمذي 2501","needs_scholar_review":false,"grade":"صحيح"}],"llm_used":true,"baseline":"plain","model":"claude-sonnet-5-5","error":null,"_latency_s":3.53}

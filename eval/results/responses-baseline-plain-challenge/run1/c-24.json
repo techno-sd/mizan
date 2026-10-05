@@ -1,0 +1,1 @@
+{"findings":[{"id":"b1","quoted_text":"ادعوني أستجب لكم","status":"reference_mismatch","suggested_reference":"غافر: 60","needs_scholar_review":false,"grade":null}],"llm_used":true,"baseline":"plain","model":"claude-sonnet-5-5","error":null,"_latency_s":2.25}

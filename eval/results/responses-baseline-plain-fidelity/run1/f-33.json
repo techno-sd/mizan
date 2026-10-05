@@ -1,0 +1,1 @@
+{"findings":[{"id":"b1","quoted_text":"إن الله تعالى قال عن عادى لي وليا","status":"wording_differs","suggested_reference":"صحيح البخاري 6502","needs_scholar_review":false,"grade":null}],"llm_used":true,"baseline":"plain","model":"claude-sonnet-5-5","error":null,"_latency_s":3.53}

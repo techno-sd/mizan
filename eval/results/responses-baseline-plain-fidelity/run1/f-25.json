@@ -1,0 +1,1 @@
+{"findings":[{"id":"b1","quoted_text":"ما نهيتكم عنه فاجتنبوه وما أمرتكم به فأتوا منه","status":"wording_differs","suggested_reference":"صحيح البخاري 7288","needs_scholar_review":false,"grade":null}],"llm_used":true,"baseline":"plain","model":"claude-sonnet-5-5","error":null,"_latency_s":3.11}

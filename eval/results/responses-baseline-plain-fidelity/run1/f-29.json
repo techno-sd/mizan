@@ -1,0 +1,1 @@
+{"findings":[{"id":"b1","quoted_text":"لا تقوم الساعة حتى يحسر الفرات عن جبل من ذهب يقتتل عليه","status":"wording_differs","suggested_reference":"صحيح البخاري 7119","needs_scholar_review":false,"grade":null}],"llm_used":true,"baseline":"plain","model":"claude-sonnet-5-5","error":null,"_latency_s":9.27}

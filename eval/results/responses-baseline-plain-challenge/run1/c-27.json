@@ -1,0 +1,1 @@
+{"findings":[{"id":"b1","quoted_text":"إن الله لا يغير ما بقوم حتى يغيروا ما بأنفسهم","status":"reference_mismatch","suggested_reference":"الرعد: 11","needs_scholar_review":false,"grade":null}],"llm_used":true,"baseline":"plain","model":"claude-sonnet-5-5","error":null,"_latency_s":2.71}

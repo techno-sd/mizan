@@ -1,0 +1,1 @@
+{"findings":[{"id":"b1","quoted_text":"تبسمك في وجه أخيك لك صدقة","status":"reference_mismatch","suggested_reference":"جامع الترمذي 1956","needs_scholar_review":false,"grade":"حسن"}],"llm_used":true,"baseline":"plain","model":"claude-sonnet-5-5","error":null,"_latency_s":7.67}

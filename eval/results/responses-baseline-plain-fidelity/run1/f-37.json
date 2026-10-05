@@ -1,0 +1,1 @@
+{"findings":[{"id":"b1","quoted_text":"كل أمتي معافى إلا المجاهرين وإن عن المجاهرة أن يعمل","status":"wording_differs","suggested_reference":"صحيح البخاري 6069","needs_scholar_review":false,"grade":null}],"llm_used":true,"baseline":"plain","model":"claude-sonnet-5-5","error":null,"_latency_s":3.01}

@@ -1,5 +1,9 @@
 # Mizan vs. a general AI model (held-out test split, approved sources)
 
+> Two later sets against the same model: [word fidelity](FIDELITY.md) (Mizan 40/40, model 31/40: it flagged 7 of 10
+> correctly quoted hadith as altered) and [popular claims](CHALLENGE.md) (Mizan 37/37, model 36/37, neither invented a
+> reference). Summary in [docs/EVALUATION.md](../../docs/EVALUATION.md#two-more-sets-against-the-same-general-model-2026-10-05).
+
 Run on 2026-10-05, commit `a801ab2`, corpus `2026-10-05`: **only the challenge's approved sources**
 (QuranEnc for the Quran, HadeethEnc for hadith with its takhrij and ruling). Test split of the gold set:
 29 cases, 33 quotes, never used for tuning. Same model everywhere: **Claude Sonnet 5.5**.

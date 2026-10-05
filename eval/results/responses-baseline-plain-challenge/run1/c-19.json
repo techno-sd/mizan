@@ -1,0 +1,1 @@
+{"findings":[{"id":"b1","quoted_text":"البر حسن الخلق","status":"reference_mismatch","suggested_reference":"صحيح مسلم 2553","needs_scholar_review":false,"grade":"صحيح"}],"llm_used":true,"baseline":"plain","model":"claude-sonnet-5-5","error":null,"_latency_s":3.42}

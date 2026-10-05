@@ -1,0 +1,1 @@
+{"findings":[{"id":"b1","quoted_text":"فلما جاءتهم رسلهم بٱلبينت فرحوا بما عندهم عن ٱلعلم وحاق بهم ما كانوا به يستهزءون","status":"wording_differs","suggested_reference":"غافر: 83","needs_scholar_review":false,"grade":null}],"llm_used":true,"baseline":"plain","model":"claude-sonnet-5-5","error":null,"_latency_s":3.11}

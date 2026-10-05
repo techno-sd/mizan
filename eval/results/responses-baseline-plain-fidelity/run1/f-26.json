@@ -1,0 +1,1 @@
+{"findings":[{"id":"b1","quoted_text":"يجزئ عن الجماعة إذا مروا أن يسلم أحدهم ويجزئ عن الجماعة أن","status":"wording_differs","suggested_reference":"سنن أبي داود 5210","needs_scholar_review":false,"grade":null}],"llm_used":true,"baseline":"plain","model":"claude-sonnet-5-5","error":null,"_latency_s":3.22}

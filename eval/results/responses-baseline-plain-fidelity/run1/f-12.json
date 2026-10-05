@@ -1,0 +1,1 @@
+{"findings":[{"id":"b1","quoted_text":"قل إنني هدىني ربي إلى صرط مستقيم دينا قيما ملة إبرهيم حنيفا وما كان عن ٱلمشركين","status":"wording_differs","suggested_reference":"الأنعام: 161","needs_scholar_review":false,"grade":null}],"llm_used":true,"baseline":"plain","model":"claude-sonnet-5-5","error":null,"_latency_s":3.62}

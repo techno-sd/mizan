@@ -1,0 +1,1 @@
+{"findings":[{"id":"b1","quoted_text":"الطهور شطر الإيمان","status":"reference_mismatch","suggested_reference":"صحيح مسلم 223","needs_scholar_review":false,"grade":"صحيح"}],"llm_used":true,"baseline":"plain","model":"claude-sonnet-5-5","error":null,"_latency_s":2.31}

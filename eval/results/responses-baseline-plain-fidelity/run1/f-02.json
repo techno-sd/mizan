@@ -1,0 +1,1 @@
+{"findings":[{"id":"b1","quoted_text":"لهم عذاب في ٱلحيوة ٱلدنيا ولعذاب ٱلأخرة أشق وما لهم من ٱلله من واق","status":"matches_source","suggested_reference":"الرعد: 34","needs_scholar_review":false,"grade":null}],"llm_used":true,"baseline":"plain","model":"claude-sonnet-5-5","error":null,"_latency_s":4.28}

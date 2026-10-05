@@ -1,0 +1,1 @@
+{"findings":[{"id":"b1","quoted_text":"فأوحينا على موسى أن ٱضرب بعصاك ٱلبحر فٱنفلق فكان كل فرق كٱلطود ٱلعظيم","status":"wording_differs","suggested_reference":"الشعراء: 63","needs_scholar_review":false,"grade":null}],"llm_used":true,"baseline":"plain","model":"claude-sonnet-5-5","error":null,"_latency_s":3.09}

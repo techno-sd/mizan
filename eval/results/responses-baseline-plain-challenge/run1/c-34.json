@@ -1,0 +1,1 @@
+{"findings":[{"id":"b1","quoted_text":"يسروا ولا تعسروا، وبشروا ولا تنفروا","status":"matches_source","suggested_reference":"صحيح البخاري 69","needs_scholar_review":false,"grade":"صحيح"}],"llm_used":true,"baseline":"plain","model":"claude-sonnet-5-5","error":null,"_latency_s":2.91}

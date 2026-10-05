@@ -1,0 +1,1 @@
+{"findings":[{"id":"b1","quoted_text":"أحلت لكم ميتتان ودمان فأما الميتتان فالجراد والحوت","status":"wording_differs","suggested_reference":"سنن ابن ماجه 3314","needs_scholar_review":false,"grade":null}],"llm_used":true,"baseline":"plain","model":"claude-sonnet-5-5","error":null,"_latency_s":7.74}

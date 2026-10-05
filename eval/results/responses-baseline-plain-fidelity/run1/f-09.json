@@ -1,0 +1,1 @@
+{"findings":[{"id":"b1","quoted_text":"خلق ٱلله ٱلسموت وٱلأرض بٱلحق إن في ذلك لأية للمؤمنين","status":"matches_source","suggested_reference":"العنكبوت: 44","needs_scholar_review":false,"grade":null}],"llm_used":true,"baseline":"plain","model":"claude-sonnet-5-5","error":null,"_latency_s":2.93}

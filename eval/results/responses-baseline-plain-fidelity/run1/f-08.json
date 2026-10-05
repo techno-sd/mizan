@@ -1,0 +1,1 @@
+{"findings":[{"id":"b1","quoted_text":"وٱلسارق وٱلسارقة فٱقطعوا أيديهما جزاء بما كسبا نكلا من ٱلله وٱلله عزيز حكيم","status":"matches_source","suggested_reference":"المائدة: 38","needs_scholar_review":false,"grade":null}],"llm_used":true,"baseline":"plain","model":"claude-sonnet-5-5","error":null,"_latency_s":3.18}

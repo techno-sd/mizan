@@ -1,0 +1,1 @@
+{"findings":[{"id":"b1","quoted_text":"وليحكم أهل ٱلإنجيل بما أنزل ٱلله فيه ومن لم يحكم بما أنزل ٱلله فأولئك ٱلفسقون","status":"wording_differs","suggested_reference":"المائدة: 47","needs_scholar_review":false,"grade":null}],"llm_used":true,"baseline":"plain","model":"claude-sonnet-5-5","error":null,"_latency_s":3.42}

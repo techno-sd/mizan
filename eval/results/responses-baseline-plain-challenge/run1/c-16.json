@@ -1,0 +1,1 @@
+{"findings":[{"id":"b1","quoted_text":"لا ضرر ولا ضرار","status":"reference_mismatch","suggested_reference":"سنن ابن ماجه 2340","needs_scholar_review":false,"grade":"حسن"}],"llm_used":true,"baseline":"plain","model":"claude-sonnet-5-5","error":null,"_latency_s":4.55}
