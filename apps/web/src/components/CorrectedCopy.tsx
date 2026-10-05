@@ -13,10 +13,12 @@ export default function CorrectedCopy({ text, findings }: { text: string; findin
   const [open, setOpen] = useState(false);
   if (!c.notes.length) return null;
 
+  const count = (n: number, one: string, two: string, many: string) => (n === 1 ? one : n === 2 ? two : `${n} ${many}`);
   const summary = [
-    c.changed ? `صحّحنا ${c.changed === 1 ? "موضعًا واحدًا" : c.changed === 2 ? "موضعين" : `${c.changed} مواضع`}` : "لا تصحيحات",
-    c.flagged ? `${c.flagged === 1 ? "موضع يحتاج" : `${c.flagged} مواضع تحتاج`} قرارك` : null,
-  ].filter(Boolean).join(" · ");
+    c.changed ? `صحّحنا ${count(c.changed, "موضعًا", "موضعين", "مواضع")}` : null,
+    c.added ? `أضفنا ${count(c.added, "إحالة", "إحالتين", "إحالات")}` : null,
+    c.flagged ? `${count(c.flagged, "موضع يحتاج", "موضعان يحتاجان", "مواضع تحتاج")} قرارك` : null,
+  ].filter(Boolean).join(" · ") || "لا تغييرات";
 
   return (
     <section aria-label="نسخة مصحّحة" className="rounded-2xl border border-border bg-surface">
@@ -31,7 +33,7 @@ export default function CorrectedCopy({ text, findings }: { text: string; findin
         </span>
         <span className="flex-1">
           <span className="block font-semibold">نسخة مصحّحة جاهزة للنشر</span>
-          <span className="block text-sm text-muted">{summary}، مع قائمة المصادر</span>
+          <span className="block text-sm text-muted">{summary} · مع قائمة المصادر</span>
         </span>
         <Chevron className={`h-5 w-5 text-muted transition ${open ? "rotate-180" : ""}`} />
       </button>

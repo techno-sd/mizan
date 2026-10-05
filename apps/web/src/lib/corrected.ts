@@ -23,6 +23,7 @@ export interface Corrected {
   segments: Segment[];
   notes: SourceNote[];
   changed: number; // quotes whose wording or reference was corrected
+  added: number; // correct quotes that had no reference: one was added
   flagged: number; // quotes left for the writer to decide
   plain: string; // corrected text + notes, ready to paste
 }
@@ -77,7 +78,7 @@ interface Edit { start: number; end: number; text: string; kind: ChangeKind; }
 export function buildCorrected(text: string, findings: Finding[]): Corrected {
   const edits: Edit[] = [];
   const notes: SourceNote[] = [];
-  let changed = 0, flagged = 0;
+  let changed = 0, added = 0, flagged = 0;
   const ordered = findings.filter((f) => f.span).sort((a, b) => a.span!.start - b.span!.start);
 
   for (const f of ordered) {
@@ -121,7 +122,7 @@ export function buildCorrected(text: string, findings: Finding[]): Corrected {
       const at = afterQuote(text, f.span!.end);
       edits.push({ start: at, end: at, text: isQuran ? ` [${citation(ev)}]` : ` (${citation(ev)})`, kind: "reference" });
       lines.push("أُضيفت الإحالة.");
-      didChange = true;
+      added++;
     }
 
     if (ev) {
@@ -171,5 +172,5 @@ export function buildCorrected(text: string, findings: Finding[]): Corrected {
   const plain = notes.length
     ? `${body}\n\n— المصادر —\n${notes.map((x) => `[${x.n}] ${x.lines.join(" ")}${x.url ? ` ${x.url}` : ""}`).join("\n")}`
     : body;
-  return { segments, notes, changed, flagged, plain };
+  return { segments, notes, changed, added, flagged, plain };
 }

@@ -6,7 +6,8 @@ import CorrectedCopy from "@/components/CorrectedCopy";
 import FindingCard from "@/components/FindingCard";
 import HighlightedText from "@/components/HighlightedText";
 import { ScaleLogo } from "@/components/Icons";
-import { FILTERS, type Filter, inFilter, sortFindings } from "@/lib/labels";
+import { sortFindings } from "@/lib/labels";
+import type { Finding } from "@/lib/types";
 import { SAMPLES, countQuotes, fmt } from "@/lib/sample";
 import type { VerifyResponse } from "@/lib/types";
 
@@ -101,6 +102,14 @@ function Composer({
   );
 }
 
+// One summary line under the results: how many quotes are fine and how many need the writer.
+const SUMMARY: { label: string; dot: string; test: (f: Finding) => boolean }[] = [
+  { label: "مطابقة للمصدر", dot: "bg-[var(--green-fg)]", test: (f) => f.status === "matches_source" },
+  { label: "تحتاج تصحيحًا", dot: "bg-[var(--orange-fg)]", test: (f) => f.status === "reference_mismatch" || f.status === "wording_differs" },
+  { label: "لم نجدها في المصادر", dot: "bg-[var(--slate-fg)]", test: (f) => f.status === "not_found" },
+  { label: "لم تُفحص", dot: "bg-[var(--zinc-fg)]", test: (f) => f.status === "out_of_scope" },
+];
+
 export default function Verifier() {
   const [draft, setDraft] = useState("");
   const [checkedText, setCheckedText] = useState("");
@@ -109,7 +118,6 @@ export default function Verifier() {
   const [elapsed, setElapsed] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [filter, setFilter] = useState<Filter>("all");
   const topRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -126,7 +134,6 @@ export default function Verifier() {
     setElapsed(0);
     setError(null);
     setActiveId(null);
-    setFilter("all");
     setCheckedText(text);
     setResult(null);
     requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "smooth" }));
@@ -159,7 +166,6 @@ export default function Verifier() {
 
   function selectFromText(id: string) {
     setActiveId(id);
-    setFilter("all");
     requestAnimationFrame(() => document.getElementById(`card-${id}`)?.scrollIntoView({ behavior: "smooth", block: "start" }));
   }
 
@@ -194,8 +200,6 @@ export default function Verifier() {
 
   // ---------- Conversation view: checked text, results, composer pinned at the bottom ----------
   const findings = result ? sortFindings(result.findings) : [];
-  const visible = findings.filter((f) => inFilter(f, filter));
-  const counts = Object.fromEntries(FILTERS.map((x) => [x.key, findings.filter(x.test).length]));
   const stage = [...STAGES].reverse().find((s) => elapsed >= s.after) ?? STAGES[0];
 
   return (
@@ -227,44 +231,32 @@ export default function Verifier() {
 
         {result && (
           <>
-            <div className="space-y-3 px-1">
-              <p className="font-semibold">
-                {findings.length === 0 ? "لم نجد آيات أو أحاديث أو أقوالًا منسوبة في هذا النص." : `وجدنا ${countQuotes(findings.length)}.`}
+            <div className="space-y-1 px-1">
+              <p className="text-lg font-semibold">
+                {findings.length === 0 ? "لم نجد آيات أو أحاديث أو أقوالًا منسوبة في هذا النص." : `وجدنا ${countQuotes(findings.length)}`}
               </p>
-              {findings.length > 1 && (
-                <div className="flex flex-wrap gap-2" role="group" aria-label="تصفية النتائج">
-                  <button
-                    type="button"
-                    aria-pressed={filter === "all"}
-                    onClick={() => setFilter("all")}
-                    className={`rounded-full px-3 py-1 text-sm ${
-                      filter === "all" ? "bg-foreground text-background" : "border border-border text-muted hover:text-foreground"
-                    }`}
-                  >
-                    الكل {findings.length}
-                  </button>
-                  {FILTERS.filter((x) => counts[x.key] > 0).map((x) => (
-                    <button
-                      key={x.key}
-                      type="button"
-                      aria-pressed={filter === x.key}
-                      onClick={() => setFilter(filter === x.key ? "all" : x.key)}
-                      className={`rounded-full px-3 py-1 text-sm ${x.tone} ${filter === x.key ? "ring-2 ring-current" : ""}`}
-                    >
-                      {x.label} {counts[x.key]}
-                    </button>
-                  ))}
-                </div>
+              {findings.length > 0 && (
+                <p className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+                  {SUMMARY.map((x) => {
+                    const n = findings.filter(x.test).length;
+                    return n ? (
+                      <span key={x.label} className="inline-flex items-center gap-1.5">
+                        <span className={`h-2.5 w-2.5 rounded-full ${x.dot}`} aria-hidden="true" />
+                        {n} {x.label}
+                      </span>
+                    ) : null;
+                  })}
+                </p>
               )}
             </div>
 
+            {findings.length > 0 && <CorrectedCopy text={checkedText} findings={result.findings} />}
+
             <div className="space-y-3">
-              {visible.map((f) => (
+              {findings.map((f) => (
                 <FindingCard key={f.id} finding={f} active={activeId === f.id} onSelect={() => selectFromCard(f.id)} />
               ))}
             </div>
-
-            {findings.length > 0 && <CorrectedCopy text={checkedText} findings={result.findings} />}
 
             <p className="px-1 text-xs leading-6 text-muted">
               تم الفحص مقابل: {result.corpus_scope.join("، ")} · نسخة المصادر {result.corpus_version}

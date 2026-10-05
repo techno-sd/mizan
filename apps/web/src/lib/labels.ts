@@ -5,7 +5,7 @@ export const STATUS: Record<
   { label: string; hint: string; tone: string; mark: string }
 > = {
   reference_mismatch: {
-    label: "الإحالة غير دقيقة",
+    label: "الإحالة غير صحيحة",
     hint: "النص موجود، لكن ليس في الموضع الذي ذكرته.",
     tone: "tone-orange",
     mark: "mark-orange",
@@ -17,7 +17,7 @@ export const STATUS: Record<
     mark: "mark-amber",
   },
   not_found: {
-    label: "لم يُعثر عليه",
+    label: "لم نجده في المصادر",
     hint: "غير موجود في المصادر المحمّلة. هذا لا يعني بالضرورة أنه موضوع.",
     tone: "tone-slate",
     mark: "mark-slate",
@@ -29,7 +29,7 @@ export const STATUS: Record<
     mark: "mark-green",
   },
   out_of_scope: {
-    label: "خارج نطاق الفحص",
+    label: "لم يُفحص",
     hint: "هذه النسخة لا تفحص هذا النوع.",
     tone: "tone-zinc",
     mark: "mark-zinc",
@@ -37,12 +37,12 @@ export const STATUS: Record<
 };
 
 // Grading axis, shown next to the text-axis status. "Matches the source" must never read as "authentic".
-export function gradingSummary(f: Finding): { label: string; tone: string; mark: string } | null {
+export function gradingSummary(f: Finding): { label: string; short: string; tone: string; mark: string } | null {
   const cats = new Set(f.gradings.map((g) => g.category));
   if (cats.has("accepted") && (cats.has("weak") || cats.has("rejected")))
-    return { label: "أحكام متباينة", tone: "tone-violet", mark: "mark-amber" };
-  if (cats.has("rejected")) return { label: "ضُعِّف بشدة عند من نُقل حكمه", tone: "tone-orange", mark: "mark-orange" };
-  if (cats.has("weak")) return { label: "ضُعِّف عند من نُقل حكمه", tone: "tone-amber", mark: "mark-amber" };
+    return { label: "أحكام العلماء فيه متباينة", short: "أحكام متباينة", tone: "tone-violet", mark: "mark-amber" };
+  if (cats.has("rejected")) return { label: "ضعّفه بشدة من نُقل حكمه", short: "ضعيف جدًا", tone: "tone-orange", mark: "mark-orange" };
+  if (cats.has("weak")) return { label: "ضعّفه من نُقل حكمه", short: "ضعيف", tone: "tone-amber", mark: "mark-amber" };
   return null;
 }
 
