@@ -108,10 +108,14 @@ def detect_rules(text: str) -> list[ExtractedItem]:
             quoted = text[s:e].strip()
             if not quoted:
                 continue
+            kind = item_type
+            # «قال تعالى» also introduces a hadith qudsi when the author says so; that is not a Quran claim.
+            if kind == ItemType.QURAN and "قدسي" in text[max(0, m.start() - 80) : m.end() + 40]:
+                kind = ItemType.HADITH
             items.append(
                 ExtractedItem(
                     quoted_text=quoted,
-                    type=item_type,
+                    type=kind,
                     attributed_to=who,
                     cited_reference=_cited_reference_after(text, e + 1 if e < len(text) else e),
                     span=Span(start=s, end=e),
@@ -161,6 +165,10 @@ def merge_items(llm_items: list[ExtractedItem], rule_items: list[ExtractedItem])
             continue
         twin.cited_reference = twin.cited_reference or item.cited_reference
         twin.attributed_to = twin.attributed_to or item.attributed_to
+        # Mizan judges how the author presented the text. An explicit marker (﴿﴾, «قال تعالى», «قال رسول الله ﷺ»)
+        # is that presentation, so it wins over the model's view of what the text really is.
+        if item.origin == "rules" and twin.origin != "rules" and {item.type, twin.type} == {ItemType.QURAN, ItemType.HADITH}:
+            twin.type = item.type
         if twin.origin != item.origin:
             twin.origin = "merged"
     return sorted(merged, key=lambda it: it.span.start if it.span else 0)

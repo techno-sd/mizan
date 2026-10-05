@@ -105,23 +105,44 @@ def main() -> None:
     ap.add_argument("--split", default="dev", help="dev | test | all")
     ap.add_argument("--runs", type=int, default=3)
     ap.add_argument("--out", default="eval/results")
+    ap.add_argument("--responses", help="score saved responses (<dir>/run<N>/<case id>.json) instead of calling the API")
+    ap.add_argument("--save", help="also save each API response under <dir>/run<N>/<case id>.json")
+    ap.add_argument("--tag", default="", help="suffix for the result file names, e.g. 'llm'")
     args = ap.parse_args()
 
     cases = [json.loads(line) for line in Path(args.gold).read_text(encoding="utf-8").splitlines() if line.strip()]
     if args.split != "all":
         cases = [c for c in cases if c.get("split") == args.split]
 
-    runs, statuses = [], {}
+    def response(case: dict, run: int) -> tuple[dict, float]:
+        if args.responses:
+            data = json.loads((Path(args.responses) / f"run{run}" / f"{case['id']}.json").read_text(encoding="utf-8"))
+            return data, data.get("_latency_s", 0.0)
+        t0 = time.perf_counter()
+        data = call(args.api, args.key, case["text"])
+        data["_latency_s"] = round(time.perf_counter() - t0, 2)
+        if args.save:
+            d = Path(args.save) / f"run{run}"
+            d.mkdir(parents=True, exist_ok=True)
+            (d / f"{case['id']}.json").write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+        return data, data["_latency_s"]
+
+    runs, statuses, failures, llm_used = [], {}, [], set()
     for r in range(args.runs):
         pairs_all, latencies = [], []
         for c in cases:
-            t0 = time.perf_counter()
-            resp = call(args.api, args.key, c["text"])
-            latencies.append(time.perf_counter() - t0)
+            resp, latency = response(c, r + 1)
+            latencies.append(latency)
+            llm_used.add(resp.get("llm_used"))
             pairs = match(c["expected"], resp["findings"])
             pairs_all += pairs
             for i, (e, f) in enumerate(pairs):
                 statuses.setdefault(f"{c['id']}#{i}", []).append(f["status"] if f else None)
+                ref_ok = not e.get("reference") or (f and norm(e["reference"]) in norm(f.get("suggested_reference") or ""))
+                if r == 0 and (not f or f["status"] != e["status"] or not ref_ok):
+                    failures.append((c["id"], c.get("category", ""), e["quote"][:70], e["status"],
+                                     f["status"] if f else "missed", e.get("reference"),
+                                     f and f.get("suggested_reference")))
         s = score(pairs_all)
         s["latency_p50_s"] = round(statistics.median(latencies), 2) if latencies else None
         runs.append(s)
@@ -133,14 +154,19 @@ def main() -> None:
                    if any(x[k] is not None for x in runs) else None) for k in keys}
     summary["consistency_across_runs"] = consistency
     summary["cases"], summary["items"], summary["runs"] = len(cases), runs[0]["items"], args.runs
+    summary["llm_used"] = sorted(str(x) for x in llm_used)
 
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     stamp = time.strftime("%Y%m%d-%H%M%S")
-    (out / f"{args.split}-{stamp}.json").write_text(json.dumps({"summary": summary, "runs": runs}, indent=2))
-    lines = [f"# Eval {args.split} ({stamp})", "", "| metric | value |", "|---|---|"]
+    name = f"{args.split}-{args.tag}" if args.tag else args.split
+    (out / f"{name}-{stamp}.json").write_text(json.dumps({"summary": summary, "runs": runs}, indent=2))
+    lines = [f"# Eval {name} ({stamp})", "", "| metric | value |", "|---|---|"]
     lines += [f"| {k} | {v} |" for k, v in summary.items()]
-    (out / f"{args.split}-latest.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    lines += ["", f"## Failures in run 1 ({len(failures)})", "",
+              "| id | category | quote | gold | got | gold ref | got ref |", "|---|---|---|---|---|---|---|"]
+    lines += ["| " + " | ".join(str(x) for x in row) + " |" for row in failures]
+    (out / f"{name}-latest.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
     print("\n".join(lines))
 
 

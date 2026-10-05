@@ -30,6 +30,24 @@ def test_quote_right_after_the_honorific():
     assert items[0].cited_reference == "رواه الترمذي"
 
 
+def test_explicit_marker_type_wins_over_model_type():
+    from app.extract import ExtractedItem, merge_items
+    from app.schemas import Span
+
+    text = "قال تعالى: «لما خلق الله الخلق كتب في كتابه»"
+    rules = detect_rules(text)
+    assert rules[0].type == ItemType.QURAN
+    llm = [ExtractedItem("لما خلق الله الخلق كتب في كتابه", ItemType.HADITH, span=Span(start=12, end=43), origin="llm")]
+    merged = merge_items(llm, rules)
+    assert len(merged) == 1 and merged[0].type == ItemType.QURAN
+
+
+def test_hadith_qudsi_framing_is_not_a_quran_claim():
+    text = "وفي الحديث القدسي قال تعالى: «يا عبادي إني حرمت الظلم على نفسي»"
+    items = detect_rules(text)
+    assert items[0].type == ItemType.HADITH
+
+
 def test_english_marker():
     text = 'The Prophet (ﷺ) said: "Actions are judged by intentions" (Bukhari 1).'
     items = detect_rules(text)
