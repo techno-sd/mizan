@@ -2,28 +2,27 @@
 
 ## 1. Deploy (first time)
 
-1. **Supabase**: project `mizan` (ref `txqjbjcsxnaeuzxmmbke`, Frankfurt `eu-central-1`, Free plan) was created on
-   2026-10-04 and the migration is applied. Arabic trigram matching was verified: a partial quote inside a long hadith
-   scores 1.0 (`lc_ctype = en_US.UTF-8`).
-   - Free plan caveats: 500 MB database (check size after loading; drop `passages_en_trgm_idx` first if needed) and
-     pausing after about a week without activity. `/health` queries the database, so Render's health checks keep it
-     active.
-   - Corpus `2026-10-05` (approved sources only: QuranEnc + HadeethEnc, 9,810 passages) loaded on 2026-10-05. Connection: use the pooler host
-     shown in Supabase → Connect (for this project `aws-1-eu-central-1.pooler.supabase.com`), and percent-encode
-     special characters in the password (`@` → `%40`).
-   - For a new project: SQL editor → run the files in `supabase/migrations/` in order (or `supabase db push`), then
-     `select extensions.word_similarity('انما الاعمال بالنيات', 'حدثنا الحميدي انما الاعمال بالنيات');` → high, not 0.
+1. **Database: Neon** (paid plan), project `mizan`, branch `production`, AWS Frankfurt `eu-central-1`, Postgres 17,
+   created on 2026-10-05. Compute: autoscaling 0.5–2 CU, scale to zero off (no cold start during judging).
+   - Schema: the files in `supabase/migrations/` applied in order. They revoke from the Supabase roles `anon` and
+     `authenticated`, so on a plain Postgres create them first: `create role anon nologin; create role authenticated nologin;`.
+   - Loaded: corpus `2026-10-05.2` (approved sources + labelled hadith-api, 45,792 passages, live) and `2026-10-05`
+     (approved only, 9,810, kept for rollback). Database ≈ 260 MB. `match_passages` ≈ 0.3–0.4 s per query from Riyadh.
+   - Connection: the API uses the **pooled** string (host contains `-pooler`); load the corpus over the direct host
+     (the same string without `-pooler`).
+   - Before 2026-10-05 the database was Supabase (project `txqjbjcsxnaeuzxmmbke`, Free plan); it moved to Neon
+     because the free 500 MB limit could not hold the new corpus. Any Postgres with `pg_trgm` + `pgvector` works.
 2. **Corpus**:
    ```bash
    cd services/api
    pip install -e ".[dev]"
-   python -m scripts.build_corpus --version 2026-10-04
-   MIZAN_DATABASE_URL="<direct connection string>" python -m scripts.load_corpus --version 2026-10-04
+   python -m scripts.build_corpus --version 2026-10-05.2
+   MIZAN_DATABASE_URL="<direct connection string>" python -m scripts.load_corpus --version 2026-10-05.2
    ```
 3. **API on Render** (Frankfurt region, next to the database): New → Blueprint → `techno-sd/mizan`
    (`render.yaml`). Set `ANTHROPIC_API_KEY`, `MIZAN_INTERNAL_API_KEY` (the value in the git-ignored
-   `services/api/.env`) and `MIZAN_DATABASE_URL` (**transaction pooler** string, port 6543). Check `GET /health`:
-   it should report 9,810 passages.
+   `services/api/.env`) and `MIZAN_DATABASE_URL` (Neon **pooled** string). Check `GET /health`: it should report
+   45,792 passages.
 4. **Web on Vercel**: Add New → Project → import `techno-sd/mizan`, root directory `apps/web` (framework
    detected as Next.js); set `MIZAN_API_URL` (the Render URL) and `MIZAN_INTERNAL_API_KEY` (same value as the API).
 5. **Smoke test**: open the site → "جرّب نصًا تجريبيًا" → "افحص المحتوى" → 7 findings, matching
@@ -31,7 +30,7 @@
 
 ## 2. Keep it alive through judging (until 2026-10-22)
 
-- Paid plans for Render (no sleep) and Supabase (no pause) for the judging window.
+- Paid plans for Render (no sleep) and Neon (scale to zero off) for the judging window.
 - Anthropic: prepaid credit for the period plus a spend alert. Repeated inputs hit the cache and cost nothing.
 - The web proxy rate-limits each IP (15 requests / 5 min).
 - Check `/health` daily (an uptime monitor is fine).
@@ -42,10 +41,10 @@
 |---|---|
 | Claude Sonnet 5.5 ($2 / $10 per million input / output tokens) | extraction ≈ 2k input + ≈ 1–2k output per 500-word document ≈ **$0.015–0.025**; adjudication only for unmatched quotes ≈ $0.01–0.015 each. Typical document **≈ $0.025–0.05**; cached repeats $0 |
 | Render Starter (API) | ≈ $7 / month |
-| Supabase Pro | ≈ $25 / month |
+| Neon (paid, always-on 0.5 CU minimum) | usage-based; check the Neon billing page |
 | Vercel Hobby | $0 (Pro for commercial use) |
 
-1,000 documents per month ≈ $25–50 of model usage plus ≈ $7 of hosting (Supabase free) or ≈ $32 with Supabase Pro.
+1,000 documents per month ≈ $25–50 of model usage plus ≈ $7 for the API host and the Neon compute and storage.
 
 Cost levers, in order: the cache (free); a lower extraction effort; skipping extraction when rules already found
 everything in a short text; batch processing for bulk audits.
@@ -55,7 +54,7 @@ everything in a short text; batch processing for bulk audits.
 | Dependency | If unavailable |
 |---|---|
 | Claude API | rules-only mode works automatically (`llm_used: false`); Claude is also available via AWS Bedrock / Google Vertex for data-residency needs |
-| Supabase | any Postgres with `pg_trgm` + `pgvector` (same migration); or no database at all: `IndexedRetriever` loads the built corpus JSONL into memory (~4 s per document in the slowest environment we tested) |
+| Neon | any Postgres with `pg_trgm` + `pgvector` (same migration); or no database at all: `IndexedRetriever` loads the built corpus JSONL into memory (~4 s per document in the slowest environment we tested) |
 | QuranEnc / HadeethEnc APIs | the corpus is versioned and stored in our database; the APIs are only needed to rebuild it |
 | Render / Vercel | Docker image and Next.js app run on any container / Node host |
 
