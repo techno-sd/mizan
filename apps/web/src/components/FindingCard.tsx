@@ -14,7 +14,7 @@ const STATUS_ICON: Record<ReferenceStatus, (p: { className?: string }) => React.
   out_of_scope: Search,
 };
 
-function CopyButton({ text, label }: { text: string; label: string }) {
+export function CopyButton({ text, label }: { text: string; label: string }) {
   const [done, setDone] = useState(false);
   return (
     <button

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
+import CorrectedCopy from "@/components/CorrectedCopy";
 import FindingCard from "@/components/FindingCard";
 import HighlightedText from "@/components/HighlightedText";
 import { ScaleLogo } from "@/components/Icons";
@@ -262,6 +263,8 @@ export default function Verifier() {
                 <FindingCard key={f.id} finding={f} active={activeId === f.id} onSelect={() => selectFromCard(f.id)} />
               ))}
             </div>
+
+            {findings.length > 0 && <CorrectedCopy text={checkedText} findings={result.findings} />}
 
             <p className="px-1 text-xs leading-6 text-muted">
               تم الفحص مقابل: {result.corpus_scope.join("، ")} · نسخة المصادر {result.corpus_version}
