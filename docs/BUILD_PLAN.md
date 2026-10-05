@@ -45,15 +45,15 @@
 
 ## قائمة التسليم
 
-- [ ] رابط Live Demo يعمل (ويبقى حتى 22 أكتوبر)
-- [ ] مستودع GitHub **عام**، بلا مفاتيح (`.env.example` فقط)، مع تراخيص المكونات
+- [x] رابط Live Demo يعمل: https://mizan-xi-six.vercel.app (Render مدفوع لا ينام؛ /health يُبقي Supabase نشطًا)
+- [x] مستودع GitHub **عام**: https://github.com/techno-sd/mizan، بلا مفاتيح، مع تراخيص المكونات
 - [ ] فيديو لا يتجاوز دقيقتين
 - [ ] عرض PDF/PowerPoint: المشكلة، والحل، وآلية العمل، والقيمة، والتقنيات، والنتائج، وخطة الاستمرار، وصور من المنتج
-- [ ] توثيق المحتوى والمصادر وطريقة التحقق ([SOURCES_AND_LICENSES.md](SOURCES_AND_LICENSES.md)، [METHOD.md](METHOD.md))
-- [ ] توثيق الإعداد والتشغيل (README، [OPERATIONS.md](OPERATIONS.md))
+- [x] توثيق المحتوى والمصادر وطريقة التحقق ([SOURCES_AND_LICENSES.md](SOURCES_AND_LICENSES.md)، [METHOD.md](METHOD.md))
+- [x] توثيق الإعداد والتشغيل (README، [OPERATIONS.md](OPERATIONS.md))
 - [ ] نتائج التقييم والمقارنة ([EVALUATION.md](EVALUATION.md))
 - [ ] قسم واضح: ما بُني الآن مقابل ما هو مقترح لاحقًا
-- [ ] ترخيص الكود (ملف LICENSE)
+- [x] ترخيص الكود (MIT)
 
 ## ربط معايير التحكيم النهائي بما نقدمه
 

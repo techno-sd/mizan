@@ -9,7 +9,7 @@ AI Challenge: Serving Islamic Content 2026 · Track 04: Knowledge and verificati
 Islam.
 
 - Idea and scope: [docs/IDEA.md](docs/IDEA.md)
-- Live demo: _add the URL after deployment_
+- **Live demo: https://mizan-xi-six.vercel.app** (API: https://mizan-api-dslz.onrender.com/health)
 - Video (≤ 2 min): _add the link_
 
 ---
@@ -32,11 +32,11 @@ Two separate axes: the **reference** (Mizan decides, with deterministic rules) a
 
 | Built | Proposed next |
 |---|---|
-| Verification pipeline, five statuses + specialist flag | Multilingual embeddings for meaning and translation matches |
+| Verification pipeline, five statuses + specialist flag, deployed (Vercel + Render + Supabase, Frankfurt) | Multilingual embeddings for meaning and translation matches |
 | Corpus build: 6,236 ayat + 36,064 hadith, versioned, checksummed | Licensed Quran translations; more languages |
 | Supabase schema + hybrid search function | Organization workspaces with their own approved corpora |
 | Arabic document-centred UI, `POST /v1/verify` API | Reviewer dashboard, audit trail, browser and editor add-ons |
-| 38 tests, including a regression on real texts; eval runner | Reviewed database of circulating texts |
+| 48 tests (CI on every push); 120-item gold set; dev false support rate 18% → 0% (see eval/results/HISTORY.md) | Reviewed database of circulating texts |
 
 ## Repository
 
