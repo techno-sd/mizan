@@ -11,6 +11,11 @@ these numbers are optimistic. The held-out test split is run once, at the end (D
 | 2026-10-05 09:29 | `0004330` | dev, **live API + Claude Sonnet 5.5**, 3 runs | 88 | 2.4% | 97.7% | 100% | 100% | 100% |
 | 2026-10-05 09:34 | `cb30407` | dev, **live API + Claude Sonnet 5.5**, 3 runs | 88 | **0.0%** | 98.9% | 100% | 100% | 100% |
 
+| 2026-10-05 09:46 | `67f3a92` | **test** (held out), live API + Claude Sonnet 5.5, 3 runs | 32 | **0.0%** | **100%** | 100% | 100% | 100% |
+
+Test split, run once with no tuning on it. Comparison with the same model used directly (with and without web
+search): [COMPARISON.md](COMPARISON.md).
+
 Live runs: the deployed stack (Vercel → Render → Supabase, Frankfurt), consistency across the 3 runs 100%,
 median latency 2.8 s per case on the first run (Claude calls) and 0.6 s on repeats (cached Claude results).
 

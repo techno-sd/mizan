@@ -36,7 +36,7 @@ Two separate axes: the **reference** (Mizan decides, with deterministic rules) a
 | Corpus build: 6,236 ayat + 36,064 hadith, versioned, checksummed | Licensed Quran translations; more languages |
 | Supabase schema + hybrid search function | Organization workspaces with their own approved corpora |
 | Arabic document-centred UI, `POST /v1/verify` API | Reviewer dashboard, audit trail, browser and editor add-ons |
-| 48 tests (CI on every push); 120-item gold set; dev false support rate 18% → 0% (see eval/results/HISTORY.md) | Reviewed database of circulating texts |
+| Held-out test: 100% status accuracy, 0% false support, 100% valid references vs 70% for the same model used directly ([comparison](eval/results/COMPARISON.md)); 50 tests in CI | Reviewed database of circulating texts |
 
 ## Repository
 
