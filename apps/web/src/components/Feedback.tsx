@@ -33,7 +33,7 @@ export default function Feedback({ runId, finding: f }: { runId: string; finding
   if (state === "sent")
     return (
       <p className="text-sm text-muted" aria-live="polite">
-        {verdict === "wrong" ? "شكرًا، وصلنا بلاغك وسيراجعه مختص." : "شكرًا لتأكيدك."}
+        {verdict === "wrong" ? "شكرًا، وصلنا بلاغك للمراجعة." : "شكرًا لتأكيدك."}
       </p>
     );
 

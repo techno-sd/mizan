@@ -31,6 +31,7 @@ class MatchType(StrEnum):
 
 
 class Span(BaseModel):
+    """Half-open Unicode code-point offsets, not UTF-16 code units."""
     start: int
     end: int
 
@@ -108,6 +109,20 @@ class Summary(BaseModel):
 class VerifyRequest(BaseModel):
     text: str = Field(min_length=1)
     debug: bool = False
+
+
+IMAGE_MAX_BYTES = 4_500_000  # the browser shrinks screenshots well below this
+
+
+class ImageTextRequest(BaseModel):
+    """A screenshot to transcribe before checking. Base64 without the data: prefix."""
+
+    media_type: Literal["image/jpeg", "image/png", "image/webp", "image/gif"]
+    data: str = Field(min_length=16, max_length=IMAGE_MAX_BYTES * 4 // 3 + 4)
+
+
+class ImageTextResponse(BaseModel):
+    text: str
 
 
 class FeedbackRequest(BaseModel):

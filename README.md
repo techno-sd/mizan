@@ -10,7 +10,7 @@ Islam.
 
 - Idea and scope: [docs/IDEA.md](docs/IDEA.md)
 - **Live demo: https://mizan-islam.vercel.app** (API: https://mizan-api-dslz.onrender.com/health)
-- Video (≤ 2 min): _add the link_
+- Video (≤ 2 min): not recorded yet; [recording script](docs/PITCH.md). Submission materials remain incomplete.
 
 ---
 
@@ -35,10 +35,19 @@ Two separate axes: the **reference** (Mizan decides, with deterministic rules) a
 | Verification pipeline, five statuses + specialist flag, deployed (Vercel + Render + Neon Postgres, Frankfurt) | Multilingual embeddings for meaning and translation matches |
 | Corpus: 6,236 ayat (QuranEnc) + 3,574 hadith (HadeethEnc) from the approved sources, + 35,982 hadith from a labelled supplementary source (hadith-api), versioned, checksummed | More approved translation languages; Dorar / Shamela coverage if access is granted |
 | Postgres schema (`supabase/migrations/`) + hybrid search function | Organization workspaces with their own approved corpora |
-| Arabic document-centred UI, `POST /v1/verify` API; **corrected copy**: the text with each quote's wording and reference taken from its source, numbered source notes, and flags for what the writer must decide (nothing in it is written by a model) | Reviewer dashboard, audit trail, browser and editor add-ons |
-| Held-out test: 97% status accuracy, 0% false support, 100% references agreeing with the approved takhrij (same model used directly: 85-88% / 93%) ([comparison](eval/results/COMPARISON.md)). Word fidelity: **40/40 vs 31/40** for the same model used directly, which flagged 7 of 10 correctly quoted hadith as altered ([FIDELITY](eval/results/FIDELITY.md)). Popular claims: 37/37, 0 invented references ([CHALLENGE](eval/results/CHALLENGE.md)). 60+ tests in CI | Reviewed database of circulating texts |
-| **Report a wrong result** on every card: the quote, the reader's comment and the corpus version go to a `feedback` review queue for specialists (the checked text is never stored) | Specialist review screen for the queue; fixes flow back into the corpus and the test sets |
-| Plain verdict → fix → source on each card, details on demand; RTL, light/dark, mobile | Apply one fix in place; edit and re-check; results streamed as found; save/share/export (PDF, Word); English interface; accessibility audit; shared rate limit and daily spending cap |
+| Arabic document-centred UI, `POST /v1/verify` API; **text-first suggested copy** includes eligible source-based changes by default; optional include/exclude checkboxes and restore-all; clean copy or copy with numbered source notes; uncertain cases remain unchanged and flagged | Reviewer dashboard, durable audit trail, browser and editor add-ons |
+| Historical held-out test: **32/33** correct statuses (97%), 0 false support on that small corpus-derived set; 27/27 references agreeing with the approved takhrij ([comparison and limits](eval/results/COMPARISON.md)). Historical word fidelity: **40/40 vs 31/40** ([FIDELITY](eval/results/FIDELITY.md)); popular claims: 37/37 ([CHALLENGE](eval/results/CHALLENGE.md)). These scores predate pipeline 0.2.1 and are not a guarantee for the current build. Backend and corrected-copy regressions run in CI | Independent examples, uncached model evaluation and reviewed database of circulating texts |
+| **Check a screenshot**: upload, paste (Ctrl+V) or drop an image of a post; Claude transcribes it word for word (misquotes are kept, interface text is dropped, the image is not stored), the writer reviews the text, then it is checked as usual (`POST /v1/image-text`) | Batch images; read text from video frames |
+| **Report a wrong result** inside each finding's expandable source details: the quote, the reader's comment and the corpus version go to a `feedback` review queue (the checked text is never stored) | Specialist review screen for the queue; fixes flow back into the corpus and the test sets |
+| Conversational results view: white conversation panel on the cream page background, independently scrolling response with a docked composer, contextual review commentary, concise quote-by-quote explanations with soft inline highlights and numbered citations, a single expandable sources section and reply copying; wording comparisons and separate reported gradings; original-text and suggested-copy views; formal Qur’an script from the source with verse brackets and surah references; suggestion include/exclude choices persist between views; **local HTML review report** with original text, decisions, source evidence, gradings and version metadata (print/save PDF in a browser); compact input privacy disclosure; RTL, light/dark, mobile. The original document stays in its own tab. The commentary and response are composed from verified findings; the next-text composer starts a fresh document review. | Results streamed as found; durable save/share and Word export; English interface; accessibility audit; shared rate limit and daily spending cap |
+
+Pipeline 0.2.1 preserves ordinary Quran alefs and emoji offsets. The proposed copy requires review and leaves
+ambiguous or model-assisted matches unchanged. Eligible source-based proposals are included in the draft by default; this is not human approval. The optional changes section lets readers exclude a proposal or restore the defaults.
+Reviewer decisions are held only in the current browser session; a new check or reload clears them. The downloaded
+report is a local snapshot, not a signed certificate or a completed specialist review. Full documents are sent to Anthropic when the model is enabled;
+extracted quotations may be cached without automatic expiry. Set `MIZAN_LLM_CACHE_ENABLED=false` to disable cache
+reads and writes; existing cached rows need separate deletion. Target-user testing, the video, and the presentation
+are still pending.
 
 ## Repository
 

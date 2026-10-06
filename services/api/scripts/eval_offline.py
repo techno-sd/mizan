@@ -47,7 +47,10 @@ async def main() -> None:
 
     settings = Settings(_env_file=None, corpus_version=args.version)
     store = MemoryStore()
-    llm = ClaudeClient(store, settings.llm_model) if os.environ.get("ANTHROPIC_API_KEY") else None
+    llm = (
+        ClaudeClient(store, settings.llm_model, cache_enabled=settings.llm_cache_enabled)
+        if settings.llm_enabled and os.environ.get("ANTHROPIC_API_KEY") else None
+    )
     pipeline = Pipeline(settings, retriever, store, llm)
 
     cases = [json.loads(x) for x in Path(args.gold).read_text(encoding="utf-8").splitlines() if x.strip()]

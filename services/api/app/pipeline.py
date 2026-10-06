@@ -37,8 +37,23 @@ from .schemas import (
 from .store import Store
 
 OUT_OF_SCOPE_NOTE = "هذه النسخة تفحص الآيات والأحاديث والأقوال المنسوبة فقط، ولا تحكم على الادعاءات التاريخية العامة."
-NOT_FOUND_NOTE = "لم نجد هذا النص في المصادر المحمّلة. هذا لا يعني بالضرورة أنه موضوع أو غير صحيح."
-NO_SAYINGS_CORPUS_NOTE = "لا تتضمن هذه النسخة مدونة لأقوال الصحابة والعلماء خارج كتب الحديث المحمّلة."
+NOT_FOUND_NOTE = "لم نجد هذا النص في مصادر ميزان (القرآن الكريم، وموسوعة الأحاديث النبوية، والكتب الستة، وموطأ مالك). هذا لا يعني بالضرورة أنه موضوع أو غير صحيح."
+NO_SAYINGS_CORPUS_NOTE = "لا تتضمن هذه النسخة أقوال الصحابة والعلماء إلا ما ورد منها في كتب الحديث."
+
+
+# A model's supporting excerpt must be whole words of the passage, and long enough not to be a stock phrase
+# («قال», «الله») that any passage contains.
+MIN_EXCERPT_WORDS = 3
+
+
+def excerpt_verified(excerpt: str, passage: Passage) -> bool:
+    e = normalize(excerpt or "")
+    if not e:
+        return False
+    for hay in (passage.text_ar_norm, passage.text_en_norm):
+        if hay and f" {e} " in f" {hay} " and len(e.split()) >= min(MIN_EXCERPT_WORDS, len(hay.split())):
+            return True
+    return False
 
 
 class Pipeline:
@@ -146,18 +161,9 @@ class Pipeline:
             return await self._check_translated_verse(f, item, trace)
         candidates = [c.passage for c in await self.retriever.search(item.quoted_text, None, s.retrieve_k)]
         candidates += await self._cited_ayah(item, {p.id for p in candidates})
-        # Word-for-word matches first, then by similarity.
-        comparisons = sorted(
-            (compare(item.quoted_text, p, s.t_exact, s.t_variant) for p in candidates),
-            key=lambda c: (c.match_type not in (MatchType.EXACT, MatchType.PARTIAL), -c.similarity),
+        comparisons = self._rank(
+            item, [compare(item.quoted_text, p, s.t_exact, s.t_variant) for p in candidates]
         )
-        # A verse presented as Quran is judged against the Quran when it matches there: a hadith that recites
-        # the verse is not a competing source (and must not make the result "ambiguous"). The reverse case stays
-        # unfiltered, so a verse presented as a hadith is still reported.
-        if item.type == ItemType.QURAN:
-            quran_hits = [c for c in comparisons if c.passage.collection == QURAN and c.match_type is not None]
-            if quran_hits:
-                comparisons = [c for c in comparisons if c.passage.collection == QURAN]
         group = matched_group(comparisons, s.t_variant, s.ambiguity_margin)
         step: dict = {
             "finding": fid,
@@ -168,8 +174,17 @@ class Pipeline:
             ],
         }
 
-        if not group and comparisons and self.llm is not None:
-            group = await self._adjudicate(item, comparisons[:5], f, step)
+        if not group and self.llm is not None:
+            # Search found nothing usable (a paraphrase, another translation, a misremembered wording). Ask Claude
+            # where the text comes from, fetch those passages from the database, and match them like any other.
+            proposed = await self._propose(item, {c.passage.id for c in comparisons}, step)
+            if proposed:
+                comparisons = self._rank(item, proposed + comparisons)
+                group = matched_group(comparisons, s.t_variant, s.ambiguity_margin)
+            if not group and comparisons:
+                # Claude's proposals go first: retrieval already failed to produce a match from the rest.
+                top = proposed[:4] + [c for c in comparisons if c not in proposed]
+                group = await self._adjudicate(item, top[:6], f, step)
 
         if is_ambiguous(comparisons, s.t_variant, s.ambiguity_margin):
             f.needs_scholar_review = True
@@ -251,6 +266,64 @@ class Pipeline:
             trace.append(step)
         return f
 
+    async def _cited_ayah(self, item: ExtractedItem, known: set[int]) -> list[Passage]:
+        """The ayah the author cited is always compared: mushaf spelling («تَاْيۡـَٔسُواْ») can keep search from finding it."""
+        cited = parse_cited_reference(item.cited_reference)
+        if not cited or QURAN not in cited.collections or not (cited.surah and cited.ayah):
+            return []
+        return [p for p in await self.retriever.lookup(QURAN, number=cited.ayah, book=cited.surah) if p.id not in known]
+
+    @staticmethod
+    def _rank(item: ExtractedItem, comparisons: list[Comparison]) -> list[Comparison]:
+        # Word-for-word matches first, then by similarity.
+        comparisons = sorted(
+            comparisons,
+            key=lambda c: (c.match_type not in (MatchType.EXACT, MatchType.PARTIAL), -c.similarity),
+        )
+        # A verse presented as Quran is judged against the Quran when it matches there: a hadith that recites
+        # the verse is not a competing source (and must not make the result "ambiguous"). The reverse case stays
+        # unfiltered, so a verse presented as a hadith is still reported.
+        if item.type == ItemType.QURAN:
+            quran_hits = [c for c in comparisons if c.passage.collection == QURAN and c.match_type is not None]
+            if quran_hits:
+                comparisons = [c for c in comparisons if c.passage.collection == QURAN]
+        return comparisons
+
+    async def _proposed_passages(
+        self, item: ExtractedItem, step: dict, kind: str | None = None
+    ) -> list[Passage]:
+        """Passages Claude names as the source of the quote, fetched from the database. Claude's numbers and
+        wording are only used to look things up; nothing it writes is shown."""
+        try:
+            hint = await self.llm.locate_sources(item.quoted_text, item.type.value, item.cited_reference)
+        except LLMError as e:
+            step["llm_locate_error"] = str(e)
+            return []
+        step["llm_locate"] = hint
+        found: dict[int, Passage] = {}
+        for loc in hint.get("locations", [])[:5]:
+            col, book, number = loc.get("collection"), loc.get("book") or 0, loc.get("number") or 0
+            if col not in COLLECTIONS or number <= 0 or (kind and COLLECTIONS[col].kind != kind):
+                continue
+            if col == QURAN:
+                hits = await self.retriever.lookup(QURAN, number=number, book=book) if book > 0 else []
+            else:
+                hits = await self.retriever.lookup(col, number=number)
+            for p in hits[:3]:
+                found.setdefault(p.id, p)
+        source_text = (hint.get("original_text_ar") or "").strip()
+        if source_text:
+            for c in await self.retriever.search(source_text, kind, 5):
+                found.setdefault(c.passage.id, c.passage)
+        step["proposed"] = [passage_reference(p) for p in found.values()]
+        return list(found.values())
+
+    async def _propose(self, item: ExtractedItem, known: set[int], step: dict) -> list[Comparison]:
+        passages = await self._proposed_passages(item, step)
+        return [
+            compare(item.quoted_text, p, self.s.t_exact, self.s.t_variant) for p in passages if p.id not in known
+        ]
+
     async def _adjudicate(
         self, item: ExtractedItem, top: list[Comparison], f: Finding, step: dict
     ) -> list[Comparison]:
@@ -273,74 +346,93 @@ class Pipeline:
         if verdict["decision"] == "different" or verdict["passage_id"] == 0:
             return []
         chosen = next((c for c in top if c.passage.id == verdict["passage_id"]), None)
-        excerpt = normalize(verdict.get("supporting_excerpt", ""))
-        haystack = f"{chosen.passage.text_ar_norm} {chosen.passage.text_en_norm}" if chosen else ""
-        if chosen is None or not excerpt or excerpt not in haystack:
+        if chosen is None or not excerpt_verified(verdict.get("supporting_excerpt", ""), chosen.passage):
             f.needs_scholar_review = True
             f.review_reasons.append("لم نتمكن من التحقق آليًا من المطابقة المقترحة.")
             return []
         chosen.match_type = MatchType.SEMANTIC
+        f.needs_scholar_review = True
+        f.review_reasons.append("المطابقة بالمعنى أو الترجمة بمساعدة النموذج؛ تحتاج مراجعة قبل اعتمادها.")
         f.notes.append("المطابقة هنا بالمعنى أو عبر الترجمة، حددها النموذج وتحققنا من وجود المقطع في المصدر. راجع النص الأصلي.")
         # same_text (e.g. a faithful translation) counts as a match; same_meaning as differing wording.
         chosen.similarity = max(chosen.similarity, self.s.t_exact if verdict["decision"] == "same_text" else self.s.t_variant)
         return [chosen]
 
-    async def _cited_ayah(self, item: ExtractedItem, known: set[int]) -> list[Passage]:
-        """The ayah the author cited is always compared: mushaf spelling («تَاْيۡـَٔسُواْ») can keep search from finding it."""
-        cited = parse_cited_reference(item.cited_reference)
-        if not cited or QURAN not in cited.collections or not (cited.surah and cited.ayah):
-            return []
-        return [p for p in await self.retriever.lookup(QURAN, number=cited.ayah, book=cited.surah) if p.id not in known]
-
     async def _check_translated_verse(self, f: Finding, item: ExtractedItem, trace: list[dict] | None) -> Finding:
-        """A verse quoted in translation. No Quran translations are loaded, so compare against the Arabic ayah at
-        the cited reference: Claude judges whether the translation renders it, and must cite an excerpt that is
-        verified to exist in the Arabic text. Without Claude, the ayah is shown for comparison only."""
+        """A verse quoted in translation. No Quran translations are loaded, so compare against Arabic ayat: the one
+        at the cited reference, plus the ayat Claude names as the source. Claude judges whether the translation
+        renders one of them, and must cite an excerpt that is verified to exist in its Arabic text. Without Claude,
+        the cited ayah is shown for comparison only."""
         step: dict = {"finding": f.id, "origin": item.origin, "translated_quran": True}
         cited = parse_cited_reference(item.cited_reference)
-        ayat = []
+        cited_ayah: Passage | None = None
         if cited and cited.surah and cited.ayah:
-            ayat = await self.retriever.lookup(QURAN, number=cited.ayah, book=cited.surah)
-        if not ayat:
+            found = await self.retriever.lookup(QURAN, number=cited.ayah, book=cited.surah)
+            cited_ayah = found[0] if found else None
+
+        candidates = [cited_ayah] if cited_ayah else []
+        verdict = None
+        if self.llm is not None:
+            for p in await self._proposed_passages(item, step, kind="quran"):
+                if all(p.id != c.id for c in candidates):
+                    candidates.append(p)
+            candidates = candidates[:5]
+            if candidates:
+                try:
+                    verdict = await self.llm.adjudicate(
+                        item.quoted_text,
+                        [{"id": p.id, "reference": passage_reference(p), "text": p.text_ar} for p in candidates],
+                    )
+                    step["llm_adjudicate"] = verdict
+                except LLMError as e:
+                    step["llm_adjudicate_error"] = str(e)
+
+        chosen = next((p for p in candidates if verdict and p.id == verdict["passage_id"]), None)
+        verified = (
+            chosen is not None
+            and verdict["decision"] in ("same_text", "same_meaning")
+            and excerpt_verified(verdict.get("supporting_excerpt", ""), chosen)
+        )
+        if verified:
+            shown, match_type = chosen, MatchType.SEMANTIC
+            f.needs_scholar_review = True
+            f.review_reasons.append("مطابقة الترجمة حددها النموذج؛ راجع النص العربي والإحالة قبل اعتمادها.")
+            f.status = (
+                ReferenceStatus.MATCHES_SOURCE if verdict["decision"] == "same_text" else ReferenceStatus.WORDING_DIFFERS
+            )
+            f.notes.append(
+                "النص ترجمة؛ حكم النموذج بأنها تؤدي معنى الآية المعروضة، وتحققنا من وجود المقطع المستشهد به في نصها العربي. راجع الآية."
+            )
+            if cited_ayah and chosen.id != cited_ayah.id:
+                if chosen.book == cited_ayah.book and abs((chosen.number or 0) - (cited_ayah.number or 0)) == 1:
+                    # A translation often spans two ayat; the neighbouring ayah is not a wrong reference.
+                    f.needs_scholar_review = True
+                    f.review_reasons.append("الترجمة أقرب إلى الآية المجاورة للموضع المذكور؛ راجع حدود الآيات.")
+                else:
+                    f.status = ReferenceStatus.REFERENCE_MISMATCH
+                    f.notes.append("رقم الآية المذكور لا يطابق موضع النص.")
+        elif cited_ayah:
+            shown, match_type = cited_ayah, None
+            f.status = ReferenceStatus.OUT_OF_SCOPE
+            if verdict and verdict["decision"] == "different":
+                f.needs_scholar_review = True
+                f.review_reasons.append("لا يبدو أن الترجمة تؤدي معنى الآية في الموضع المذكور؛ راجع الإحالة.")
+            elif verdict:
+                f.needs_scholar_review = True
+                f.review_reasons.append("لم نتمكن من التحقق آليًا من المطابقة المقترحة.")
+            f.notes.append("لا تتضمن هذه النسخة ترجمات لمعاني القرآن. الآية في الموضع المذكور معروضة للمقارنة.")
+        else:
             f.status = ReferenceStatus.OUT_OF_SCOPE
             f.notes.append(
-                "لا تتضمن هذه النسخة ترجمات لمعاني القرآن، ولم تُذكر إحالة (سورة:آية) يمكن المقارنة بها؛ تحقق من الآية بنصها العربي."
+                "لا تتضمن هذه النسخة ترجمات لمعاني القرآن، ولم نتمكن من تحديد الآية المقصودة؛ تحقق من الآية بنصها العربي."
             )
             if trace is not None:
                 trace.append(step)
             return f
 
-        ayah = ayat[0]
-        comp = Comparison(ayah, 0.0, 1.0, "ar", None)
-        verdict = None
-        if self.llm is not None:
-            try:
-                verdict = await self.llm.adjudicate(
-                    item.quoted_text, [{"id": ayah.id, "reference": passage_reference(ayah), "text": ayah.text_ar}]
-                )
-                step["llm_adjudicate"] = verdict
-            except LLMError as e:
-                step["llm_adjudicate_error"] = str(e)
-        excerpt = normalize((verdict or {}).get("supporting_excerpt", ""))
-        verified = bool(verdict) and verdict["passage_id"] == ayah.id and excerpt and excerpt in ayah.text_ar_norm
-
-        if verified and verdict["decision"] in ("same_text", "same_meaning"):
-            comp.match_type = MatchType.SEMANTIC
-            f.status = (
-                ReferenceStatus.MATCHES_SOURCE if verdict["decision"] == "same_text" else ReferenceStatus.WORDING_DIFFERS
-            )
-            f.notes.append(
-                "النص ترجمة؛ حكم النموذج بأنها تؤدي معنى الآية في الموضع المذكور، وتحققنا من وجود المقطع المستشهد به في نصها العربي. راجع الآية."
-            )
-        else:
-            f.status = ReferenceStatus.OUT_OF_SCOPE
-            if verified and verdict["decision"] == "different":
-                f.needs_scholar_review = True
-                f.review_reasons.append("لا يبدو أن الترجمة تؤدي معنى الآية في الموضع المذكور؛ راجع الإحالة.")
-            f.notes.append("لا تتضمن هذه النسخة ترجمات لمعاني القرآن. الآية في الموضع المذكور معروضة للمقارنة.")
-        f.evidence = [to_evidence(comp)]
+        f.evidence = [to_evidence(Comparison(shown, 0.0, 1.0, "ar", match_type))]
         await self._add_quran_context(f)
-        f.suggested_reference = passage_reference(ayah)
+        f.suggested_reference = passage_reference(shown)
         if trace is not None:
             trace.append(step)
         return f

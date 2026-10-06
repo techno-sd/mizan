@@ -39,6 +39,7 @@ export const Copy = ({ className }: P) =>
   svg(className, <><rect x="9" y="9" width="11" height="11" rx="2" /><path d="M5 15V6a2 2 0 0 1 2-2h9" /></>);
 export const External = ({ className }: P) => svg(className, <><path d="M14 4h6v6" /><path d="M20 4l-9 9" /><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" /></>);
 export const Chevron = ({ className }: P) => svg(className, <path d="M6 9l6 6 6-6" />);
+export const ImageIcon = ({ className }: P) => svg(className, <><rect x="3" y="4" width="18" height="16" rx="2" /><circle cx="9" cy="10" r="1.8" /><path d="M21 16l-5-5-9 9" /></>);
 export const Paste = ({ className }: P) =>
   svg(className, <><rect x="6" y="4" width="12" height="17" rx="2" /><path d="M9 4.5V3h6v1.5" /><path d="M9 11h6M9 15h4" /></>);
 export const Eraser = ({ className }: P) => svg(className, <><path d="M7 21h10" /><path d="M5.6 15.6l7.8-7.8 4.8 4.8-6.2 6.2H8.8z" /></>);

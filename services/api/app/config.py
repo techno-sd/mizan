@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     llm_effort_extract: str = "low"
     llm_effort_adjudicate: str = "medium"
     llm_fallbacks: bool = True
+    llm_cache_enabled: bool = True  # disable to avoid reading/writing cached user quotations
     llm_concurrency: int = 4
 
     # Matching thresholds (0-100). Tune on eval/gold dev split; never on the test split.

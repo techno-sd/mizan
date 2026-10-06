@@ -18,6 +18,7 @@ class _Word:
     orig: str
     norm: str
     idx: int  # index of the original whitespace token
+    end_idx: int | None = None  # last original token when a vocative spans two tokens
 
 
 @dataclass
@@ -56,39 +57,42 @@ VARIANT_MIN_WINDOW_SHARE = 0.7
 
 _DAGGER = "ٰ"
 _SMALL_HIGH_YEH = "ۧ"
-_DIACRITICS_RE = re.compile("[ؐ-ًؚ-ٰٟۖ-ۭـ]")
-_ENDS_WAW_TAA = re.compile(r"وة\W*$")
-
-
 def _rasm(tok: str) -> list[str]:
-    """Spelling-insensitive key for comparing a quote with the Uthmani mushaf text (QuranEnc).
+    """Expand vowels actually marked in the mushaf; never erase ordinary alefs.
 
-    The mushaf writes some long vowels with a dagger alef or none (خَلَقۡنَٰكُم، ٱلۡكِتَٰبَ، ٱلرَّحۡمَٰنِ), the alef of
-    صلاة/زكاة/حياة as و with a dagger alef (ٱلصَّلَوٰةَ), and يا أيها as one word (يَٰٓأَيُّهَا). Writers use standard
-    spelling. Comparing without alefs makes both spellings meet; the text shown is always the mushaf text.
+    Source-derived aliases below accept the same source token copied without marks. This accommodates
+    Uthmani spelling without treating different words such as «قال» and «قل» as identical.
     """
-    tok = tok.replace("و" + _DAGGER, "ا").replace(_SMALL_HIGH_YEH, "ي")
-    # «ءا» in the mushaf is «آ» in standard spelling (وَءَاتُواْ / وآتوا): drop the bare hamza with the alefs.
-    subs = [w for w in (s.replace("ا", "").replace("ء", "") for s in normalize(tok).split()) if w]
-    # Mushaf text copied without marks keeps the rasm «الحيوة / الصلوة»: «وة» at the end of a word reads «اة».
-    if subs and _ENDS_WAW_TAA.search(_DIACRITICS_RE.sub("", tok)):
-        subs[-1] = re.sub("وه$", "ه", subs[-1])
-    return subs
+    tok = tok.replace("و" + _DAGGER, "ا").replace("ى" + _DAGGER, "ا")
+    # QuranEnc's silent alef + hamza seat in «تَاْيۡـَٔسُواْ / يَاْيۡـَٔسُ» is standard «تيأسوا / ييأس».
+    tok = tok.replace("اْيۡـَٔ", "يأ")
+    tok = tok.replace(_DAGGER, "ا").replace(_SMALL_HIGH_YEH, "ي")
+    return normalize(tok).replace("ءا", "ا").split()
 
 
-def _words(text: str, rasm: bool = False) -> list[_Word]:
+def _source_spelling_aliases(text: str) -> dict[str, str]:
+    variants: dict[str, set[str]] = {}
+    for tok in text.split():
+        bare, expanded = normalize(tok).split(), _rasm(tok)
+        if len(bare) == len(expanded):
+            for original, canonical in zip(bare, expanded):
+                variants.setdefault(original, set()).add(canonical)
+    # A stripped spelling shared by two different source words cannot safely identify either one.
+    return {key: next(iter(values)) for key, values in variants.items() if len(values) == 1}
+
+
+def _words(text: str, rasm: bool = False, aliases: dict[str, str] | None = None) -> list[_Word]:
     out: list[_Word] = []
     for idx, tok in enumerate(text.split()):
         for sub in (_rasm(tok) if rasm else normalize(tok).split()):
-            out.append(_Word(tok, sub, idx))
+            out.append(_Word(tok, (aliases or {}).get(sub, sub), idx))
     if rasm:
-        # Vocative «يا» written apart (يا أيها) vs joined in the mushaf (يٰأيها): after dropping alefs it is a
-        # lone «ي»; join it to the next word.
+        # Vocative «يا أيها» written apart vs joined in the mushaf («يٰأيها»).
         merged: list[_Word] = []
         for w in out:
-            if merged and merged[-1].norm == "ي" and merged[-1].idx != w.idx:
+            if merged and merged[-1].norm == "يا" and w.norm == "ايها" and merged[-1].idx != w.idx:
                 prev = merged.pop()
-                w = _Word(f"{prev.orig} {w.orig}", "ي" + w.norm, prev.idx)
+                w = _Word(f"{prev.orig} {w.orig}", "يا" + w.norm, prev.idx, w.idx)
             merged.append(w)
         out = merged
     # Drop honorific phrases.
@@ -190,7 +194,8 @@ def compare(quote: str, passage: Passage, t_exact: float, t_variant: float) -> C
     lang = "ar" if is_arabic(quote) or not passage.text_en else "en"
     source_text = passage.text_ar if lang == "ar" else (passage.text_en or "")
     rasm = lang == "ar" and passage.collection == "quran"
-    q_words = _words(quote, rasm)
+    aliases = _source_spelling_aliases(source_text) if rasm else None
+    q_words = _words(quote, rasm, aliases)
     s_words = _words(source_text, rasm)
     if not q_words or not s_words:
         return Comparison(passage, 0.0, 0.0, lang, None)
@@ -217,7 +222,10 @@ def compare(quote: str, passage: Passage, t_exact: float, t_variant: float) -> C
         else:
             diff = []
     tokens = list(re.finditer(r"\S+", source_text))
-    highlight = (tokens[window[0].idx].start(), tokens[window[-1].idx].end()) if window else None
+    highlight = (
+        (tokens[window[0].idx].start(), tokens[window[-1].end_idx or window[-1].idx].end())
+        if window else None
+    )
     return Comparison(passage, float(similarity), coverage, lang, match_type, diff, window_norm, highlight)
 
 

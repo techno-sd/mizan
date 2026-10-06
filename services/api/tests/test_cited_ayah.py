@@ -16,7 +16,7 @@ AYAT = [
 # A hadith commentary that quotes the verse: the only thing search found in production.
 HADITH = Passage(
     id=4, collection="bukhari", kind="hadith", book=60, number=3389, numbering_scheme=None,
-    text_ar="قَالَتْ ‏{‏لاَ تَيْأَسُوا مِنْ رَوْحِ اللَّهِ‏}‏ مَعْنَاهُ الرَّجَاءُ",
+    text_ar="قَالَتْ \u200f{\u200fلاَ تَيْأَسُوا مِنْ رَوْحِ اللَّهِ\u200f}\u200f مَعْنَاهُ الرَّجَاءُ",
 )
 
 

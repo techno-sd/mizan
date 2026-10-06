@@ -12,6 +12,7 @@ export type ReferenceStatus =
 export type MatchType = "exact" | "variant" | "partial" | "semantic";
 
 export interface Span {
+  // Unicode code-point offsets from Python; convert to UTF-16 before JavaScript slicing.
   start: number;
   end: number;
 }

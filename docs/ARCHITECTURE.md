@@ -30,7 +30,7 @@ services/api/
     retrieve.py           Retriever interface: InMemoryRetriever (fixture) / SupabaseRetriever
     align.py              similarity, match type, word diff, matched-span highlight
     rules.py              status rules, reference check, gradings
-    llm.py                Claude: extraction + adjudication (JSON-schema output, cached)
+    llm.py                Claude: extraction, source proposals, adjudication (JSON-schema output, cached)
     store.py              LLM cache + run log (memory / Postgres)
     pipeline.py           orchestration
     main.py               FastAPI app
@@ -93,16 +93,19 @@ passage at rank 1–2 for Arabic quotes and within the top 20 for an English quo
 2. Claude extraction (one call per document, JSON schema). Each item is located in the original text; items that
    cannot be located are dropped.
 3. Merge both sources by span overlap.
-4. For each item, concurrently: retrieve → align → group matches → (Claude adjudication only if nothing matched,
-   then verify the excerpt it cites) → reference check → gradings → status.
+4. For each item, concurrently: retrieve → align → group matches → (only if nothing matched: Claude proposes
+   source locations, which are looked up and aligned like any candidate; then Claude adjudication and verification
+   of the excerpt it cites) → reference check → gradings → status.
 5. Summary + run log (hash only).
 
 ## Determinism
 
-- Everything except the two Claude calls is deterministic.
+- Everything except the Claude calls is deterministic.
 - Claude outputs are cached by input, so a repeated input returns the same result even though Claude Sonnet 5.5 does
   not accept `temperature`.
-- The eval runner measures consistency across repeated runs (see [EVALUATION.md](EVALUATION.md)).
+- The eval runner measures consistency across repeated runs (see [EVALUATION.md](EVALUATION.md)). With caching
+  enabled this measures cache-backed repeatability, not independent model stability. Disable the cache with
+  `MIZAN_LLM_CACHE_ENABLED=false` when measuring independent calls.
 
 ## Failure modes
 

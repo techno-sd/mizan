@@ -1,8 +1,43 @@
+import pytest
+
 from app.align import compare
 from app.schemas import MatchType
 from tests.conftest import PASSAGES
 
 BUKHARI_1 = next(p for p in PASSAGES if p.id == 10)
+
+
+@pytest.mark.parametrize("quote", ["قال هو الله أحد", "قل هو الله واحد", "قل هو الله الأحد"])
+def test_quran_letter_changes_are_not_exact_matches(quote):
+    p = next(p for p in PASSAGES if p.id == 1)
+    c = compare(quote, p, 92, 75)
+    assert c.match_type == MatchType.VARIANT
+    assert any(d.op != "equal" for d in c.diff)
+
+
+def test_quran_alef_insertion_is_not_ignored_in_other_words():
+    from app.retrieve import Passage
+
+    p = Passage(100, "quran", "quran", 96, 5, None, "عَلَّمَ ٱلۡإِنسَٰنَ مَا لَمۡ يَعۡلَمۡ")
+    c = compare("عالم الإنسان ما لم يعلم", p, 92, 75)
+    assert c.match_type == MatchType.VARIANT
+
+
+def test_source_vowel_marks_and_bare_rasm_are_supported():
+    from app.retrieve import Passage
+
+    p = Passage(101, "quran", "quran", 1, 1, None, "بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ")
+    assert compare("بسم الله الرحمن الرحيم", p, 92, 75).match_type == MatchType.EXACT
+    assert compare(p.text_ar, p, 92, 75).match_type == MatchType.EXACT
+
+
+def test_vocative_highlight_includes_both_original_tokens():
+    from app.retrieve import Passage
+
+    p = Passage(102, "quran", "quran", 49, 13, None, "يا أيها الناس")
+    c = compare("يا أيها", p, 92, 75)
+    start, end = c.highlight
+    assert p.text_ar[start:end] == "يا أيها"
 
 
 def test_exact_excerpt_inside_long_hadith_is_partial_match():

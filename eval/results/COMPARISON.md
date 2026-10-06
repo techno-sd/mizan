@@ -8,6 +8,11 @@ Run on 2026-10-05, commit `a801ab2`, corpus `2026-10-05`: **only the challenge's
 (QuranEnc for the Quran, HadeethEnc for hadith with its takhrij and ruling). Test split of the gold set:
 29 cases, 33 quotes, never used for tuning. Same model everywhere: **Claude Sonnet 5.5**.
 
+**Historical result:** these numbers predate pipeline 0.2.1. That version fixes an alef false match found outside this
+small set, preserves emoji offsets, and requires review for model-assisted matches. Rerun before claiming these scores
+for the current build. Three repeats with the cache enabled establish repeatability, not independent model stability.
+The latency summary does not separate cold and cached calls.
+
 - **Mizan**: the deployed service (Vercel → Render → Supabase, Frankfurt), 3 runs.
 - **Claude, directly**: the same model given the same text and asked, in Arabic, for each quote's status and correct
   reference as JSON (`eval/baselines/run_baseline.mjs --variant plain`).

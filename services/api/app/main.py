@@ -1,3 +1,5 @@
+import base64
+import binascii
 import logging
 import os
 from contextlib import asynccontextmanager
@@ -7,10 +9,16 @@ from fastapi import Depends, FastAPI, Header, HTTPException, Request
 
 from . import API_VERSION, PIPELINE_VERSION
 from .config import Settings, get_settings
-from .llm import ClaudeClient
+from .llm import ClaudeClient, LLMError
 from .pipeline import Pipeline
 from .retrieve import InMemoryRetriever, SupabaseRetriever, load_fixture
-from .schemas import FeedbackRequest, VerifyRequest, VerifyResponse
+from .schemas import (
+    FeedbackRequest,
+    ImageTextRequest,
+    ImageTextResponse,
+    VerifyRequest,
+    VerifyResponse,
+)
 from .store import MemoryStore, PostgresStore
 
 log = logging.getLogger("mizan")
@@ -32,7 +40,10 @@ async def lifespan(app: FastAPI):
 
     llm = None
     if s.llm_enabled and os.environ.get("ANTHROPIC_API_KEY"):
-        llm = ClaudeClient(store, s.llm_model, s.llm_effort_extract, s.llm_effort_adjudicate, s.llm_fallbacks)
+        llm = ClaudeClient(
+            store, s.llm_model, s.llm_effort_extract, s.llm_effort_adjudicate, s.llm_fallbacks,
+            cache_enabled=s.llm_cache_enabled,
+        )
     log.info("llm=%s", s.llm_model if llm else "disabled (rules-only mode)")
 
     app.state.pipeline = Pipeline(s, retriever, store, llm)
@@ -85,6 +96,25 @@ async def verify(body: VerifyRequest, request: Request) -> VerifyResponse:
     if len(body.text) > p.s.max_input_chars:
         raise HTTPException(status_code=413, detail=f"text longer than {p.s.max_input_chars} characters")
     return await p.verify(body.text, debug=body.debug)
+
+
+@app.post("/v1/image-text", response_model=ImageTextResponse, dependencies=[Depends(check_internal_key)])
+async def image_text(body: ImageTextRequest, request: Request) -> ImageTextResponse:
+    """The text in a screenshot, word for word, for the writer to review and then check. The image is not stored."""
+    p: Pipeline = request.app.state.pipeline
+    if p.llm is None or not hasattr(p.llm, "transcribe_image"):
+        raise HTTPException(status_code=503, detail="reading images needs the model, which is disabled")
+    try:
+        base64.b64decode(body.data, validate=True)
+    except (binascii.Error, ValueError) as e:
+        raise HTTPException(status_code=400, detail="image data is not valid base64") from e
+    try:
+        text = await p.llm.transcribe_image(body.media_type, body.data)
+    except LLMError as e:
+        log.warning("image-text failed: %s", e)
+        raise HTTPException(status_code=502, detail="could not read the image") from e
+    log.info("image-text chars=%d", len(text))
+    return ImageTextResponse(text=text)
 
 
 @app.post("/v1/feedback", dependencies=[Depends(check_internal_key)])

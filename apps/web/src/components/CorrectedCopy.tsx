@@ -1,90 +1,50 @@
 "use client";
 
-import { useMemo, useState } from "react";
-
-import { CopyButton } from "@/components/FindingCard";
-import { Chevron, External, Shield } from "@/components/Icons";
+import { useMemo } from "react";
+import CorrectionDecision from "@/components/CorrectionDecision";
+import { CopyButton } from "@/components/FindingResponse";
+import { External } from "@/components/Icons";
 import { buildCorrected } from "@/lib/corrected";
+import type { ReviewDecision, ReviewDecisions } from "@/lib/corrected";
 import type { Finding } from "@/lib/types";
 
-// The checked text with wording and references taken from the sources, and numbered source notes.
-export default function CorrectedCopy({ text, findings }: { text: string; findings: Finding[] }) {
-  const c = useMemo(() => buildCorrected(text, findings), [text, findings]);
-  const [open, setOpen] = useState(false);
-  if (!c.notes.length) return null;
-
-  const count = (n: number, one: string, two: string, many: string) => (n === 1 ? one : n === 2 ? two : `${n} ${many}`);
-  const summary = [
-    c.changed ? `صحّحنا ${count(c.changed, "موضعًا", "موضعين", "مواضع")}` : null,
-    c.added ? `أضفنا ${count(c.added, "إحالة", "إحالتين", "إحالات")}` : null,
-    c.flagged ? `${count(c.flagged, "موضع يحتاج", "موضعان يحتاجان", "مواضع تحتاج")} قرارك` : null,
-  ].filter(Boolean).join(" · ") || "لا تغييرات";
-
+export default function CorrectedCopy({ text, findings, decisions, onDecision, onReset }: {
+  text: string; findings: Finding[]; decisions: ReviewDecisions;
+  onDecision: (id: string, decision: ReviewDecision | null) => void;
+  onReset: () => void;
+}) {
+  const c = useMemo(() => buildCorrected(text, findings, decisions, "suggested"), [text, findings, decisions]);
+  const included = c.proposals.filter((p) => decisions[p.findingId] !== "keep").length;
   return (
-    <section aria-label="نسخة مصحّحة" className="rounded-2xl border border-border bg-surface">
-      <button
-        type="button"
-        aria-expanded={open}
-        onClick={() => setOpen(!open)}
-        className="flex w-full items-center gap-3 px-4 py-3 text-start"
-      >
-        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-accent-soft text-accent">
-          <Shield className="h-5 w-5" />
-        </span>
-        <span className="flex-1">
-          <span className="block font-semibold">نسخة مصحّحة جاهزة للنشر</span>
-          <span className="block text-sm text-muted">{summary} · مع قائمة المصادر</span>
-        </span>
-        <Chevron className={`h-5 w-5 text-muted transition ${open ? "rotate-180" : ""}`} />
-      </button>
-
-      {open && (
-        <div className="space-y-4 border-t border-border px-4 pb-4 pt-3">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-xs leading-6 text-muted">
-              الألفاظ والإحالات منقولة من المصادر نفسها، ولا يكتبها الذكاء الاصطناعي. الأخضر ما صحّحناه (مرّر المؤشر لترى الأصل)،
-              والأصفر يحتاج قرارك.
-            </p>
-            <CopyButton text={c.plain} label="نسخ النص مع المصادر" />
-          </div>
-
-          <div dir="auto" className="whitespace-pre-wrap rounded-xl bg-surface-muted px-4 py-3 text-[1.05rem] leading-[2.1]">
-            {c.segments.map((s, i) => {
-              if (!s.kind) return <span key={i}>{s.text}</span>;
-              if (s.kind === "wording" || s.kind === "reference")
-                return (
-                  <span key={i} className="tone-green rounded px-0.5" title={s.was ? `كان: ${s.was}` : "أُضيف"}>
-                    {s.text}
-                  </span>
-                );
-              return (
-                <span key={i} className={s.kind === "flag" ? "tone-amber rounded px-1 text-sm font-semibold" : "text-sm font-semibold text-accent"}>
-                  {s.text}
-                </span>
-              );
-            })}
-          </div>
-
-          <div>
-            <h3 className="mb-2 text-sm font-semibold">المصادر</h3>
-            <ol className="space-y-2 text-sm leading-7">
-              {c.notes.map((n) => (
-                <li key={n.n} className={`flex gap-2 rounded-lg px-2 py-1 ${n.warn ? "tone-amber" : ""}`}>
-                  <span className="font-semibold">[{n.n}]</span>
-                  <span className="flex-1">
-                    {n.lines.join(" · ")}
-                    {n.url && (
-                      <a href={n.url} target="_blank" rel="noreferrer" className="ms-1 inline-flex items-center gap-0.5 underline">
-                        المصدر <External className="h-3.5 w-3.5" />
-                      </a>
-                    )}
-                  </span>
-                </li>
-              ))}
-            </ol>
-          </div>
+    <section aria-label="النص المقترح" className="review-copy overflow-hidden rounded-2xl border border-border bg-surface">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border px-5 py-5 sm:px-7">
+        <div><h2 className="text-lg font-semibold">النص المقترح</h2><p className="mt-1 text-xs leading-6 text-muted">الاقتراحات المضمّنة: {included} · راجع النص قبل النشر.</p></div>
+        <div className="flex flex-wrap gap-2">
+          <CopyButton text={c.text} label="نسخ النص" primary />
+          <CopyButton text={c.plain} label="نسخ مع المصادر" />
         </div>
-      )}
+      </div>
+      <div className="space-y-5 p-5 sm:p-7">
+        {c.flagged > 0 && <aside className="tone-amber rounded-xl px-4 py-3 text-sm leading-7"><strong>مواضع تحتاج انتباهك: {c.flagged}.</strong> تبقى الحالات غير القاطعة دون تصحيح تلقائي، وتُعرض ملاحظاتها مع المصادر أدناه.</aside>}
+        <div dir="auto" className="whitespace-pre-wrap break-words text-[1.05rem] leading-[2.2]" aria-label="محتوى النص المقترح">{c.text}</div>
+        {c.proposals.length > 0 && <details className="rounded-xl border border-border">
+          <summary className="cursor-pointer px-4 py-3 text-sm font-medium">عرض التعديلات المقترحة ({c.proposals.length})</summary>
+          <div className="space-y-3 border-t border-border p-3 sm:p-4">
+            <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted"><p>ألغِ تحديد أي اقتراح للإبقاء على الأصل.</p><button type="button" onClick={onReset} disabled={!Object.keys(decisions).length} className="review-button rounded-lg px-2 py-1 hover:bg-surface-muted disabled:opacity-40">استعادة كل الاقتراحات</button></div>
+            {c.proposals.map((proposal) => <div key={proposal.findingId}><p className="mb-2 text-xs font-semibold text-muted">الاقتباس {findings.findIndex((f) => f.id === proposal.findingId) + 1}</p><CorrectionDecision proposal={proposal} decision={decisions[proposal.findingId]} onDecision={(decision) => onDecision(proposal.findingId, decision)} /></div>)}
+          </div>
+        </details>}
+        {c.notes.length > 0 && <details className="rounded-xl border border-border">
+          <summary className="cursor-pointer px-4 py-3 text-sm font-medium">المصادر والملاحظات ({c.notes.length})</summary>
+          <ol className="space-y-3 border-t border-border p-4 text-sm leading-7">
+            {c.notes.map((n) => <li key={n.n} className={`rounded-lg p-3 ${n.warn ? "tone-amber" : "bg-surface-muted/50"}`}>
+              <p className="font-semibold">الاقتباس {findings.findIndex((f) => f.id === n.findingId) + 1}</p>
+              <p>{n.lines.join(" · ")}</p>
+              {n.url && <a href={n.url} target="_blank" rel="noreferrer" className="mt-1 inline-flex items-center gap-1 text-accent underline">فتح المصدر <External className="h-3.5 w-3.5" /></a>}
+            </li>)}
+          </ol>
+        </details>}
+      </div>
     </section>
   );
 }

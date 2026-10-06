@@ -69,8 +69,8 @@ def test_approved_source_comes_first(response, fragment, takhrij):
 
 
 def test_supplementary_grades_are_shown_in_arabic():
-    from app.rules import collect_gradings
     from app.retrieve import Passage
+    from app.rules import collect_gradings
 
     p = Passage(id=1, collection="ibnmajah", kind="hadith", book=None, number=224, numbering_scheme=None,
                 text_ar="", gradings=[{"scholar": "Al-Albani", "grade": "Very Daif"}, {"scholar": "x", "grade": "Sanad Daif"},

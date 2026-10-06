@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "tsc -p tsconfig.test.json && node --test .next/tests/tests/corrected.test.js .next/tests/tests/review-report.test.js .next/tests/tests/review-text.test.js .next/tests/tests/issue-highlights.test.js"
   },
   "dependencies": {
     "next": "16.3.8",

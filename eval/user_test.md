@@ -3,6 +3,9 @@
 Goal: does Mizan help people who introduce Islam find problems in a text faster and more reliably than checking by
 hand? Rewarded by the judging criteria (UX 10%: "tests with the target group, and improvements made based on them").
 
+**Status: pending.** No target-user observations or timings have been recorded. Automated regression checks and the
+technical review are separate evidence; do not present them as completed user testing or invent participant results.
+
 ## Participants
 
 3–5 people from the target group (writers, editors or translators of Islam-introduction content). Record role and
@@ -38,6 +41,28 @@ Verified against the full corpus with `python -m scripts.demo ../../eval/user_te
    - Would you use this before publishing? What is missing?
 
 Half the participants do step 2 before step 1, to limit learning effects.
+
+### Review-workflow tasks (added 2026-10-06)
+
+After the timed comparison, ask the participant to:
+
+1. Explain the difference between matching a source text and the reported hadith grading.
+2. Read and copy the suggested text, exclude one reference suggestion using its checkbox, then restore all suggestions.
+3. Switch between findings, original text, and the reviewed copy; explain which changes were actually applied.
+4. Download the review report, find an unresolved finding and its source, and save a PDF using browser printing.
+5. Read the input disclosure and explain what is sent to the model and what may be cached.
+
+Record completion, time, assistance required, and any incorrect interpretation. Use two comparable documents and
+counterbalance their order if available; repeated exposure to the same text can improve the second attempt. This
+small pilot is descriptive evidence, not a population-wide accuracy or productivity claim.
+
+| Participant | Explains grading vs match | Copies / excludes / restores | Finds unresolved issue in report | Understands data handling | Assistance / confusion |
+|---|---|---|---|---|---|
+| P1 | | | | | |
+| P2 | | | | | |
+| P3 | | | | | |
+
+These rows are intentionally blank until real observations are collected. Automated UI checks do not fill them.
 
 ## Observation sheet
 

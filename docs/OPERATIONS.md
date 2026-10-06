@@ -75,8 +75,12 @@ rise.
 
 ## 6. Privacy
 
-- The user's text is not stored. `verification_runs` keeps a SHA-256 of the input, its length and the summary counts.
+- The full submitted document is not stored in `verification_runs`; that log keeps a SHA-256 of the input, its length
+  and the summary counts. The document is sent to Anthropic when model extraction is enabled.
 - The LLM cache stores Claude's extraction output (which contains the extracted quotes) keyed by a hash. To avoid
-  storing any user content, set a short retention (e.g. delete `llm_cache` rows older than 30 days) or disable the
-  Postgres cache.
+  storing extracted quotations, set `MIZAN_LLM_CACHE_ENABLED=false`. This disables cache reads and writes; it does
+  not delete existing rows. The default cache has **no automatic expiry**: entries remain until the operator deletes
+  them. An operator may configure scheduled deletion separately, but no retention job is included in this build.
+- Feedback stores the reported quotation and comment for specialist review. The UI discloses both caching and
+  feedback storage; a hash cache key does not anonymize the cached quotation.
 - Anthropic API data handling follows the organization's agreement with Anthropic.

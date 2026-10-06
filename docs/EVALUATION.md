@@ -46,7 +46,7 @@ specialist reviews a random sample and every `needs_review` label.
 | Abstention recall | gold `not_found` items not matched to a source | ≥ 95% |
 | Reference accuracy | gold reference contained in the suggested reference | ≥ 90% |
 | Review recall | gold `needs_review` items flagged | ≥ 80% |
-| Consistency | items with identical status across 3 runs | 100% |
+| Consistency | items with identical status across 3 runs; report whether cached | 100% |
 | Fabricated references | references not present in the corpus | **0 by construction** |
 | Latency p50 | per document | < 15 s |
 
@@ -56,6 +56,25 @@ python eval/run_eval.py ... --split test --runs 3        # once, at the end
 ```
 
 Results go to `eval/results/<split>-latest.md` (committed) and timestamped JSON (ignored).
+
+Report counts alongside percentages: the historical held-out result is **32/33**, not a general 97% guarantee.
+The corpus-derived set favours this retrieval system. Add independently written mutations such as «قال هو الله أحد»
+and posts with emojis before quotations; these are regression cases, not additions secretly folded into the original
+held-out score. Cached repeats demonstrate repeatability. For independent model stability and uncached latency,
+run a separate service with `MIZAN_LLM_CACHE_ENABLED=false`. First-run and later-run latencies are reported separately;
+first-run latency alone does not prove a cold cache. Historical results below predate pipeline 0.2.1 and need rerunning
+before being presented as measurements of the current build.
+
+Local regression verification for pipeline **0.2.1**, corpus **2026-10-05.2**, rules-only:
+- word fidelity: **40/40** detected and correct statuses;
+- independently written regression examples (`eval/adversarial.jsonl`): **6/6** detected and correct statuses;
+- dev split: **88/92** quotes detected, **88/88** detected quotes had the correct status, no false support among
+  scored predictions. Four English Quran excerpts were missed without model extraction. This is not an end-to-end
+  100% accuracy claim and is not a replacement for the historical live model comparison.
+
+Reproduce in `services/api` with `MIZAN_LLM_ENABLED=false`:
+`python -m scripts.eval_offline --version 2026-10-05.2 --gold ../../eval/fidelity.jsonl --split fidelity`
+and the same command with `--gold ../../eval/adversarial.jsonl --split regression`.
 
 ## 3. Ablations (show that each part adds value)
 

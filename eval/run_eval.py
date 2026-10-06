@@ -155,6 +155,11 @@ def main() -> None:
     summary["consistency_across_runs"] = consistency
     summary["cases"], summary["items"], summary["runs"] = len(cases), runs[0]["items"], args.runs
     summary["llm_used"] = sorted(str(x) for x in llm_used)
+    summary["latency_p50_first_run_s"] = runs[0]["latency_p50_s"]
+    summary["latency_p50_later_runs_s"] = (
+        round(statistics.mean(r["latency_p50_s"] for r in runs[1:]), 2) if len(runs) > 1 else None
+    )
+    summary["cache_caveat"] = "Cache state is not measured. First run is not necessarily uncached."
 
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)

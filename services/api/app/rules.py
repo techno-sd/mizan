@@ -214,7 +214,7 @@ def check_reference(
             in_cited = [p for p in passages if p.collection in cited.collections]
             if in_cited and all(p.number != cited.number for p in in_cited):
                 scheme = in_cited[0].numbering_scheme or "الترقيم المستخدم"
-                return False, [f"رقم الحديث المذكور يختلف عن رقمه في المصادر المحمّلة ({scheme}). قد يختلف الترقيم بين الطبعات."], True
+                return False, [f"رقم الحديث المذكور يختلف عن رقمه في مصادر ميزان ({scheme}). قد يختلف الترقيم بين الطبعات."], True
     return False, notes, False
 
 
