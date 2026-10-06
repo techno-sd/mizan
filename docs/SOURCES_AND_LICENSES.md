@@ -15,6 +15,15 @@ stated**, which is how Mizan presents every result from it.
 | **موسوعة القرآن الكريم — QuranEnc** (Society for Islamic Content Service in Languages), https://quranenc.com, API `quranenc.com/api/v1` | 6,236 ayat: Arabic text of the King Fahd Complex mushaf (`arabic_text`), and the approved English translation `english_saheeh` | Verses are matched against the mushaf text, shown verbatim with surah:ayah. English verse quotes are matched against the approved translation. |
 | **موسوعة الأحاديث النبوية — HadeethEnc** (same society), https://hadeethenc.com, API `hadeethenc.com/api/v1` | 3,574 hadith in Arabic and English, each with its **source (التخريج)** and **ruling (الحكم)**, and the full takhrij references | Hadith are matched against the encyclopedia text. The reference shown is the encyclopedia's takhrij (e.g. «متفق عليه»), the ruling is the encyclopedia's ruling, and the full takhrij is one click away. |
 
+### Approved translations of the meanings of the Quran (QuranEnc)
+
+One translation per language, from QuranEnc (approved source), for verses quoted in translation: English
+`english_saheeh`, French `french_rashid`, Spanish `spanish_garcia`, German `german_bubenheim`, Indonesian
+`indonesian_affairs`, Turkish `turkish_rwwad`, Urdu `urdu_junagarhi` (6,236 ayat each, footnote markers removed).
+Downloaded with `scripts/fetch_translations.mjs`, loaded into `quran_translations` with `scripts/load_translations.py`.
+A quote that matches one word for word is reported with the translator's name; other translations of the same verse
+are checked by meaning instead, with a review flag.
+
 ### Supplementary source (not in the package)
 
 | Source | What we use | How it is used |

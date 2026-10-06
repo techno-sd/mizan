@@ -142,7 +142,7 @@ export function reviewCorrection(f: Finding): string | null {
   if (!wording && f.status === "reference_mismatch" && ["exact", "partial"].includes(ev.match_type)) wording = f.quoted_text;
   if (!wording) return null;
   const quran = ev.collection === "quran";
-  const arabicVerse = quran && !/[a-z]/i.test(wording);
+  const arabicVerse = quran && !ev.translation_lang && !/[a-z]/i.test(wording);
   return `${arabicVerse ? "﴿" : "«"}${wording}${arabicVerse ? "﴾" : "»"} ${quran ? "[" : "("}${citation(ev)}${quran ? "]" : ")"}`;
 }
 
@@ -181,6 +181,7 @@ export function reviewText(f: Finding): { text: string; reference: string | null
     return { text: wording ? `اللفظ في المصدر: ${ev?.collection === "quran" ? "﴿" : "«"}${wording}${ev?.collection === "quran" ? "﴾" : "»"}.` : "اللفظ يختلف عن المصدر؛ راجعه قبل النشر.", reference: ev ? citation(ev) : null, tone: "fix" };
   }
   if (reviewOnlyForRulings(f)) return { text: "مطابق للنص في المصدر، لكن الأحكام المنقولة فيه متباينة.", reference: ev ? citation(ev) : null, tone: "review" };
+  if (ev?.translation_label) return { text: `مطابق لترجمة معاني الآية المعتمدة: ${ev.translation_label}.`, reference: citation(ev), tone: "ok" };
   return { text: "مطابق للنص في المصدر.", reference: ev ? citation(ev) : null, tone: "ok" };
 }
 

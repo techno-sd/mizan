@@ -54,6 +54,8 @@ export interface Evidence {
   source_label: string;
   source_url: string;
   source_approved: boolean;
+  translation_lang?: string | null; // a verse quoted in translation: text_en holds the approved translation
+  translation_label?: string | null;
 }
 
 export interface Finding {

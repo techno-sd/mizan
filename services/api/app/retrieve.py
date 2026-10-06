@@ -5,6 +5,7 @@
 """
 
 import json
+import logging
 import math
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -13,6 +14,8 @@ from typing import Protocol
 from rapidfuzz import fuzz
 
 from .normalize import normalize
+
+log = logging.getLogger("mizan")
 
 FIXTURE = Path(__file__).parent / "data" / "fixture_passages.json"
 
@@ -74,6 +77,19 @@ class Retriever(Protocol):
 class InMemoryRetriever:
     def __init__(self, passages: list[Passage]):
         self.passages = passages
+        # Approved translations of ayat, {(lang, sura, aya): (translation_key, text)}; empty unless a test adds them.
+        self.translations: dict[tuple[str, int, int], tuple[str, str]] = {}
+
+    async def translation(self, lang: str, sura: int, aya: int) -> tuple[str, str] | None:
+        return self.translations.get((lang, sura, aya))
+
+    async def search_translation(self, query: str, lang: str, k: int) -> list[tuple[int, int, str, str]]:
+        q = normalize(query)
+        scored = [
+            (fuzz.partial_ratio(q, normalize(text)), sura, aya, key, text)
+            for (lg, sura, aya), (key, text) in self.translations.items() if lg == lang
+        ]
+        return [(s, a, key, text) for score, s, a, key, text in sorted(scored, reverse=True)[:k] if score >= 60]
 
     async def search(self, query: str, kind: str | None, k: int) -> list[Candidate]:
         q = normalize(query)
@@ -248,6 +264,30 @@ class SupabaseRetriever:
                 await conn.execute(sql, (self.corpus_version, collection, number, number, book, book))
             ).fetchall()
         return [_row_to_passage(r) for r in rows]
+
+    async def translation(self, lang: str, sura: int, aya: int) -> tuple[str, str] | None:
+        import psycopg
+
+        sql = "select translation_key, text from quran_translations where lang = %s and sura = %s and aya = %s"
+        try:
+            async with self.pool.connection() as conn:
+                row = await (await conn.execute(sql, (lang, sura, aya))).fetchone()
+        except psycopg.Error as e:  # translations not loaded: the meaning check runs instead
+            log.warning("translation lookup failed: %s", e)
+            return None
+        return (row[0], row[1]) if row else None
+
+    async def search_translation(self, query: str, lang: str, k: int) -> list[tuple[int, int, str, str]]:
+        import psycopg
+
+        sql = "select sura, aya, translation_key, text from match_translation(%s, %s, %s)"
+        try:
+            async with self.pool.connection() as conn:
+                rows = await (await conn.execute(sql, (normalize(query), lang, k))).fetchall()
+        except psycopg.Error as e:
+            log.warning("translation search failed: %s", e)
+            return []
+        return [(r[0], r[1], r[2], r[3]) for r in rows]
 
     async def neighbors(self, passage_id: int) -> tuple[str | None, str | None]:
         sql = (

@@ -73,8 +73,9 @@ function SourcePassage({ ev, showEnglish }: { ev: Evidence; showEnglish: boolean
         </button>
       )}
       {(showEnglish || enSpan) && ev.text_en && (
-        <div dir="ltr" className="mt-3 border-t border-border pt-3">
-          <MarkedText text={ev.text_en} span={enSpan} open={open} className="text-sm leading-6 text-muted" />
+        <div dir={ev.translation_lang === "ur" ? "rtl" : "ltr"} className="mt-3 border-t border-border pt-3">
+{ev.translation_label && <p dir="rtl" className="mb-1 text-xs text-muted">{ev.translation_label}</p>}
+<MarkedText text={ev.text_en} span={enSpan} open={open} className="text-sm leading-6 text-muted" />
         </div>
       )}
     </div>
@@ -101,7 +102,7 @@ export default function FindingResponse({ finding: f, originalText, active, numb
   const g = f.gradings.length ? mainGrading(f.gradings) : null;
   const grading = gradingSummary(f);
   const sourceUrl = ev?.url && /^https?:\/\//i.test(ev.url) ? ev.url : null;
-  const emphasis = ["يحتاج مراجعة", "مطابق للنص", "صحّح الإحالة", "اللفظ في المصدر", "لم نجده", "خارج نطاق", "الأقوال المنسوبة"].find((phrase) => message.text.startsWith(phrase));
+  const emphasis = ["يحتاج مراجعة", "مطابق للنص", "مطابق لترجمة", "صحّح الإحالة", "اللفظ في المصدر", "لم نجده", "خارج نطاق", "الأقوال المنسوبة"].find((phrase) => message.text.startsWith(phrase));
   const v = verdict(f);
   const detail = referenceChange(f) ?? (f.status === "wording_differs" && message.tone === "fix" ? wordingChange(f.diff) : null);
   const gradeLine = gradingSentence(f);

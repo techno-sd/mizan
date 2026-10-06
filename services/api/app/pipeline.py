@@ -2,11 +2,13 @@ import asyncio
 import hashlib
 import time
 import uuid
+from dataclasses import replace
 
 from . import API_VERSION, PIPELINE_VERSION
 from .align import Comparison, compare, is_arabic
 from .config import Settings
 from .extract import ExtractedItem, detect_rules, locate, merge_items
+from .language import TRANSLATION_LABELS, detect_language
 from .llm import PROMPT_VERSION, LLMClient, LLMError
 from .normalize import normalize
 from .references import COLLECTIONS, QURAN, loaded_scope, parse_cited_reference
@@ -156,7 +158,7 @@ class Pipeline:
             return f
 
         s = self.s
-        translated = not is_arabic(item.quoted_text)
+        translated = not is_arabic(item.quoted_text) or detect_language(item.quoted_text) == "ur"
         if translated and item.type == ItemType.QURAN:
             return await self._check_translated_verse(f, item, trace)
         candidates = [c.passage for c in await self.retriever.search(item.quoted_text, None, s.retrieve_k)]
@@ -358,11 +360,64 @@ class Pipeline:
         chosen.similarity = max(chosen.similarity, self.s.t_exact if verdict["decision"] == "same_text" else self.s.t_variant)
         return [chosen]
 
+    async def _approved_translation(self, f: Finding, item: ExtractedItem, trace: list[dict] | None) -> Finding | None:
+        """A verse quoted in a language with an approved QuranEnc translation, compared word for word with that
+        translation: of the cited ayah first, then of the ayat search finds. None when it does not match word for
+        word (another translator's wording is not an error), so the meaning check runs instead."""
+        lang = detect_language(item.quoted_text)
+        if lang not in TRANSLATION_LABELS or not hasattr(self.retriever, "search_translation"):
+            return None
+        cited = parse_cited_reference(item.cited_reference)
+        places: list[tuple[int, int, str, str]] = []
+        if cited and cited.surah and cited.ayah:
+            hit = await self.retriever.translation(lang, cited.surah, cited.ayah)
+            if hit:
+                places.append((cited.surah, cited.ayah, hit[0], hit[1]))
+        for p in await self.retriever.search_translation(item.quoted_text, lang, 5):
+            if all((p[0], p[1]) != (q[0], q[1]) for q in places):
+                places.append(p)
+        exact = (MatchType.EXACT, MatchType.PARTIAL)
+        best: Comparison | None = None
+        for sura, aya, _key, text in places:
+            ayah = next(iter(await self.retriever.lookup(QURAN, number=aya, book=sura)), None)
+            if ayah is None:
+                continue
+            c = compare(item.quoted_text, replace(ayah, text_en=text, text_en_norm=normalize(text)), self.s.t_exact,
+                        self.s.t_variant, lang="en")
+            if c.match_type in exact and (best is None or c.similarity > best.similarity):
+                best = c
+        if best is None:
+            return None
+        ayah = best.passage
+        f.status = ReferenceStatus.MATCHES_SOURCE
+        if cited and cited.surah and (cited.surah, cited.ayah) != (ayah.book, ayah.number):
+            if cited.surah == ayah.book and cited.ayah and abs(cited.ayah - (ayah.number or 0)) == 1:
+                f.needs_scholar_review = True
+                f.review_reasons.append("الترجمة أقرب إلى الآية المجاورة للموضع المذكور؛ راجع حدود الآيات.")
+            else:
+                f.status = ReferenceStatus.REFERENCE_MISMATCH
+                f.notes.append("رقم الآية المذكور لا يطابق موضع النص.")
+        label = TRANSLATION_LABELS[lang]
+        f.notes.append(f"النص مطابق بلفظه لترجمة معاني الآية المعتمدة: {label}.")
+        ev = to_evidence(best)
+        ev.translation_lang, ev.translation_label = lang, label
+        f.evidence = [ev]
+        f.diff = best.diff
+        await self._add_quran_context(f)
+        f.suggested_reference = passage_reference(ayah)
+        if trace is not None:
+            trace.append({"finding": f.id, "approved_translation": lang, "ayah": passage_reference(ayah)})
+        return f
+
     async def _check_translated_verse(self, f: Finding, item: ExtractedItem, trace: list[dict] | None) -> Finding:
-        """A verse quoted in translation. No Quran translations are loaded, so compare against Arabic ayat: the one
+        """A verse quoted in translation. When it matches the approved translation in its language word for word, that
+        decides (_approved_translation). Otherwise compare against Arabic ayat: the one
         at the cited reference, plus the ayat Claude names as the source. Claude judges whether the translation
         renders one of them, and must cite an excerpt that is verified to exist in its Arabic text. Without Claude,
         the cited ayah is shown for comparison only."""
+        matched = await self._approved_translation(f, item, trace)
+        if matched is not None:
+            return matched
         step: dict = {"finding": f.id, "origin": item.origin, "translated_quran": True}
         cited = parse_cited_reference(item.cited_reference)
         cited_ayah: Passage | None = None

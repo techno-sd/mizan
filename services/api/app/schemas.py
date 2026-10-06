@@ -81,6 +81,9 @@ class Evidence(BaseModel):
     source_label: str = ""
     source_url: str = ""
     source_approved: bool = True
+    # A verse quoted in translation: `text_en` then holds the approved translation it was compared with.
+    translation_lang: str | None = None
+    translation_label: str | None = None
 
 
 class Finding(BaseModel):

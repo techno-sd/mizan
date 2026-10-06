@@ -188,10 +188,11 @@ def word_diff(quote: list[_Word], source: list[_Word]) -> tuple[list[DiffOp], in
     return ops, shared, changed
 
 
-def compare(quote: str, passage: Passage, t_exact: float, t_variant: float) -> Comparison:
+def compare(quote: str, passage: Passage, t_exact: float, t_variant: float, lang: str | None = None) -> Comparison:
     """`matches` means word-for-word identical after normalization (diacritics, hamza forms, honorifics
     ignored). Character similarity alone is too lenient: one added word barely moves it."""
-    lang = "ar" if is_arabic(quote) or not passage.text_en else "en"
+    # lang="en" compares with the passage's non-Arabic text (English, or an approved translation put in text_en).
+    lang = lang or ("ar" if is_arabic(quote) or not passage.text_en else "en")
     source_text = passage.text_ar if lang == "ar" else (passage.text_en or "")
     rasm = lang == "ar" and passage.collection == "quran"
     aliases = _source_spelling_aliases(source_text) if rasm else None
