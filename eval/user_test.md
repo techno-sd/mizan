@@ -1,7 +1,7 @@
-# User test (Day 2)
+# User test
 
 Goal: does Mizan help people who introduce Islam find problems in a text faster and more reliably than checking by
-hand? Rewarded by the judging criteria (UX 10%: "tests with the target group, and improvements made based on them").
+hand? The challenge's UX criterion rewards tests with the target group and the improvements made from them.
 
 **Status: pending.** No target-user observations or timings have been recorded. Automated regression checks and the
 technical review are separate evidence; do not present them as completed user testing or invent participant results.
@@ -74,7 +74,7 @@ These rows are intentionally blank until real observations are collected. Automa
 
 ## Changes made from the findings
 
-Fill in on Day 3: at least two changes, each with the observation that motivated it.
+Fill in after the test: at least two changes, each with the observation that motivated it.
 
 | Observation | Change | Commit |
 |---|---|---|

@@ -53,9 +53,6 @@ export const SAMPLES = [
 
 export const SAMPLE_TEXT = SAMPLES[0].text;
 
-export const REPO_URL = "https://github.com/techno-sd/mizan";
-export const METHOD_URL = `${REPO_URL}/blob/main/docs/METHOD.md`;
-
 export const fmt = (n: number) => n.toLocaleString("en-US");
 
 // Arabic number agreement: 1 اقتباسًا واحدًا، 2 اقتباسين، 3-10 اقتباسات، 11-99 اقتباسًا، 100+ follows the last two digits.

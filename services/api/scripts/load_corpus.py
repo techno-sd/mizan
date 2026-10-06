@@ -1,4 +1,4 @@
-"""Load a built corpus into Supabase Postgres.
+"""Load a built corpus into Postgres (Neon).
 
     MIZAN_DATABASE_URL=postgresql://... python -m scripts.load_corpus --version 2026-10-04
 

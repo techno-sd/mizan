@@ -15,26 +15,15 @@ Dev fix between the two: mushaf text copied without marks («الحيوة / ال
 (`a801ab2`). Test failure: `g-050`, a gold-set artifact (excerpt starting mid-honorific). Comparison with the
 same model used directly: [COMPARISON.md](COMPARISON.md).
 
-## Earlier: previous sources (corpus `2026-10-04`, Tanzil + hadith-api), replaced on 2026-10-05
+## Earlier runs
 
-Kept for the record of how the matching rules were developed; these sources are no longer used.
+Before 2026-10-05 the corpus was Tanzil + hadith-api (2026-10-04). Those runs showed how the matching rules were
+developed (false support 18.0% → 0.0% on dev after the word-for-word rule, then 0.0% on dev and test with Claude Sonnet
+5.5 on the live API) and are not repeated here: those sources are no longer used and their result files were removed.
+Latency in old runs came from a WebAssembly Python runtime with pure-Python fuzzy matching (≈ 9.5 s per case); the
+deployed service uses native CPython and RapidFuzz's compiled implementation.
 
-| Date | Commit | Split | Items | False support ↓ | Status acc. | Abstention | Reference acc. | Detection |
-|---|---|---|---|---|---|---|---|---|
-| 2026-10-04 12:26 | `c24da01` | dev | 88 | **18.0%** | 84.1% | 50% | 100% | 100% |
-| 2026-10-04 13:00 | `f529217` | dev | 88 | **0.0%** | 98.9% | 100% | 100% | 100% |
-| 2026-10-05 09:29 | `0004330` | dev, **live API + Claude Sonnet 5.5**, 3 runs | 88 | 2.4% | 97.7% | 100% | 100% | 100% |
-| 2026-10-05 09:34 | `cb30407` | dev, **live API + Claude Sonnet 5.5**, 3 runs | 88 | **0.0%** | 98.9% | 100% | 100% | 100% |
-
-| 2026-10-05 09:46 | `67f3a92` | **test** (held out), live API + Claude Sonnet 5.5, 3 runs | 32 | **0.0%** | **100%** | 100% | 100% | 100% |
-
-Test split, run once with no tuning on it. Comparison with the same model used directly (with and without web
-search): [COMPARISON.md](COMPARISON.md).
-
-Live runs: the deployed stack (Vercel → Render → Supabase, Frankfurt), consistency across the 3 runs 100%,
-median latency 2.8 s per case on the first run (Claude calls) and 0.6 s on repeats (cached Claude results).
-
-## What changed between the two runs
+## What was fixed, and what found it
 
 | Failure seen on dev | Fix | Commit |
 |---|---|---|
@@ -52,6 +41,3 @@ median latency 2.8 s per case on the first run (Claude calls) and 0.6 s on repea
 - `g-009`: the generated excerpt ends with «… للنبي صلى», cut in the middle of «صلى الله عليه وسلم». The pipeline
   reports the dangling «صلى» as an added word. This is a gold-generation artifact (no writer ends a quote there); the
   gold set was not changed to avoid tuning on it.
-
-Latency in this table is from a WebAssembly Python runtime with pure-Python fuzzy matching (≈ 9.5 s per case); the
-deployed service uses native CPython and RapidFuzz's compiled implementation.

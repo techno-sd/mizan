@@ -9,7 +9,7 @@ rulings, and offers a corrected copy built only from the sources. Built for the 
 - Code: https://github.com/techno-sd/mizan (MIT)
 - Start here, then: [README](README.md) · [Architecture](docs/ARCHITECTURE.md) · [Method](docs/METHOD.md) ·
   [Operations](docs/OPERATIONS.md) · [Sources and licenses](docs/SOURCES_AND_LICENSES.md) · [Limits](docs/LIMITS.md) ·
-  [Evaluation](docs/EVALUATION.md)
+  [Evaluation](docs/EVALUATION.md) · [Idea](docs/IDEA.md) · [Pitch](docs/PITCH.md) · [eval/](eval/README.md)
 
 ## 1. State at handover (2026-10-07)
 
@@ -20,7 +20,7 @@ rulings, and offers a corrected copy built only from the sources. Built for the 
 | Corpus | `2026-10-05.2`, 45,792 passages: QuranEnc 6,236 ayat + HadeethEnc 3,574 hadith (approved sources) + hadith-api 35,982 (supplementary, labelled in every result) |
 | Model | Claude Sonnet 5.5 (`claude-sonnet-5-5`) for quote extraction, source proposals, adjudication, screenshot transcription |
 | Tests | API 94 (pytest) · web 53 (`npm test`) · ruff, eslint, tsc, `next build` in CI |
-| Evaluation | word fidelity 40/40 (same model alone 31/40), popular claims 37/37, held-out test 97% status accuracy ([details](docs/EVALUATION.md)) |
+| Evaluation | word fidelity 40/40 (same model alone 31/40), popular claims 37/37, held-out test 32/33. Measured **before** pipeline 0.2.1: rerun before quoting them for this build ([details and limits](docs/EVALUATION.md)) |
 
 Features live: verification of Arabic and English quotes; grouped chat-style reply (verdict, exact wording
 difference, the fix, rulings with the book they concern, numbered sources); suggested corrected copy with per-change
@@ -36,7 +36,7 @@ compared with QuranEnc's approved translations. The code is deployed; the data i
 | GitHub `techno-sd/mizan` | code, CI (`.github/workflows/ci.yml`) | push to `main` deploys both apps |
 | Vercel project `mizan` | web app, root `apps/web` | env: `MIZAN_API_URL`, `MIZAN_INTERNAL_API_KEY` |
 | Render service `mizan-api` | API, Docker (`services/api/Dockerfile`), Blueprint `render.yaml`, plan `0.5c-512mb`, Frankfurt | env: see 3; `MIZAN_CORPUS_VERSION` and `MIZAN_LLM_MODEL` come from `render.yaml` |
-| Neon project `mizan`, branch `production` | Postgres 17, AWS Frankfurt, autoscaling 0.5–2 CU, scale to zero off | connections from outside Render are currently rejected ("connection reset"), most likely an IP allow-list or branch protection: check Settings → Network security |
+| Neon project `mizan`, branch `production` | Postgres 17, AWS Frankfurt, autoscaling 0.5–2 CU, scale to zero off | both the pooled and the direct host accepted a connection from the maintainer's machine on 2026-10-07; earlier "connection reset" errors from outside Render suggest an IP allow-list or branch protection, so if they return check Settings → Network security |
 | Anthropic | Claude API key used by the API | spend shows in the Anthropic console |
 | Supabase `txqjbjcsxnaeuzxmmbke` | **old database, no longer used** | pause or delete it |
 
@@ -90,8 +90,9 @@ psql "$DIRECT_URL" -f ../../db/migrations/20261006020000_quran_translations.sql
 python -m scripts.load_translations              # reads MIZAN_DATABASE_URL; uses the direct host
 ```
 
-From a machine allowed by Neon's IP allow-list (it currently rejects others with "connection reset"). Until then
-translated verses use the meaning check with a review flag, and the API logs `translation lookup failed`.
+Checked on 2026-10-07: the live database has **no `quran_translations` table yet** (the migration is not applied), so
+translated verses use the meaning check with a review flag and the API logs `translation lookup failed`. Run these
+steps from a machine Neon accepts (see section 2). On Windows run the loaders from WSL/Linux.
 
 ## 6. Evaluation
 
@@ -118,6 +119,6 @@ Limits of every number are written next to it; do not present them as general ac
 2. Target-user test ([eval/user_test.md](eval/user_test.md)) and specialist review of labels and wording
    ([eval/specialist_review.md](eval/specialist_review.md)): both still pending.
 3. Shared rate limit and spending cap (7); uptime alert on `/health`.
-4. A specialist screen for the `feedback` queue.
+4. A specialist screen for the `feedback` queue (2 reports were in it on 2026-10-07: read them).
 5. Proposed features: hadith translations (HadeethEnc), Telegram/WhatsApp bot, browser extension, curated database of
    circulating texts with documented verdicts, English interface, file/URL upload.

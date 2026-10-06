@@ -29,7 +29,7 @@ including source-passage highlights, so emojis do not shift a quote or corrupt i
 ## 3. Parsing the cited reference (`references.py`)
 
 - `2:255`, `Quran 49:13` → surah/ayah.
-- A surah name (all 114 names from Tanzil metadata, Arabic and transliterated) together with «سورة»/"surah" or
+- A surah name (all 114, Arabic and transliterated, from `app/data/surahs.json`) together with «سورة»/"surah" or
   followed by a number.
 - Collection aliases (البخاري، صحيح مسلم، أبو داود، الترمذي، النسائي، ابن ماجه، الموطأ…, plus English). «متفق عليه» =
   al-Bukhari + Muslim. A bare «مسلم» counts only after a narration verb («رواه مسلم»).
@@ -59,6 +59,8 @@ Defaults: `T_exact = 92`, `T_variant = 75`. **Tune them on the dev split only.**
 - **Group:** the best match plus other passages whose aligned window carries the same wording (the same hadith via
   another chain, or in both Sahihs).
 - **Ambiguous:** another passage with different wording scores within `ambiguity_margin` of the best → scholar review.
+- **Order of equally good matches:** the approved source (HadeethEnc) first, then al-Bukhari and Muslim, then the
+  Sunan. A quote may drop a joining «و» or «ف» at its start and still match word for word.
 
 ## 6. Status rules
 
@@ -73,7 +75,15 @@ Defaults: `T_exact = 92`, `T_variant = 75`. **Tune them on the dev split only.**
 A number-only difference inside the right collection is a **note**, not a mismatch: numbering differs between
 editions.
 
-## 7. When matching finds nothing: Claude proposes, the database confirms
+## 7. Verses quoted in translation
+
+A verse written in another language is detected by `language.py` (Urdu by its own letters, Latin-script languages by
+common words). It is compared **word for word with QuranEnc's approved translation in that language**
+(`quran_translations`; the cited ayah first, then the ayat search finds). A match is certain and names the translator;
+a wrong ayah number is reported. Another translator's wording is not an error: it falls through to the meaning check in
+section 9. Without the translation table the API logs a warning and uses the meaning check directly.
+
+## 8. When matching finds nothing: Claude proposes, the database confirms
 
 Search is lexical, so a paraphrase, another English translation or a misremembered wording can share too few words
 with its source to be retrieved. Claude is then asked where the text comes from (`LOCATE_SYSTEM`): up to 5
@@ -89,7 +99,7 @@ A verse quoted in translation is checked against the Arabic ayah at the cited re
 Claude proposes, in one adjudication. A verified ayah other than the cited one is a `reference_mismatch`; the
 neighbouring ayah (translations often span two) is flagged for review instead.
 
-## 8. Claude adjudication (only when matching found nothing)
+## 9. Claude adjudication (only when matching found nothing)
 
 Up to 6 candidates are sent with the quote (Claude's proposals first). The JSON schema restricts `passage_id` to those
 candidate ids (or 0). The answer is used only if `supporting_excerpt` is found in the chosen passage as whole words
@@ -100,7 +110,7 @@ match; `same_meaning` as `wording_differs`. Both are visibly labelled as model-a
 The excerpt check establishes that the cited words exist; it does not independently prove semantic equivalence.
 The proposed-copy feature leaves all semantic or specialist-review findings unchanged and adds a review note.
 
-## 9. Gradings
+## 10. Gradings
 
 - Copied from the source data as `[{scholar, grade}]`; shown with the scholar's own wording (plus an Arabic rendering
   of known names and terms).
@@ -111,7 +121,7 @@ The proposed-copy feature leaves all semantic or specialist-review findings unch
   or later saying.
 - Texts in al-Bukhari or Muslim have no separate grading in the dataset; the UI states the collection.
 
-## 10. What is never done
+## 11. What is never done
 
 - No model freely generates a displayed reference or grading. Status rules are deterministic, but a semantic
   fallback uses the model's constrained equivalence decision and is always flagged for review.

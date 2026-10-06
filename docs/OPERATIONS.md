@@ -10,8 +10,8 @@
      (approved only, 9,810, kept for rollback). Database ≈ 260 MB. `match_passages` ≈ 0.3–0.4 s per query from Riyadh.
    - Connection: the API uses the **pooled** string (host contains `-pooler`); load the corpus over the direct host
      (the same string without `-pooler`).
-   - Before 2026-10-05 the database was Supabase (project `txqjbjcsxnaeuzxmmbke`, Free plan); it moved to Neon
-     because the free 500 MB limit could not hold the new corpus. Any Postgres with `pg_trgm` + `pgvector` works.
+   - The project started on Supabase (free plan) and moved to Neon on 2026-10-05 because the free 500 MB limit could
+     not hold the corpus. Any Postgres with `pg_trgm` + `pgvector` works.
 2. **Corpus**:
    ```bash
    cd services/api
@@ -28,12 +28,15 @@
 5. **Smoke test**: open the site → "جرّب نصًا تجريبيًا" → "افحص المحتوى" → 7 findings, matching
    `services/api/tests/test_demo_regression.py`.
 
-## 2. Keep it alive through judging (until 2026-10-22)
+## 2. Keeping it running
 
-- Paid plans for Render (no sleep) and Neon (scale to zero off) for the judging window.
-- Anthropic: prepaid credit for the period plus a spend alert. Repeated inputs hit the cache and cost nothing.
-- The web proxy rate-limits each IP (15 requests / 5 min).
-- Check `/health` daily (an uptime monitor is fine).
+- Render must stay on a paid always-on plan (the free plan sleeps) and Neon must keep scale-to-zero off; otherwise the
+  first request after idle time is slow or fails. The live link was promised through the judging window (until
+  2026-10-22).
+- Anthropic: prepaid credit plus a spend alert. Repeated inputs hit the cache and cost nothing.
+- The web proxies rate-limit each IP, but **in memory, per server instance**: not a real limit on Vercel. A shared
+  limit and a daily spending cap are an open item ([HANDOVER.md §8](../HANDOVER.md)).
+- Watch `/health` with an uptime monitor (also keeps the database warm).
 
 ## 3. Cost (estimates; check current price lists)
 

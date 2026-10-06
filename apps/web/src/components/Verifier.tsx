@@ -325,13 +325,6 @@ export default function Verifier() {
             <span className="text-xs text-muted">جرّب:</span>
             {SAMPLES.map((s) => <button key={s.id} type="button" title={s.hint} onClick={() => setDraft(s.text)} className="rounded-full border border-border bg-surface/80 px-3.5 py-1.5 text-xs text-muted transition hover:border-accent/50 hover:bg-accent-soft hover:text-accent">{s.label}</button>)}
           </div>
-          <p className="mx-auto mt-6 max-w-xl text-[11px] leading-6 text-muted">
-            المصادر: القرآن الكريم وموسوعة الأحاديث النبوية (معتمدة)، والكتب الستة والموطأ (إضافية ومذكورة في كل نتيجة). مطابقة اللفظ لا تعني صحة الحديث.
-          </p>
-          <details className="mx-auto mt-1 max-w-md text-[11px] text-muted">
-            <summary className="cursor-pointer">خصوصية النص</summary>
-            <p className="mt-1 leading-6">يُرسل النص إلى Anthropic للفحص، ولا نحفظه كاملًا؛ قد تُحفظ الاقتباسات المستخرجة مؤقتًا لتسريع الفحص. البلاغ يحفظ الاقتباس وتعليقك فقط.</p>
-          </details>
         </div>
       </section>
     );

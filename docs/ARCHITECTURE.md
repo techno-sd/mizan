@@ -38,7 +38,7 @@ services/api/
     store.py              LLM cache + run log + readers' feedback (memory / Postgres)
     pipeline.py           orchestration
     main.py               FastAPI app
-    data/                 surahs.json (Tanzil metadata), fixture_passages.json (offline corpus)
+    data/                 surahs.json (surah names), fixture_passages.json (39-passage offline corpus)
   scripts/                build_corpus.py, load_corpus.py, fetch_translations.mjs, load_translations.py,
                           eval_offline.py, ref_validity.py, demo.py
   tests/                  unit + real-text regression tests
@@ -49,8 +49,7 @@ docs/                     this documentation
 
 ## Swappable parts
 
-Every part that will change for production sits behind a small interface; the hackathon build uses the simple
-implementation.
+Every part that is likely to change sits behind a small interface; the current build uses the simple implementation.
 
 | Interface | Now | Production path |
 |---|---|---|
@@ -83,7 +82,7 @@ Reciprocal rank fusion of up to four candidate lists (60 each):
    passages and took ~8 s;
 2. `word_similarity(q, text_ar_norm)`: trigram similarity that works for a short quote inside a long hadith;
 3. the same over `text_en_norm` (English quotes of hadith translations);
-4. cosine distance over `embedding` when an embedding is supplied (optional, Day 2+).
+4. cosine distance over `embedding` when an embedding is supplied (not used yet: the column is empty).
 
 The function returns ids and fused scores. The service then aligns each candidate exactly (`align.py`): retrieval
 only proposes, it never decides.
@@ -99,9 +98,9 @@ query, the expected passage at rank 1–2 for Arabic quotes. Database ≈ 290 MB
 - `POST /v1/feedback`: stores a reader's report on one result.
 - `GET /health`: corpus version, passage count, model; also keeps the database warm.
 
-> Check on Day 1: `select word_similarity('انما الاعمال بالنيات', 'حدثنا ... انما الاعمال بالنيات');` must
-> return a high value. If it returns 0, the database locale treats Arabic letters as non-word characters; fall back to
-> FTS-only candidates (alignment in Python still works).
+> On a new database, check `select word_similarity('انما الاعمال بالنيات', 'حدثنا ... انما الاعمال بالنيات');`: it
+> must return a high value. If it returns 0, the database locale treats Arabic letters as non-word characters; fall
+> back to FTS-only candidates (alignment in Python still works).
 
 ## Request flow (`POST /v1/verify`)
 

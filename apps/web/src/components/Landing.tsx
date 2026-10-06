@@ -1,8 +1,7 @@
 // Site chrome: header and footer only.
 import Link from "next/link";
 
-import { GitHub, ScaleLogo } from "@/components/Icons";
-import { METHOD_URL, REPO_URL } from "@/lib/sample";
+import { ScaleLogo } from "@/components/Icons";
 
 export function SiteHeader() {
   return (
@@ -14,20 +13,6 @@ export function SiteHeader() {
           </span>
           <span className="text-lg font-bold">ميزان</span>
         </Link>
-        <nav className="flex items-center gap-1 text-sm" aria-label="روابط">
-          <a href={METHOD_URL} target="_blank" rel="noreferrer" className="rounded-lg px-3 py-1.5 text-muted hover:bg-surface-muted hover:text-foreground">
-            المنهجية
-          </a>
-          <a
-            href={REPO_URL}
-            target="_blank"
-            rel="noreferrer"
-            aria-label="الكود المصدري على GitHub"
-            className="rounded-lg p-2 text-muted hover:bg-surface-muted hover:text-foreground"
-          >
-            <GitHub className="h-[18px] w-[18px]" />
-          </a>
-        </nav>
       </div>
     </header>
   );
