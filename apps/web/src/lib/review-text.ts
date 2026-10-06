@@ -71,7 +71,12 @@ export function gradingSentence(f: Finding): string | null {
       if (ref && !e.refs.includes(ref)) e.refs.push(ref);
       groups.set(grade(g), e);
     }
-    const list = [...groups].slice(0, 4).map(([k, v]) => attributed(k, v.names.slice(0, 2)) + (v.refs.length ? ` في ${v.refs.slice(0, 2).join(" و")}` : "")).join("، و");
+    // An approved takhrij ("رواه الترمذي وغيره") reads as itself; a book and number reads "في جامع الترمذي 2317".
+    const where = (refs: string[]) => {
+      const takhrij = refs.filter((r) => r.startsWith("رواه")).slice(0, 2), books = refs.filter((r) => !r.startsWith("رواه")).slice(0, 2);
+      return (takhrij.length ? ` (${takhrij.join("؛ ")})` : "") + (books.length ? ` في ${books.join(" و")}` : "");
+    };
+    const list = [...groups].slice(0, 4).map(([k, v]) => attributed(k, v.names.slice(0, 2)) + where(v.refs)).join("، و");
     return `الأحكام المنقولة: ${list}. راجعه قبل الاستشهاد به.`;
   }
   const main = f.gradings.find((g) => g.source_approved) ?? f.gradings[0];

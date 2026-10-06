@@ -31,6 +31,7 @@
   --details-border: #e3ded2;
   --details-heading: #1a1f1c;
   --details-muted: #5b625d;
+  --tree-line: #c9c1ae;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -64,6 +65,7 @@
     --details-border: #2b332e;
     --details-heading: #e9ede9;
     --details-muted: #9ca59f;
+    --tree-line: #48534c;
   }
 }
 
@@ -134,21 +136,31 @@ body:has(.review-workspace) .site-footer-content { flex-direction: row; gap: 0.7
 .response-comment { padding-bottom: 1.25rem; border-bottom: 1px solid var(--border); }
 .inline-citation { display: inline; margin-inline-start: 0.3rem; padding: 0.2rem 0.3rem; border-radius: 0.35rem; background: var(--accent-soft); color: var(--accent); font-size: 0.75rem; font-weight: 600; vertical-align: 0.15em; white-space: nowrap; }
 .inline-citation:hover { text-decoration: underline; text-underline-offset: 3px; }
-.response-inline-details { margin-top: 0.75rem; border: 1px solid var(--details-border); border-radius: 0.875rem; overflow: hidden; background: var(--details-bg); }
-.source-entry-heading { display: flex; width: 100%; align-items: center; gap: 0.75rem; padding: 0.875rem 1rem; text-align: start; color: var(--details-heading); background: var(--details-header); }
-.source-entry-heading .source-number { border-color: transparent; color: var(--accent); background: var(--accent-soft); }
-.source-number { display: grid; width: 1.75rem; height: 1.75rem; flex-shrink: 0; place-items: center; border: 1px solid var(--details-border); border-radius: 0.5rem; color: var(--details-heading); font-size: 0.75rem; font-weight: 600; background: var(--surface); }
-.response-evidence { padding: 1rem; border-top: 1px solid var(--details-border); overflow-wrap: anywhere; }
-.response-inline-details .text-muted { color: var(--details-muted); }
-.response-inline-details h4 { color: var(--details-heading); }
-.response-inline-details h4 svg { color: var(--accent); }
-.response-inline-details a.review-button { border-color: var(--details-border); }
-.response-inline-details a.review-button:hover { background: var(--accent-soft); }
-.review-note { border-inline-start: 3px solid var(--violet-fg); border-radius: 0.5rem; background: var(--violet-bg); padding: 0.5rem 0.75rem; font-size: 0.8rem; line-height: 1.8; color: var(--foreground); }
-.review-note strong { color: var(--violet-fg); font-weight: 600; }
 .source-scope { display: inline-flex; align-items: center; gap: 0.25rem; border-radius: 999px; padding: 0 0.5rem; font-size: 0.7rem; line-height: 1.4rem; font-weight: 500; }
 .source-scope-approved { background: var(--green-bg); color: var(--green-fg); }
 .source-scope-extra { background: var(--slate-bg); color: var(--slate-fg); }
+/* One quote as a short tree: the quote, then its branches on a rail at the start side. */
+.finding-tree { list-style: none; margin: 0.35rem 0 0; padding: 0; margin-inline-start: 0.7rem; }
+.tree-node { position: relative; padding-inline-start: 1.15rem; padding-block: 0.15rem; }
+.tree-node::before { content: ""; position: absolute; inset-inline-start: 0; top: 0; bottom: 0; border-inline-start: 1.5px solid var(--tree-line); }
+.tree-node:last-child::before { bottom: auto; height: 1.15rem; }
+.tree-node::after { content: ""; position: absolute; inset-inline-start: 0; top: 1.15rem; width: 0.8rem; border-top: 1.5px solid var(--tree-line); }
+.tree-row { font-size: 0.875rem; line-height: 2; color: var(--foreground); }
+.tree-label { display: inline-block; min-width: 3.6rem; margin-inline-end: 0.5rem; font-size: 0.75rem; font-weight: 500; color: var(--muted); }
+.tree-fix .tree-label { color: var(--accent); }
+.tree-issue .tree-label { color: var(--orange-fg); }
+.tree-correction { color: var(--accent); font-weight: 500; font-size: 0.95rem; }
+.tree-copy { min-height: 0; vertical-align: 0.05em; }
+.tree-toggle, .tree-locate { display: inline-flex; align-items: center; gap: 0.3rem; border-radius: 0.4rem; padding: 0.05rem 0.4rem; font-size: 0.75rem; color: var(--accent); }
+.tree-toggle { margin-inline-start: 0.5rem; }
+.tree-toggle:hover { background: var(--accent-soft); }
+.tree-locate { color: var(--muted); }
+.tree-locate:hover { background: var(--surface-muted); color: var(--foreground); }
+.tree-details { margin-block: 0.5rem 0.75rem; border: 1px solid var(--details-border); border-radius: 0.75rem; background: var(--details-bg); padding: 1rem; overflow-wrap: anywhere; }
+.tree-details .text-muted { color: var(--details-muted); }
+.tree-details h4 { color: var(--details-heading); }
+.tree-details h4 svg { color: var(--accent); }
+.tree-details a.review-button:hover { background: var(--accent-soft); }
 .evidence-passage { background: var(--surface); border: 1px solid var(--details-border); border-radius: 0.625rem; padding: 1rem; }
 .evidence-gradings { border-inline-start: 2px solid var(--details-border); padding-inline-start: 1rem; }
 .evidence-disclosure { font-size: 0.75rem; line-height: 1.8; }
@@ -160,11 +172,15 @@ body:has(.review-workspace) .site-footer-content { flex-direction: row; gap: 0.7
 @keyframes review-enter { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 @media (max-width: 639px) {
   .review-workspace { padding-inline: 0.875rem; }
-  .response-evidence .source-text { font-size: 1.15rem; }
   .conversation-scroll { padding: 1rem; }
   .conversation-composer { padding-inline: 1rem; }
   .review-button { min-height: 44px; }
-  .source-entry-heading, .response-evidence { padding: 0.875rem; }
+  .tree-copy { min-height: 32px; }
+  .finding-tree { margin-inline-start: 0.35rem; }
+  .tree-node { padding-inline-start: 0.95rem; }
+  .tree-label { min-width: 0; }
+  .tree-details { padding: 0.75rem; }
+  .tree-details .source-text { font-size: 1.15rem; }
   .evidence-disclosure > summary { min-height: 44px; }
 }
 
