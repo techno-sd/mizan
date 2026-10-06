@@ -11,7 +11,7 @@ from . import API_VERSION, PIPELINE_VERSION
 from .config import Settings, get_settings
 from .llm import ClaudeClient, LLMError
 from .pipeline import Pipeline
-from .retrieve import InMemoryRetriever, SupabaseRetriever, load_fixture
+from .retrieve import InMemoryRetriever, PostgresRetriever, load_fixture
 from .schemas import (
     FeedbackRequest,
     ImageTextRequest,
@@ -29,7 +29,7 @@ logging.basicConfig(level=logging.INFO, format='{"level":"%(levelname)s","msg":%
 async def lifespan(app: FastAPI):
     s = get_settings()
     if s.database_url:
-        retriever = SupabaseRetriever(s.database_url, s.corpus_version)
+        retriever = PostgresRetriever(s.database_url, s.corpus_version)
         await retriever.open()
         store = PostgresStore(retriever.pool)
         log.info("retriever=supabase corpus_version=%s", s.corpus_version)
@@ -48,7 +48,7 @@ async def lifespan(app: FastAPI):
 
     app.state.pipeline = Pipeline(s, retriever, store, llm)
     yield
-    if isinstance(retriever, SupabaseRetriever):
+    if isinstance(retriever, PostgresRetriever):
         await retriever.close()
 
 
@@ -66,7 +66,7 @@ def check_internal_key(
 @app.get("/health")
 async def health(request: Request) -> dict:
     p: Pipeline = request.app.state.pipeline
-    if isinstance(p.retriever, SupabaseRetriever):
+    if isinstance(p.retriever, PostgresRetriever):
         try:
             passages = await p.retriever.ping()
         except Exception as e:  # report, don't crash: the host restarts unhealthy services

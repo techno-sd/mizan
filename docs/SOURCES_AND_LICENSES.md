@@ -80,6 +80,6 @@ Download URLs and SHA-256 checksums are recorded in the corpus manifest
 | Service | Use |
 |---|---|
 | Anthropic Claude API (`claude-sonnet-5-5`) | quote extraction; adjudication of unclear matches |
-| Supabase (Postgres, pg_trgm, pgvector) | corpus, search, cache, run log |
+| Neon (Postgres with pg_trgm, pgvector; Frankfurt) | corpus, search, translations, cache, run log, feedback |
 | Vercel | web app hosting |
 | Render | API hosting |

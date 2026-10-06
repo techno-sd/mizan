@@ -1,6 +1,6 @@
 """Candidate retrieval behind a small interface.
 
-* SupabaseRetriever: production. Calls the `match_passages` SQL function (full-text + trigram + vector, RRF).
+* PostgresRetriever: production (Neon; any Postgres with pg_trgm + pgvector). Calls the `match_passages` SQL function (full-text + trigram + vector, RRF).
 * InMemoryRetriever: tests and offline demos. Same contract.
 """
 
@@ -215,7 +215,7 @@ def _row_to_passage(row) -> Passage:
     )
 
 
-class SupabaseRetriever:
+class PostgresRetriever:
     def __init__(self, database_url: str, corpus_version: str):
         from psycopg_pool import AsyncConnectionPool
 

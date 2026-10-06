@@ -8,6 +8,7 @@ and tells you honestly when it can't find one.*
 AI Challenge: Serving Islamic Content 2026 · Track 04: Knowledge and verification tools for those who introduce
 Islam.
 
+- **Taking over the project? Start with [HANDOVER.md](HANDOVER.md)** (services, configuration, data, open items).
 - Idea and scope: [docs/IDEA.md](docs/IDEA.md)
 - **Live demo: https://mizan-islam.vercel.app** (API: https://mizan-api-dslz.onrender.com/health)
 - Video (≤ 2 min): not recorded yet; [recording script](docs/PITCH.md). Submission materials remain incomplete.
