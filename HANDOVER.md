@@ -74,8 +74,8 @@ npm test && npm run lint && npm run build
 
 ## 5. Data
 
-- Migrations: `supabase/migrations/*.sql`, plain Postgres, applied in name order. On a non-Supabase Postgres create
-  the roles first: `create role anon nologin; create role authenticated nologin;`.
+- Migrations: `db/migrations/*.sql`, plain Postgres (any Postgres with `pg_trgm` and `pgvector`), applied in name
+  order. The project started on Supabase; the live database is Neon.
 - Corpus: `python -m scripts.build_corpus --version <v>` then `python -m scripts.load_corpus --version <v>` (direct
   host), then set `MIZAN_CORPUS_VERSION`. Sources are cached in `services/api/.cache/sources` (git-ignored).
 - Hadith-api is supplementary (not in the challenge package); the organisers confirmed outside sources may be used
@@ -86,7 +86,7 @@ npm test && npm run lint && npm run build
 ```bash
 cd services/api
 node scripts/fetch_translations.mjs              # QuranEnc, 7 languages × 6,236 ayat → .cache/sources
-psql "$DIRECT_URL" -f ../../supabase/migrations/20261006020000_quran_translations.sql
+psql "$DIRECT_URL" -f ../../db/migrations/20261006020000_quran_translations.sql
 python -m scripts.load_translations              # reads MIZAN_DATABASE_URL; uses the direct host
 ```
 

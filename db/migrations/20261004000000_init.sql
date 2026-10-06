@@ -1,5 +1,11 @@
 -- Mizan initial schema.
 -- Corpus tables are versioned: every verification run records the corpus_version it used.
+-- Plain Postgres (runs on Neon; started on Supabase). The roles below exist on Supabase; elsewhere they are created
+-- so the "revoke ... from anon, authenticated" statements in these migrations work.
+do $$ begin
+  if not exists (select 1 from pg_roles where rolname = 'anon') then create role anon nologin; end if;
+  if not exists (select 1 from pg_roles where rolname = 'authenticated') then create role authenticated nologin; end if;
+end $$;
 
 create schema if not exists extensions;
 create extension if not exists pg_trgm with schema extensions;

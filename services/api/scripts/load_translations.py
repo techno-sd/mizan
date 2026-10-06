@@ -1,4 +1,4 @@
-"""Load approved QuranEnc translations into quran_translations (see supabase/migrations/*_quran_translations.sql).
+"""Load approved QuranEnc translations into quran_translations (see db/migrations/*_quran_translations.sql).
 
     python -m scripts.fetch_translations   # (node scripts/fetch_translations.mjs) downloads them into .cache/sources
     python -m scripts.load_translations    # reads MIZAN_DATABASE_URL from the environment or .env

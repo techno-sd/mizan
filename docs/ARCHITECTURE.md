@@ -42,7 +42,7 @@ services/api/
   scripts/                build_corpus.py, load_corpus.py, fetch_translations.mjs, load_translations.py,
                           eval_offline.py, ref_validity.py, demo.py
   tests/                  unit + real-text regression tests
-supabase/migrations/      plain Postgres migrations (run on Neon): schema, search functions, feedback, translations
+db/migrations/      plain Postgres migrations (run on Neon): schema, search functions, feedback, translations
 eval/                     gold set, eval runner, demo script, baseline protocol
 docs/                     this documentation
 ```

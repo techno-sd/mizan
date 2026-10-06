@@ -35,7 +35,7 @@ Two separate axes: the **reference** (Mizan decides, with deterministic rules) a
 |---|---|
 | Verification pipeline, five statuses + specialist flag, deployed (Vercel + Render + Neon Postgres, Frankfurt) | Multilingual embeddings for meaning and translation matches |
 | Corpus: 6,236 ayat (QuranEnc) + 3,574 hadith (HadeethEnc) from the approved sources, + 35,982 hadith from a labelled supplementary source (hadith-api), versioned, checksummed | More approved translation languages; Dorar / Shamela coverage if access is granted |
-| Postgres schema (`supabase/migrations/`) + hybrid search function | Organization workspaces with their own approved corpora |
+| Postgres schema (`db/migrations/`) + hybrid search function | Organization workspaces with their own approved corpora |
 | Arabic document-centred UI, `POST /v1/verify` API; **text-first suggested copy** includes eligible source-based changes by default; optional include/exclude checkboxes and restore-all; clean copy or copy with numbered source notes; uncertain cases remain unchanged and flagged | Reviewer dashboard, durable audit trail, browser and editor add-ons |
 | Historical held-out test: **32/33** correct statuses (97%), 0 false support on that small corpus-derived set; 27/27 references agreeing with the approved takhrij ([comparison and limits](eval/results/COMPARISON.md)). Historical word fidelity: **40/40 vs 31/40** ([FIDELITY](eval/results/FIDELITY.md)); popular claims: 37/37 ([CHALLENGE](eval/results/CHALLENGE.md)). These scores predate pipeline 0.2.1 and are not a guarantee for the current build. Backend and corrected-copy regressions run in CI | Independent examples, uncached model evaluation and reviewed database of circulating texts |
 | **Verses quoted in 7 languages** (English, French, Spanish, German, Indonesian, Turkish, Urdu): compared word for word with QuranEnc's approved translation in that language (`quran_translations`, `scripts/load_translations.py`); a match is certain and names the translator, another translator's wording falls back to the meaning check | Hadith translations from HadeethEnc; more languages |
@@ -56,7 +56,7 @@ are still pending.
 ```
 apps/web/            Next.js app (UI + server-side proxy)
 services/api/        FastAPI verification service (Python)
-supabase/migrations/ database schema and search function
+db/migrations/ database schema and search function
 eval/                gold set format, eval runner, demo script, baselines
 docs/                idea, architecture, method, evaluation, sources, limits, operations, plan, pitch
 ```

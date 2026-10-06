@@ -4,8 +4,8 @@
 
 1. **Database: Neon** (paid plan), project `mizan`, branch `production`, AWS Frankfurt `eu-central-1`, Postgres 17,
    created on 2026-10-05. Compute: autoscaling 0.5–2 CU, scale to zero off (no cold start during judging).
-   - Schema: the files in `supabase/migrations/` applied in order. They revoke from the Supabase roles `anon` and
-     `authenticated`, so on a plain Postgres create them first: `create role anon nologin; create role authenticated nologin;`.
+   - Schema: the files in `db/migrations/` applied in name order (plain Postgres; the first one creates the `anon` and
+     `authenticated` roles if they are missing).
    - Loaded: corpus `2026-10-05.2` (approved sources + labelled hadith-api, 45,792 passages, live) and `2026-10-05`
      (approved only, 9,810, kept for rollback). Database ≈ 260 MB. `match_passages` ≈ 0.3–0.4 s per query from Riyadh.
    - Connection: the API uses the **pooled** string (host contains `-pooler`); load the corpus over the direct host
