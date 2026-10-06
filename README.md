@@ -8,8 +8,38 @@ tells you honestly when it cannot find one.*
 Built for the AI Challenge: Serving Islamic Content 2026, Track 04 (knowledge and verification tools for those who
 introduce Islam), 4–6 October 2026.
 
-- **Live:** https://mizan-islam.vercel.app · API health: https://mizan-api-dslz.onrender.com/health
+- **Live demo:** https://mizan-islam.vercel.app · API health: https://mizan-api-dslz.onrender.com/health
 - **Taking over the project? Read [HANDOVER.md](HANDOVER.md) first** (state, accounts, configuration, open items).
+
+## نظرة سريعة
+
+ألصق مقالًا أو منشورًا أو لقطة شاشة، فيستخرج ميزان كل آية وحديث وقول منسوب، ويقارنه حرفيًا بالمصادر المعتمدة في
+الحزمة العلمية للتحدي (موسوعة القرآن الكريم QuranEnc، وموسوعة الأحاديث النبوية HadeethEnc)، ثم بمصدر إضافي يُذكر
+مرجعه صراحةً (hadith-api: الكتب الستة وموطأ مالك). لكل اقتباس نتيجة واضحة: **مطابق للمصدر**، أو **يحتاج تصحيحًا**
+مع الفرق كلمةً كلمة والمرجع الصحيح، أو **لم نجده في المصادر**. ويعرض حكم العلماء منسوبًا إلى كتابه، ونسخة مصححة
+جاهزة للنشر، وتقريرًا قابلًا للتنزيل. ميزان لا يحكم بصحة الحديث بدلًا من العلماء، ولا يخترع مرجعًا.
+
+## Try it in one minute
+
+1. Open https://mizan-islam.vercel.app.
+2. Pick the example «منشور دعوي». It contains a verse cited to the wrong number, a hadith cited to the wrong book, a
+   hadith with an added word, a weak hadith and a saying with no source.
+3. Press «افحص». Each quote gets a verdict, the exact wording difference, the correct reference with a copy button,
+   and the source passage.
+4. Open «نسخة مصححة» for the corrected text, or download the report. You can also paste or drop a screenshot.
+
+## Results
+
+| Test | Mizan | Same model (Claude Sonnet 5.5) used directly |
+|---|---|---|
+| Held-out gold set, 33 quotes: correct status | **32/33**, no false "matches the source" | 28/33 (29/33 with web search) |
+| Held-out gold set: correct reference | **27/27** | 25/27 |
+| Word fidelity: 40 texts, half changed by one word | **40/40** | 31/40, flagged 7 of 10 correctly quoted hadith as altered |
+| Popular claims: 37 baseless sayings and misattributions | **37/37**, no invented references | 36/37 |
+
+These are small sets, mostly generated from Mizan's own corpus, measured on 2026-10-05: an indication, not a general
+accuracy claim. References are never invented by construction, because they come from the database. Method, limits and
+how to reproduce: [docs/EVALUATION.md](docs/EVALUATION.md).
 
 ## What it does
 
@@ -53,7 +83,7 @@ See [docs/METHOD.md](docs/METHOD.md).
 | Evaluation sets and a comparison with the same model used directly ([docs/EVALUATION.md](docs/EVALUATION.md)) | Shared rate limit and spending cap; organization workspaces; browser/editor add-ons; Telegram/WhatsApp bot |
 
 **Not yet done:** target-user test and specialist review ([eval/user_test.md](eval/user_test.md),
-[eval/specialist_review.md](eval/specialist_review.md)); the demo video and presentation.
+[eval/specialist_review.md](eval/specialist_review.md)).
 
 ## Repository
 
