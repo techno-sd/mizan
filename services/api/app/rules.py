@@ -123,6 +123,7 @@ def collect_gradings(passages: list[Passage]) -> list[Grading]:
                     category=grade_category(grade),
                     source_label=src.label,
                     source_approved=src.approved,
+                    reference=passage_reference(p),
                 )
             )
     return out

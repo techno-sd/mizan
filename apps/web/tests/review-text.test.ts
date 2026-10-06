@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { gradingSentence, referenceChange, reviewBreakdown, reviewComment, reviewCorrection, reviewOriginal, reviewPlainText, reviewQuotation, reviewText, verdict, wordingChange } from "../src/lib/review-text";
+import { gradingSentence, referenceChange, reviewOnlyForRulings, reviewBreakdown, reviewComment, reviewCorrection, reviewOriginal, reviewPlainText, reviewQuotation, reviewText, verdict, wordingChange } from "../src/lib/review-text";
 import type { Finding } from "../src/lib/types";
 
 function finding(overrides: Partial<Finding> = {}): Finding {
@@ -181,4 +181,17 @@ test("reported rulings fit in one sentence, naming who graded and through which 
   assert.equal(gradingSentence(mixed), "الأحكام المنقولة: قال النووي: حديث حسن (الموسوعة)، وضعيف عند زبير علي زئي. راجعه قبل الاستشهاد به.");
   assert.equal(reviewText(mixed).text, "مطابق للنص في المصدر، لكن الأحكام المنقولة فيه متباينة.");
   assert.ok(!reviewPlainText([mixed]).includes("المرجع المحتمل"));
+});
+
+test("a wrong reference stays the verdict when only the rulings differ, and each ruling names its book", () => {
+  const f = finding({ type: "hadith", status: "reference_mismatch", cited_reference: "رواه البخاري", needs_scholar_review: true,
+    review_reasons: ["أحكام العلماء المنقولة على هذا الحديث متباينة."], gradings: [
+      { scholar: "a", grade: "Very Daif", scholar_ar: "الألباني", grade_ar: "ضعيف جدًا", source_label: "hadith-api", source_approved: false, reference: "سنن ابن ماجه 2225", category: "rejected" },
+      { scholar: "b", grade: "Sahih", scholar_ar: "أحمد شاكر", grade_ar: "صحيح", source_label: "hadith-api", source_approved: false, reference: "صحيح مسلم 101", category: "accepted" },
+    ] });
+  f.evidence[0] = { ...f.evidence[0], collection: "ibnmajah", collection_label: "سنن ابن ماجه", reference: "سنن ابن ماجه 2225", match_type: "partial" };
+  assert.ok(reviewOnlyForRulings(f));
+  assert.equal(verdict(f).label, "الإحالة غير صحيحة");
+  assert.equal(reviewText(f).tone, "fix");
+  assert.equal(gradingSentence(f), "الأحكام المنقولة: ضعيف جدًا عند الألباني في سنن ابن ماجه 2225، وصحيح عند أحمد شاكر في صحيح مسلم 101. راجعه قبل الاستشهاد به.");
 });

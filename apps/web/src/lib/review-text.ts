@@ -17,10 +17,16 @@ export function verdict(f: Finding): Verdict {
   if (!ev) return { label: "يحتاج مراجعة", tone: "review" };
   if (f.type === "quran" && ev.collection !== "quran") return { label: "حديث لا آية", tone: "review" };
   if (f.type === "hadith" && ev.collection === "quran") return { label: "آية لا حديث", tone: "review" };
-  if (f.needs_scholar_review || ev.match_type === "semantic") return { label: "يحتاج مراجعة", tone: "review" };
+  if ((f.needs_scholar_review && !reviewOnlyForRulings(f)) || ev.match_type === "semantic") return { label: "يحتاج مراجعة", tone: "review" };
   if (f.status === "reference_mismatch") return { label: "الإحالة غير صحيحة", tone: "fix" };
   if (f.status === "wording_differs") return { label: "اللفظ مختلف", tone: "fix" };
-  return { label: "مطابق للمصدر", tone: "ok" };
+  return { label: "مطابق للمصدر", tone: reviewOnlyForRulings(f) ? "review" : "ok" };
+}
+
+// Flagged for review only because the reported rulings differ: the text match and its reference are certain.
+export function reviewOnlyForRulings(f: Finding): boolean {
+  return f.needs_scholar_review && f.review_reasons.length > 0 && f.review_reasons.every((r) => r.includes("متباينة"))
+    && !!f.evidence[0] && f.evidence[0].match_type !== "semantic";
 }
 
 // The words that differ, from the word diff: "insert" is in the writer's text only, "delete" in the source only.
@@ -57,9 +63,15 @@ export function gradingSentence(f: Finding): string | null {
   const name = (g: Grading) => g.scholar_ar ?? g.scholar;
   const grade = (g: Grading) => g.grade_ar ?? g.grade;
   if (summary?.short === "أحكام متباينة") {
-    const groups = new Map<string, string[]>();
-    for (const g of f.gradings) groups.set(grade(g), [...(groups.get(grade(g)) ?? []), name(g)]);
-    const list = [...groups].slice(0, 4).map(([k, v]) => attributed(k, v.slice(0, 2))).join("، و");
+    const groups = new Map<string, { names: string[]; refs: string[] }>();
+    for (const g of f.gradings) {
+      const e = groups.get(grade(g)) ?? { names: [], refs: [] };
+      if (!e.names.includes(name(g))) e.names.push(name(g));
+      const ref = g.reference?.split(" (موسوعة")[0];
+      if (ref && !e.refs.includes(ref)) e.refs.push(ref);
+      groups.set(grade(g), e);
+    }
+    const list = [...groups].slice(0, 4).map(([k, v]) => attributed(k, v.names.slice(0, 2)) + (v.refs.length ? ` في ${v.refs.slice(0, 2).join(" و")}` : "")).join("، و");
     return `الأحكام المنقولة: ${list}. راجعه قبل الاستشهاد به.`;
   }
   const main = f.gradings.find((g) => g.source_approved) ?? f.gradings[0];
@@ -154,7 +166,7 @@ export function reviewText(f: Finding): { text: string; reference: string | null
   if (ev && ((f.type === "quran" && ev.collection !== "quran") || (f.type === "hadith" && ev.collection === "quran"))) {
     return { text: f.type === "quran" ? "هذا النص حديث نبوي وليس آية؛ عدّل عبارة تقديمه (مثل «قال تعالى»)." : "هذا النص آية وليس حديثًا؛ عدّل عبارة تقديمه.", reference: citation(ev), tone: "review" };
   }
-  if (f.needs_scholar_review || ev?.match_type === "semantic") {
+  if ((f.needs_scholar_review && !reviewOnlyForRulings(f)) || ev?.match_type === "semantic") {
     // The grading sentence already reports conflicting rulings, so they are not repeated here.
     const conflict = gradingSummary(f)?.short === "أحكام متباينة";
     const reasons = f.review_reasons.filter((r) => !(conflict && r.includes("متباينة")));
@@ -168,6 +180,7 @@ export function reviewText(f: Finding): { text: string; reference: string | null
     const wording = ev ? sourceWording(ev) : null;
     return { text: wording ? `اللفظ في المصدر: ${ev?.collection === "quran" ? "﴿" : "«"}${wording}${ev?.collection === "quran" ? "﴾" : "»"}.` : "اللفظ يختلف عن المصدر؛ راجعه قبل النشر.", reference: ev ? citation(ev) : null, tone: "fix" };
   }
+  if (reviewOnlyForRulings(f)) return { text: "مطابق للنص في المصدر، لكن الأحكام المنقولة فيه متباينة.", reference: ev ? citation(ev) : null, tone: "review" };
   return { text: "مطابق للنص في المصدر.", reference: ev ? citation(ev) : null, tone: "ok" };
 }
 

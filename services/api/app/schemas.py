@@ -46,6 +46,8 @@ class Grading(BaseModel):
     # Where this ruling was taken from, e.g. "موسوعة الأحاديث النبوية (HadeethEnc)" or "مجموعة hadith-api".
     source_label: str | None = None
     source_approved: bool = True
+    # The passage the ruling is about, e.g. "سنن ابن ماجه 2225": a grade on one book's chain is not a grade on another's.
+    reference: str | None = None
     category: str = Field(description="accepted | weak | rejected | unknown (display hint only)")
 
 

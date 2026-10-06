@@ -24,6 +24,7 @@ export interface Grading {
   grade_ar: string | null;
   source_label: string | null;
   source_approved: boolean;
+  reference?: string | null; // the passage this ruling is about
   category: "accepted" | "weak" | "rejected" | "unknown";
 }
 
