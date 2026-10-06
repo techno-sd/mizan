@@ -50,7 +50,7 @@ export function buildReviewReport(text: string, result: VerifyResponse, decision
       <p class="decision"><strong>خيار الاقتراح:</strong> ${decisionLabel}</p>
       ${f.evidence.map(evidenceBlock).join("\n")}
       <h3>الحكم المنقول · مستقل عن مطابقة النص</h3>
-      ${f.gradings.length ? `<ul>${f.gradings.map((g) => `<li>${escape(g.scholar_ar ?? g.scholar)}: ${escape(g.grade_ar ?? g.grade)}${g.source_label ? ` — ${escape(g.source_label)}` : ""}${g.source_approved ? "" : " (مصدر إضافي)"}</li>`).join("")}</ul>` : '<p class="muted">لا يتضمن هذا الفحص حكمًا منقولًا لهذا الاقتباس.</p>'}
+      ${f.gradings.length ? `<ul>${f.gradings.map((g) => `<li>${escape(g.scholar_ar ?? g.scholar)}: ${escape(g.grade_ar ?? g.grade)}${g.reference && g.reference !== f.evidence[0]?.reference ? ` (في ${escape(g.reference)})` : ""}${g.source_label ? ` — ${escape(g.source_label)}` : ""}${g.source_approved ? "" : " (مصدر إضافي)"}</li>`).join("")}</ul>` : '<p class="muted">لا يتضمن هذا الفحص حكمًا منقولًا لهذا الاقتباس.</p>'}
       ${f.needs_scholar_review ? `<p class="warning"><strong>تحتاج مراجعة مختص:</strong> ${escape(f.review_reasons.join("؛ ") || "نتيجة غير قاطعة")}</p>` : ""}
       ${note?.warn ? '<p class="warning">هذا الموضع ما زال يحتاج انتباه المراجع؛ الإبقاء على الأصل لا يعني مطابقته أو صحة الاستشهاد به.</p>' : ""}
       ${note ? `<ul>${note.lines.map((line) => `<li>${escape(line)}</li>`).join("")}</ul>` : ""}

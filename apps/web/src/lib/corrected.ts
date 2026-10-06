@@ -63,9 +63,12 @@ export function sourceWording(ev: Evidence): string | null {
   return w || null;
 }
 
-function gradingLine(f: Finding): string | null {
+// Rulings reported on the matched passage itself (or with no passage recorded), not on another narration.
+const onPassage = (f: Finding, ev: Evidence) => f.gradings.filter((x) => !x.reference || x.reference === ev.reference);
+
+function gradingLine(f: Finding, ev: Evidence): string | null {
   if (!f.gradings.length) return null;
-  const g = f.gradings.slice(0, 3).map((x) => `${x.scholar_ar ?? x.scholar}: ${x.grade_ar ?? x.grade}`).join("، ");
+  const g = f.gradings.slice(0, 3).map((x) => `${x.scholar_ar ?? x.scholar}: ${x.grade_ar ?? x.grade}${x.reference && x.reference !== ev.reference ? ` (في ${x.reference})` : ""}`).join("، ");
   const first = f.gradings[0];
   const via = first.source_label && !first.source_approved ? ` (عبر ${first.source_label}، غير مدرج في الحزمة العلمية)` : "";
   return `الحكم المنقول: ${g}${via}`;
@@ -223,9 +226,10 @@ export function buildCorrected(text: string, findings: Finding[], decisions: Rev
 
     if (ev) {
       lines.unshift(`${evidenceReference(ev)} — المصدر: ${ev.source_label}${ev.source_approved ? "" : " (مصدر إضافي غير مدرج في الحزمة العلمية)"}`);
-      const g = gradingLine(f);
+      const g = gradingLine(f, ev);
       if (g) lines.push(g);
-      if (f.gradings.length && f.gradings.every((x) => x.category === "weak" || x.category === "rejected")) {
+      const own = onPassage(f, ev);
+      if (own.length && own.every((x) => x.category === "weak" || x.category === "rejected")) {
         lines.push("تنبيه: الأحكام المنقولة تضعّفه؛ يُراجع قبل الاستشهاد به.");
         warn = true;
       }

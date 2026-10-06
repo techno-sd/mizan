@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { Book, Check, Chevron, Copy, External, Paste } from "@/components/Icons";
-import { GRADE_TONE, STATUS, gradingSummary } from "@/lib/labels";
+import { GRADE_TONE, gradingSummary } from "@/lib/labels";
 import { gradingSentence, referenceChange, referenceLabel, reviewCorrection, reviewOriginal, reviewText, verdict, wordingChange } from "@/lib/review-text";
 import { toUtf16Span } from "@/lib/spans";
 import { evidenceReference } from "@/lib/references";
@@ -126,7 +126,7 @@ export default function FindingResponse({ finding: f, originalText, active, numb
         {!correction && <>{emphasis ? <><mark className={"response-highlight response-highlight-" + highlightTone}>{emphasis}</mark><span>{message.text.slice(emphasis.length)}</span></> : <span>{message.text}</span>}
         {message.reference && <><span>{message.tone === "fix" && f.status === "reference_mismatch" ? " " : referenceLabel(f, message.tone) + ": "}</span><span className={"font-medium " + (message.tone === "review" ? "text-foreground" : "text-accent")}>{message.reference}</span><span>.</span></>}
         {sourceUrl && <SourceCitation url={sourceUrl} number={number} evidence={ev!} />}</>}
-        {gradeLine && <span className={grading ? "font-medium text-[var(--violet-fg)]" : g ? GRADE_TONE[g.category] : ""}> {gradeLine}</span>}
+        {gradeLine && <span className={grading ? "text-muted" : g ? GRADE_TONE[g.category] : ""}> {gradeLine}</span>}
       </p>}
       <div className="mt-2 flex flex-wrap items-center gap-2">
         <button id={"source-" + f.id} type="button" onClick={onSource} aria-label={"المصدر والتفاصيل للاقتباس " + number} aria-expanded={expanded} aria-controls={"evidence-" + f.id} className={"review-button inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium text-accent transition hover:border-accent/30 hover:bg-accent-soft " + (expanded ? "border-accent/30 bg-accent-soft" : "border-border bg-surface")}><Book className="h-3.5 w-3.5" />{ev ? "المصدر والتفاصيل" : "تفاصيل الفحص"}<Chevron className={"h-3 w-3 transition " + (expanded ? "rotate-180" : "")} /></button>
@@ -144,18 +144,17 @@ function SourceCitation({ url, number, evidence }: { url: string; number: number
 function SourceEvidence({ evidence: e, showEnglish, primary = false }: { evidence: Evidence; showEnglish: boolean; primary?: boolean }) {
   return <section aria-label={primary ? "الدليل من المصدر" : "مصدر آخر"} className="space-y-3">
     <div className="flex flex-wrap items-start justify-between gap-2">
-      <div className="min-w-0"><h4 className="inline-flex items-center gap-1.5 text-xs font-semibold"><Book className="h-3.5 w-3.5 text-accent" />{primary ? "النص في المصدر" : e.collection_label}</h4><p className="mt-1 text-xs leading-6 text-muted">{sourceLine(e)}</p></div>
+      <div className="min-w-0"><h4 className="inline-flex items-center gap-1.5 text-xs font-semibold"><Book className="h-3.5 w-3.5" />{primary ? "النص في المصدر" : e.collection_label}</h4><p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs leading-6 text-muted">{!primary && <span>{sourceLine(e)}</span>}<span className={"source-scope " + (e.source_approved ? "source-scope-approved" : "source-scope-extra")}>{e.source_approved ? "من الحزمة العلمية" : "مصدر إضافي خارج الحزمة العلمية"}</span></p></div>
       {e.url && /^https?:\/\//i.test(e.url) && <a href={e.url} target="_blank" rel="noopener noreferrer" className="review-button inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-medium text-accent hover:bg-accent-soft">فتح المصدر<External className="h-3.5 w-3.5" /></a>}
     </div>
     <SourcePassage ev={e} showEnglish={showEnglish} />
-    <p className="text-[11px] leading-5 text-muted">{e.source_approved ? "ضمن مصادر الحزمة العلمية" : "خارج الحزمة العلمية"}</p>
     {e.takhrij && <details className="evidence-disclosure"><summary>التخريج من المصدر</summary><p className="mt-2 whitespace-pre-line text-xs leading-7 text-muted">{e.takhrij}</p></details>}
   </section>;
 }
 
-function ReportedGradings({ gradings, title }: { gradings: Grading[]; title: string }) {
+function ReportedGradings({ gradings, title, withReference = false }: { gradings: Grading[]; title: string; withReference?: boolean }) {
   if (!gradings.length) return null;
-  return <section aria-label={title} className="evidence-gradings"><h4 className="mb-3 text-xs font-semibold">{title}</h4><ul className="space-y-3">{gradings.map((g, i) => <li key={i}><p className="text-sm leading-7"><span>{g.scholar_ar ?? g.scholar}: </span><strong className={GRADE_TONE[g.category]}>{g.grade_ar ?? g.grade}</strong></p>{g.source_label && <p className="text-xs leading-5 text-muted">{g.source_label}{!g.source_approved && " · خارج الحزمة العلمية"}</p>}</li>)}</ul><p className="mt-3 text-[11px] leading-5 text-muted">أحكام منقولة؛ مطابقة النص لا تعني صحة الحديث.</p></section>;
+  return <section aria-label={title} className="evidence-gradings"><h4 className="mb-3 text-xs font-semibold">{title}</h4><ul className="space-y-3">{gradings.map((g, i) => <li key={i}><p className="text-sm leading-7"><span>{g.scholar_ar ?? g.scholar}: </span><strong className={GRADE_TONE[g.category]}>{g.grade_ar ?? g.grade}</strong></p>{(g.reference || g.source_label) && <p className="text-xs leading-5 text-muted">{[withReference && g.reference, g.source_label].filter(Boolean).join(" · ")}{!g.source_approved && " · خارج الحزمة العلمية"}</p>}</li>)}</ul><p className="mt-3 text-[11px] leading-5 text-muted">أحكام منقولة؛ مطابقة النص لا تعني صحة الحديث.</p></section>;
 }
 
 export function FindingEvidence({
@@ -166,8 +165,9 @@ export function FindingEvidence({
   const [otherSourcesOpen, setOtherSourcesOpen] = useState(false);
   const ev = f.evidence[0];
   const otherSources = f.evidence.slice(1);
-  const primaryGradings = ev ? f.gradings.filter((g) => g.source_label !== null
-    && g.source_label === ev.source_label && g.source_approved === ev.source_approved) : [];
+  // A ruling belongs to the passage it was reported on: a grade on Ibn Majah's chain is not a grade on Muslim's.
+  const primaryGradings = ev ? f.gradings.filter((g) => g.reference ? g.reference === ev.reference
+    : g.source_label !== null && g.source_label === ev.source_label && g.source_approved === ev.source_approved) : [];
   const otherGradings = f.gradings.filter((g) => !primaryGradings.includes(g));
   const showEnglish = /[a-z]/i.test(f.quoted_text);
   const bodyId = "evidence-" + f.id;
@@ -177,11 +177,11 @@ export function FindingEvidence({
     <section id={bodyId} aria-label={"تفاصيل الاقتباس " + number} className="response-inline-details">
       <div className="source-entry-heading">
         <span className="source-number">{number}</span>
-        <span className="min-w-0 flex-1"><span className="block text-sm font-semibold leading-6">{label}</span><span className="mt-0.5 block text-xs leading-5 text-muted">{ev ? ev.source_label.replace(/\s*\([A-Za-z-]+\)$/, "") : f.quoted_text}</span><span className={"mt-1 block text-[11px] leading-5 sm:hidden " + (review ? "text-[var(--violet-fg)]" : "text-muted")}>{review ? "تحتاج مراجعة" : STATUS[f.status].label}</span></span>
-        <span className={"source-result " + (review ? "text-[var(--violet-fg)]" : "text-muted")}>{review ? "تحتاج مراجعة" : STATUS[f.status].label}</span>
+        <span className="min-w-0 flex-1"><span className="block text-sm font-semibold leading-6">{label}</span><span className="mt-0.5 block text-xs leading-5 text-muted">{ev ? ev.source_label.replace(/\s*\([A-Za-z-]+\)$/, "") : f.quoted_text}</span></span>
+        {review && <span className="verdict-badge verdict-review shrink-0">تحتاج مراجعة</span>}
       </div>
       <div className="response-evidence space-y-5">
-        {f.needs_scholar_review && <p className="rounded-lg bg-[var(--violet-bg)] px-3 py-2 text-xs leading-6 text-[var(--violet-fg)]">{f.review_reasons.join("؛ ") || "النتيجة غير قاطعة وتحتاج مراجعة مختص."}</p>}
+        {f.needs_scholar_review && <p className="review-note"><strong>للمراجعة: </strong>{f.review_reasons.join("؛ ") || "النتيجة غير قاطعة وتحتاج مراجعة مختص."}</p>}
         {!ev && <p className="rounded-lg bg-surface-muted px-3 py-3 text-sm leading-7 text-muted">{reviewText(f).text}</p>}
         {ev && <SourceEvidence evidence={ev} showEnglish={showEnglish} primary />}
         <ReportedGradings gradings={primaryGradings} title="الحكم المنقول في المصدر" />
@@ -189,7 +189,7 @@ export function FindingEvidence({
           <button type="button" aria-label={"مصادر أخرى للاقتباس " + number} aria-expanded={otherSourcesOpen} aria-controls={"other-sources-" + f.id} onClick={() => setOtherSourcesOpen((open) => !open)} className="review-button inline-flex items-center gap-1.5 rounded-lg border border-[var(--details-border)] bg-surface px-3 py-1.5 text-xs font-medium text-accent hover:bg-[var(--details-header)]"><Book className="h-3.5 w-3.5" />{otherSourcesOpen ? "إخفاء المصادر الأخرى" : "عرض مصادر أخرى"}<Chevron className={"h-3 w-3 transition " + (otherSourcesOpen ? "rotate-180" : "")} /></button>
           {otherSourcesOpen && <div id={"other-sources-" + f.id} role="region" aria-label={"مصادر أخرى للاقتباس " + number} className="mt-4 space-y-5 border-t border-[var(--details-border)] pt-4">
             {otherSources.map((e, i) => <SourceEvidence key={e.passage_id + ":" + i} evidence={e} showEnglish={showEnglish} />)}
-            <ReportedGradings gradings={otherGradings} title="أحكام أخرى منقولة" />
+            <ReportedGradings gradings={otherGradings} title="أحكام منقولة على روايات أخرى" withReference />
           </div>}
         </div>}
         {f.nearest && <details className="evidence-disclosure"><summary>نص قريب للمقارنة فقط</summary><div className="mt-3 space-y-2"><p className="text-xs text-muted">{evidenceReference(f.nearest)} · ليس دليلًا على صحة الاقتباس</p><SourcePassage ev={f.nearest} showEnglish={showEnglish} /></div></details>}

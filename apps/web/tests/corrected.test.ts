@@ -209,3 +209,21 @@ test("a verified partial verse keeps only the quoted excerpt in source script", 
   });
   assert.equal(buildCorrected(text, [f], {}, "suggested").text, "قال تعالى: ﴿لَآ إِكۡرَاهَ فِي ٱلدِّينِ﴾ [سورة البقرة: 256].");
 });
+
+test("a ruling on another narration is labelled with it and does not mark the matched passage as weak", () => {
+  const text = "«من غشنا فليس منا» (رواه مسلم).";
+  const muslim: Evidence = {
+    ...evidence("مَنْ غَشَّنَا فَلَيْسَ مِنَّا"), collection: "muslim", reference: "صحيح مسلم 101",
+    source_id: "hadith-api", source_label: "مجموعة hadith-api", source_approved: false, match_type: "exact",
+  };
+  const f = finding(text, "من غشنا فليس منا", {
+    type: "hadith", status: "matches_source", cited_reference: "رواه مسلم", evidence: [muslim],
+    gradings: [{
+      scholar: "Al-Albani", grade: "Very Daif", scholar_ar: "الألباني", grade_ar: "ضعيف جدًا",
+      source_label: "مجموعة hadith-api", source_approved: false, reference: "سنن ابن ماجه 2225", category: "weak",
+    }],
+  });
+  const note = buildCorrected(text, [f]).notes[0];
+  assert.ok(note.lines.join(" ").includes("الألباني: ضعيف جدًا (في سنن ابن ماجه 2225)"));
+  assert.ok(!note.lines.some((l) => l.startsWith("تنبيه: الأحكام المنقولة تضعّفه")));
+});
