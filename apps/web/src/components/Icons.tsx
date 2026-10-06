@@ -47,4 +47,6 @@ export const Shield = ({ className }: P) => svg(className, <><path d="M12 3l7 3v
 export const Ban = ({ className }: P) => svg(className, <><circle cx="12" cy="12" r="9" /><path d="M5.6 5.6l12.8 12.8" /></>);
 export const Users = ({ className }: P) =>
   svg(className, <><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20a6.5 6.5 0 0 1 13 0" /><path d="M16 4.5a3.5 3.5 0 0 1 0 7" /><path d="M18 14.5a6.5 6.5 0 0 1 3.5 5.5" /></>);
+export const Download = ({ className }: P) => svg(className, <><path d="M12 4v11" /><path d="M7 10l5 5 5-5" /><path d="M5 20h14" /></>);
+export const Plus = ({ className }: P) => svg(className, <><path d="M12 5v14" /><path d="M5 12h14" /></>);
 export const Repeat = ({ className }: P) => svg(className, <><path d="M17 2l3 3-3 3" /><path d="M4 11V9a4 4 0 0 1 4-4h12" /><path d="M7 22l-3-3 3-3" /><path d="M20 13v2a4 4 0 0 1-4 4H4" /></>);

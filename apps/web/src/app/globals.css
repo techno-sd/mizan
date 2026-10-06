@@ -139,6 +139,23 @@ body:has(.review-workspace) .site-footer-content { flex-direction: row; gap: 0.7
 .source-scope { display: inline-flex; align-items: center; gap: 0.25rem; border-radius: 999px; padding: 0 0.5rem; font-size: 0.7rem; line-height: 1.4rem; font-weight: 500; }
 .source-scope-approved { background: var(--green-bg); color: var(--green-fg); }
 .source-scope-extra { background: var(--slate-bg); color: var(--slate-fg); }
+/* Review header: summary by group, one row of equal actions, and a segmented switch for the views. */
+.review-summary-item { display: inline-flex; align-items: center; gap: 0.35rem; border-radius: 999px; padding: 0.05rem 0.55rem; color: var(--muted); transition: background 0.15s, color 0.15s; }
+.review-summary-item strong { color: var(--foreground); font-weight: 600; }
+.review-summary-item:hover { background: var(--surface-muted); color: var(--foreground); }
+.review-summary-bar { display: flex; gap: 2px; width: min(100%, 22rem); height: 0.3rem; margin-top: 0.45rem; border-radius: 999px; overflow: hidden; }
+.review-summary-bar > span { min-width: 0.4rem; }
+.review-action { display: inline-flex; min-height: 36px; align-items: center; justify-content: center; gap: 0.4rem; border: 1px solid var(--border); border-radius: 0.6rem; background: var(--surface); padding: 0.35rem 0.8rem; font-size: 0.75rem; font-weight: 500; color: var(--foreground); transition: background 0.15s, border-color 0.15s; }
+.review-action:hover { border-color: color-mix(in srgb, var(--accent) 30%, var(--border)); background: var(--accent-soft); }
+.review-action:disabled { opacity: 0.5; pointer-events: none; }
+.review-action-accent { color: var(--accent); }
+.review-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.25rem; padding: 0.25rem; border: 1px solid var(--border); border-radius: 0.8rem; background: var(--surface-muted); }
+.review-tab { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; border-radius: 0.6rem; padding: 0.3rem 0.9rem; font-size: 0.78rem; font-weight: 500; color: var(--muted); transition: background 0.15s, color 0.15s; }
+.review-tab:hover { color: var(--foreground); }
+.review-tab-active { background: var(--surface); color: var(--accent); font-weight: 600; box-shadow: 0 1px 2px rgb(16 24 20 / 0.08), 0 0 0 1px var(--border); }
+@media (min-width: 640px) { .review-tabs { display: inline-flex; align-self: flex-start; } }
+@media (max-width: 639px) { .review-action { min-height: 44px; padding-inline: 0.5rem; } .review-tab { padding-inline: 0.4rem; font-size: 0.72rem; } }
+
 /* One quote as a short tree: the quote, then its branches on a rail at the start side. */
 .finding-tree { list-style: none; margin: 0.35rem 0 0; padding: 0; margin-inline-start: 0.7rem; }
 .tree-node { position: relative; padding-inline-start: 1.15rem; padding-block: 0.15rem; }

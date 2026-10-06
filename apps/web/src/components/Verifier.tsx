@@ -6,10 +6,10 @@ import CorrectedCopy from "@/components/CorrectedCopy";
 import FindingResponse, { CopyButton, FindingEvidence } from "@/components/FindingResponse";
 import ReviewReportButton from "@/components/ReviewReportButton";
 import HighlightedText from "@/components/HighlightedText";
-import { Book, Diff, ImageIcon, Paste, Repeat, ScaleLogo } from "@/components/Icons";
+import { Book, Diff, ImageIcon, Paste, Plus, Repeat, ScaleLogo } from "@/components/Icons";
 import { IMAGE_TYPES, imageFrom, shrinkImage } from "@/lib/image";
 import { sortFindings } from "@/lib/labels";
-import { reviewBreakdown, reviewComment, reviewPlainText, verdict } from "@/lib/review-text";
+import { reviewComment, reviewPlainText, verdict } from "@/lib/review-text";
 import { buildCorrected, citation } from "@/lib/corrected";
 import type { ReviewDecision, ReviewDecisions } from "@/lib/corrected";
 import { SAMPLES, countQuotes, fmt } from "@/lib/sample";
@@ -332,24 +332,46 @@ export default function Verifier() {
 
   const findings = result ? sortFindings(result.findings) : [];
   const comment = reviewComment(findings);
+  // The header summary uses the reply's own groups, so its counts match the headings below.
+  const summary = GROUPS.map((g) => ({ ...g, count: findings.filter((f) => g.tones.includes(verdict(f).tone)).length })).filter((g) => g.count);
+  function jumpTo(key: string) {
+    setView("findings");
+    setTimeout(() => {
+      const group = document.getElementById("group-" + key);
+      if (!group) return;
+      const fold = group.querySelector("details");
+      if (fold) fold.open = true;
+      const viewport = group.closest<HTMLElement>("[data-review-scroll]");
+      // After the folded group has opened and laid out.
+      requestAnimationFrame(() => viewport?.scrollTo({ top: viewport.scrollTop + group.getBoundingClientRect().top - viewport.getBoundingClientRect().top - 12, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }));
+    }, 0);
+  }
   const stage = [...STAGES].reverse().find((s) => elapsed >= s.after) ?? STAGES[0];
 
   return (
     <div className="review-workspace mx-auto flex min-h-0 w-full max-w-[50rem] flex-1 flex-col gap-3 px-4 py-3 lg:max-w-[64rem] lg:px-6">
-      <header className="review-heading flex shrink-0 flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-        <div className="flex min-w-0 flex-col gap-1 lg:flex-row lg:items-center lg:gap-4">
-          <h1 className="shrink-0 text-lg font-bold leading-7 sm:text-xl">مراجعة النص</h1>
-          <p role="status" className="text-xs leading-5 text-muted">
+      <header className="review-heading flex shrink-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-lg font-bold leading-7 sm:text-xl">مراجعة النص</h1>
+          <div role="status" className="mt-1 text-xs leading-6 text-muted">
             {busy ? "نراجع اقتباساتك مقابل نصوص المصادر." : result
-              ? findings.length ? <span className="flex flex-wrap items-center gap-1.5"><span>{"وجدنا " + countQuotes(findings.length) + ":"}</span>{reviewBreakdown(findings).map((b) => <span key={b.label} className={"verdict-badge verdict-" + b.tone}>{b.label} {fmt(b.count)}</span>)}</span>
+              ? findings.length ? <>
+                <p className="flex flex-wrap items-center gap-x-1 gap-y-0.5">
+                  <span className="me-1">{"وجدنا " + countQuotes(findings.length)}</span>
+                  {summary.map((g) => <button key={g.key} type="button" onClick={() => jumpTo(g.key)} className="review-summary-item" aria-label={g.title + ": " + fmt(g.count) + "، انتقل إليها"}>
+                    <span className={"h-2 w-2 rounded-full " + g.dot} aria-hidden="true" />{g.title}<strong>{fmt(g.count)}</strong>
+                  </button>)}
+                </p>
+                <div className="review-summary-bar" aria-hidden="true">{summary.map((g) => <span key={g.key} className={g.dot} style={{ flexGrow: g.count }} />)}</div>
+              </>
               : "لم نجد اقتباسات يمكن فحصها في هذا النص."
               : "لم يكتمل الفحص؛ يمكنك تعديل النص وإعادة المحاولة."}
-          </p>
+          </div>
         </div>
         <div className="review-header-actions grid shrink-0 grid-cols-3 items-start gap-1.5 sm:flex">
-          <button type="button" disabled={busy || editorOpen} onClick={editText} aria-label="تعديل وإعادة الفحص" title="تعديل النص وإعادة فحصه" className="review-button inline-flex items-center justify-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-medium hover:border-accent/30 hover:bg-accent-soft/40 disabled:opacity-50"><Repeat className="h-3.5 w-3.5" /><span>تعديل النص</span></button>
+          <button type="button" disabled={busy || editorOpen} onClick={editText} aria-label="تعديل وإعادة الفحص" title="تعديل النص وإعادة فحصه" className="review-action"><Repeat className="h-3.5 w-3.5" /><span>تعديل النص</span></button>
           {result && <ReviewReportButton text={checkedText} result={result} decisions={decisions} />}
-          <button type="button" disabled={busy} onClick={startNew} className="review-button rounded-lg px-3 py-1.5 text-xs font-medium text-muted hover:bg-surface-muted hover:text-foreground disabled:opacity-50">نص جديد</button>
+          <button type="button" disabled={busy} onClick={startNew} className="review-action"><Plus className="h-3.5 w-3.5" /><span>نص جديد</span></button>
         </div>
       </header>
 
@@ -374,11 +396,9 @@ export default function Verifier() {
 
       {result && !editorOpen && (
         <>
-          <div className="shrink-0 border-b border-border">
-            <nav aria-label="أقسام المراجعة" className="grid grid-cols-3 gap-1 sm:flex sm:gap-2">
-              {VIEWS.map(({ id, label, Icon }) => <button key={id} type="button" aria-pressed={view === id} aria-controls="review-view" onClick={() => setView(id)} className={"review-button -mb-px inline-flex items-center justify-center gap-1.5 rounded-t-lg border-b-2 px-1.5 py-2 text-xs font-medium transition sm:px-3 " + (view === id ? "border-accent text-accent" : "border-transparent text-muted hover:bg-accent-soft/40 hover:text-foreground")}><Icon className="h-3.5 w-3.5" /><span>{label}</span></button>)}
-            </nav>
-          </div>
+          <nav aria-label="أقسام المراجعة" className="review-tabs shrink-0">
+            {VIEWS.map(({ id, label, Icon }) => <button key={id} type="button" aria-pressed={view === id} aria-controls="review-view" onClick={() => setView(id)} className={"review-button review-tab " + (view === id ? "review-tab-active" : "")}><Icon className="h-3.5 w-3.5" /><span>{label}</span></button>)}
+          </nav>
 
           <div id="review-view" className="min-h-0 flex-1 overflow-hidden">
             {view === "findings" && (
@@ -407,7 +427,7 @@ export default function Verifier() {
                     const heading = <span className="response-group-title"><span className={"h-2 w-2 rounded-full " + g.dot} aria-hidden="true" />{g.title}<span className="text-muted">{" (" + fmt(items.length) + ")"}</span></span>;
                     // Correct quotes fold away when something else needs the writer.
                     const fold = g.key === "ok" && findings.some((f) => verdict(f).tone !== "ok");
-                    return <section key={g.key} aria-label={g.title} className="response-group">
+                    return <section key={g.key} id={"group-" + g.key} aria-label={g.title} className="response-group">
                       {fold ? <details className="response-group-fold"><summary>{heading}<span className="ms-auto text-xs font-normal text-muted">عرض</span></summary><div className="mt-4">{list}</div></details>
                         : <><h3 className="mb-3">{heading}</h3>{list}</>}
                     </section>;

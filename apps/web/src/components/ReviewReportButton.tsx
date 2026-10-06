@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Book } from "@/components/Icons";
+import { Download } from "@/components/Icons";
 import type { ReviewDecisions } from "@/lib/corrected";
 import { buildReviewReport } from "@/lib/review-report";
 import type { VerifyResponse } from "@/lib/types";
@@ -33,8 +33,8 @@ export default function ReviewReportButton({ text, result, decisions }: {
   }
   return (
     <div className="max-w-xs">
-      <button type="button" onClick={download} aria-label="تنزيل تقرير المراجعة" title="ملف HTML محلي قابل للطباعة والحفظ بصيغة PDF" className="review-button inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-medium text-accent hover:border-accent/30 hover:bg-accent-soft/40">
-        <Book className="h-3.5 w-3.5" /><span>تنزيل التقرير</span>
+      <button type="button" onClick={download} aria-label="تنزيل تقرير المراجعة" title="ملف HTML محلي قابل للطباعة والحفظ بصيغة PDF" className="review-action review-action-accent w-full">
+        <Download className="h-3.5 w-3.5" /><span>تنزيل التقرير</span>
       </button>
       {message && <p role="status" className="mt-1 text-xs leading-5 text-muted">{message}</p>}
     </div>
