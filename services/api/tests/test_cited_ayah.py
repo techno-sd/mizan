@@ -49,3 +49,13 @@ def test_exact_verse_lists_only_ayat_with_its_words():
     f = verify("قال تعالى: ﴿لا يكلف الله نفسا إلا وسعها﴾ [البقرة: 286].", InMemoryRetriever(passages()))
     assert f.status.value == "matches_source"
     assert f.suggested_reference == "البقرة: 286"
+
+
+def test_the_two_sahihs_lead_among_equally_good_narrations():
+    sunan = Passage(id=10, collection="ibnmajah", kind="hadith", book=12, number=2225, numbering_scheme=None,
+                    text_ar="فَقَالَ لَعَلَّكَ غَشَشْتَهُ مَنْ غَشَّنَا فَلَيْسَ مِنَّا")
+    muslim = Passage(id=11, collection="muslim", kind="hadith", book=1, number=101, numbering_scheme=None,
+                     text_ar="مَنْ حَمَلَ عَلَيْنَا السِّلاَحَ فَلَيْسَ مِنَّا وَمَنْ غَشَّنَا فَلَيْسَ مِنَّا")
+    f = verify("قال ﷺ: «من غشنا فليس منا» (رواه البخاري).", InMemoryRetriever([sunan, muslim]))
+    assert f.status.value == "reference_mismatch"
+    assert f.suggested_reference.startswith("صحيح مسلم 101")

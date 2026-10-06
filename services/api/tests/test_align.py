@@ -119,3 +119,12 @@ def test_indexed_retriever_finds_the_hadith_and_its_neighbors():
 def test_english_quote_compares_against_english_text():
     c = compare("Actions are judged by intentions", BUKHARI_1, 92, 75)
     assert c.lang == "en" and c.similarity >= 92
+
+
+def test_quote_from_mid_sentence_drops_the_joining_waw():
+    from app.retrieve import Passage
+    p = Passage(id=1, collection="muslim", kind="hadith", book=1, number=101, numbering_scheme=None,
+                text_ar="مَنْ حَمَلَ عَلَيْنَا السِّلاَحَ فَلَيْسَ مِنَّا وَمَنْ غَشَّنَا فَلَيْسَ مِنَّا")
+    c = compare("من غشنا فليس منا", p, 92, 75)
+    assert c.match_type is not None and c.match_type.value in ("exact", "partial")
+    assert c.similarity == 100

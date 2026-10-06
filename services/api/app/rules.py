@@ -158,9 +158,17 @@ def matched_group(comparisons: list[Comparison], t_variant: float, margin: float
     if best.passage.collection == QURAN and best.match_type in exact:
         # A verse quoted word for word: other ayat with similar wording («لا نكلف نفسا إلا وسعها») are not its source.
         group = [c for c in group if c.match_type in exact]
-    # Approved sources first among matches of the same kind (word-for-word before differing wording).
-    group.sort(key=lambda c: (c.match_type not in exact, not source_of(c.passage.collection, c.passage.extra).approved))
+    # Approved sources first among matches of the same kind (word-for-word before differing wording), then the
+    # two Sahihs before the Sunan: the reference a writer should cite.
+    group.sort(key=lambda c: (
+        c.match_type not in exact,
+        not source_of(c.passage.collection, c.passage.extra).approved,
+        not any(s in SAHIHAYN for s in c.passage.sources),
+    ))
     return group
+
+
+SAHIHAYN = ("bukhari", "muslim")
 
 
 def is_ambiguous(comparisons: list[Comparison], t_variant: float, margin: float) -> bool:

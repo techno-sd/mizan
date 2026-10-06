@@ -203,6 +203,10 @@ def compare(quote: str, passage: Passage, t_exact: float, t_variant: float) -> C
     q_norm = " ".join(w.norm for w in q_words)
     a, b = _refine(q_norm, s_words, *_window(q_norm, s_words))
     window = s_words[a:b]
+    first = window[0] if window else None
+    if first and first.norm != q_words[0].norm and first.norm[:1] in "وف" and first.norm[1:] == q_words[0].norm:
+        # A quote taken from mid-sentence drops the joining «و/ف»: «ومن غشنا فليس منا» quoted as «من غشنا…».
+        window = [_Word(first.orig, q_words[0].norm, first.idx, first.end_idx), *window[1:]]
     window_norm = " ".join(w.norm for w in window)
     similarity = fuzz.ratio(q_norm, window_norm)
     coverage = len(window) / len(s_words)
